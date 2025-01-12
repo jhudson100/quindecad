@@ -1,2 +1,4 @@
-# quindecad
-Simple programmatic CAD in the browser with Python
+Quindecad
+===============
+
+Minimal CSG using Python in the browser.
