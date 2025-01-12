@@ -1,0 +1,6 @@
+npm view manifold-3d dist.tarball
+wget https://registry.npmjs.org/manifold-3d/-/manifold-3d-3.0.1.tgz
+tar --keep-old-files  -xzf manifold-3d-3.0.1.tgz
+ln -s package/* .
+
+https://manifoldcad.org/jsdocs/

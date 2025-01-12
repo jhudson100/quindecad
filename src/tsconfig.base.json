@@ -1,0 +1,23 @@
+/* ref: https://stackoverflow.com/questions/56356655/structuring-a-typescript-project-with-workers */
+
+{
+    "compilerOptions":{
+        "noImplicitAny":true,
+        "removeComments": false,
+        "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
+        "rootDir": ".",
+        "module": "es2015",
+        "outDir": "../dist",
+        "composite": true,
+        "alwaysStrict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitThis": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        /*"strict": true*/
+
+    }
+}

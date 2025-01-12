@@ -1,0 +1,5 @@
+#ignore everything...
+*/*
+#but don't ignore about.txt or this file
+!*/about.txt
+!.gitignore
