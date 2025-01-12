@@ -1,0 +1,6 @@
+https://github.com/brython-dev/brython/releases
+
+wget https://github.com/brython-dev/brython/releases/download/3.13.0/Brython-3.13.0.zip
+
+unzip -n Brython-3.13.0.zip
+ln -s Brython-3.13.0 brython

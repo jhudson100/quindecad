@@ -1,0 +1,4 @@
+https://github.com/ajaxorg/ace-builds/?tab=readme-ov-file
+
+git clone https://github.com/ajaxorg/ace-builds.git
+ln -s ace-builds/src-min ./ace

@@ -1,0 +1,16 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions":{
+        "lib":["es2015","DOM"],
+        "paths":{
+            "Mesh" : ["../common/Mesh.ts"],
+            "Message" : ["../common/Message.ts"],
+            "DrawCommand" : ["../common/DrawCommand.ts"],
+            "./common/Drawable.js": ["../common/DrawCommand.ts"]
+        }
+    },
+    "references":[
+        {"path":"../worker/"},
+        {"path":"../common/"}
+    ]
+}

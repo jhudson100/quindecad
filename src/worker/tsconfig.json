@@ -1,0 +1,22 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions":{
+        "lib":["es2015","webworker"],
+        "module":"es2020",
+        "paths":{
+            // "Message" : ["../common/Message.ts"],
+            /*paths in the lists are relative to tsconfig's location*/
+            // "./worker/*" : ["./*"],
+            // "./common/*" : ["../common/*"],
+            // "./worker/workermain.js" : ["./workermain.ts"],
+            // "./common/Message.js" : ["../common/Message.ts"],
+            //"./ext/manifold/package/manifold.js" : ["../../ext/manifold/package/manifold.d.ts"],
+            // "../ext/*" : [ "../../ext/*" ]
+            // "./common/Drawable.js": ["../common/DrawCommand.ts"],
+            // "./common/Mesh.js" : ["../common/Mesh.ts"],
+        }
+    },
+    "references":[
+        {"path":"../common/"}
+    ]
+}
