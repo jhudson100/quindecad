@@ -61,18 +61,20 @@ export class RunPythonCodeMessage extends SuperToWorkerMessage{
 
 
 export class PythonCodeResultMessage extends WorkerToSuperMessage{
-    commands: DrawCommand[];
+    meshes: Mesh[]; //: DrawCommand[];
     printables: string[];
     errorLineNumbers: number[];
     errorPositions: number[][];
     errorMessages: string[];
-    constructor(inResponseTo: number, result: any[],
+    constructor(inResponseTo: number, 
+            meshes: Mesh[], //result: any[],
             printables: string[],
             errorLineNumbers: number[], errorPositions: number[][],
             errorMessages: string[]
     ){
         super(MessageType.PYTHON_CODE_RESULT,inResponseTo);
-        this.commands=result;
+        // this.commands=result;
+        this.meshes = meshes;
         this.printables = printables;
         this.errorLineNumbers = errorLineNumbers;
         this.errorPositions = errorPositions;
@@ -81,20 +83,20 @@ export class PythonCodeResultMessage extends WorkerToSuperMessage{
 }
 
 
-export class ComputeGeometryMessage extends SuperToWorkerMessage{
-    commands: DrawCommand[];
-    constructor(commands: DrawCommand[]){
-        super(MessageType.COMPUTE_GEOMETRY);
-        this.commands=commands;
-    }
-}
+// export class ComputeGeometryMessage extends SuperToWorkerMessage{
+//     commands: DrawCommand[];
+//     constructor(commands: DrawCommand[]){
+//         super(MessageType.COMPUTE_GEOMETRY);
+//         this.commands=commands;
+//     }
+// }
 
-export class GeometryComputedMessage extends WorkerToSuperMessage{
-    meshes: Mesh[];
-    error:string|undefined;
-    constructor(inResponseTo: number, meshes: Mesh[], error: string|undefined){
-        super(MessageType.GEOMETRY_COMPUTED, inResponseTo);
-        this.meshes=meshes;
-        this.error=error;
-    }
-}
+// export class GeometryComputedMessage extends WorkerToSuperMessage{
+//     meshes: Mesh[];
+//     error:string|undefined;
+//     constructor(inResponseTo: number, meshes: Mesh[], error: string|undefined){
+//         super(MessageType.GEOMETRY_COMPUTED, inResponseTo);
+//         this.meshes=meshes;
+//         this.error=error;
+//     }
+// }

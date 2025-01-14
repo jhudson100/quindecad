@@ -62,6 +62,8 @@ let preambleFunctions: FuncSpec[] = [
             },
     ]
     },
+
+/*
     {
         name: "cylinder",
         doc: "Creates a cylinder",
@@ -114,6 +116,7 @@ let preambleFunctions: FuncSpec[] = [
             { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: colordoc2}
         ]
     },
+*/
     {
         name: "difference",
         doc: "Compute the difference of two objects (a solid that encloses those points that are in object1 but not in object2)",
@@ -123,6 +126,7 @@ let preambleFunctions: FuncSpec[] = [
             { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: colordoc2 }
         ]
     },
+/*
     {
         name: "translate",
         doc: "Move an object to another location.",
@@ -222,7 +226,7 @@ let preambleFunctions: FuncSpec[] = [
             { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "The number of steps for the revolution"}
         ]
     }
-
+*/
 
     //TODO: mirror, refine, refineToTolerance, slice, split
 ];
@@ -248,7 +252,9 @@ export function initialize(){
     //construct preamble in tmplist
     let preambleCodeList = [
         "import javascript",
-        "import browser"
+        "import browser",
+        "_print = print",
+
     ];
 
     preambleFunctions.forEach( (fs: FuncSpec) => {
@@ -267,6 +273,7 @@ export function initialize(){
         });
 
         preambleCodeList.push(`def ${funcname}( ${argsAsStrings.join(",")} ):`);
+        // preambleCodeList.push(`    _print("@@@ in ${funcname} @@@")`);
 
         //generate code to verify each argument passed in at runtime is
         //the type we expect
@@ -336,34 +343,58 @@ export function initialize(){
                         //See comment on neverCallThis above. neverCallThis(0);
                 }
                 expectations.push(expectation);
+                // preambleCodeList.push(`    _print("@@@ check using ${checker}: ${a.argname} @@@")`);
                 preambleCodeList.push(`    ok = ok or ${checker}(${a.argname})`);
             }); 
 
+            // preambleCodeList.push(`    _print("@@@ checker gave us:",ok)`);
             preambleCodeList.push("    if not ok:");
             let ptmp = `"Bad value for ${a.argname}: Should be ${expectations.join(" or ")}; got "+str(type(${a.argname}))+")"`;
             preambleCodeList.push(`        raise Exception(${ptmp},${a.argname})`);
 
-            //we can't pass None back to javascript, so change it
-            preambleCodeList.push(`    if ${a.argname} == None: ${a.argname} = javascript.UNDEFINED`);
+            // preambleCodeList.push(`    _print("@@@ is it None?")`);
+            // preambleCodeList.push(`    _print("@@@",${a.argname})`);
+
+            //we must use 'is' here because == will try to do an equality comparison,
+            //and that will fail if arg is in fact a JS object that's being passed in.
+            preambleCodeList.push(`    if ${a.argname} is None: `);
+            // preambleCodeList.push(`        _print("it is None, so make it undefined")`);
+            preambleCodeList.push(`        ${a.argname} = javascript.UNDEFINED`);
+            // preambleCodeList.push(`    else:`);
+            // preambleCodeList.push(`        _print("it is not None")`);
+            // preambleCodeList.push(`    _print("@@@ done with this arg")`);
         });
+
+        // preambleCodeList.push(`    _print("@@@ additional checks?")`);
 
         if(fs.additionalChecks !== undefined ){
             fs.additionalChecks.forEach( (s: string) => {
+                // preambleCodeList.push(`    _print("@@@ additional checks @@@")`);
                 preambleCodeList.push(`    ${s}`);
             });
         }
 
-        //construct a dictionary with all of the data we'll need.
-        preambleCodeList.push("    return {")
-        preambleCodeList.push(`        'type': '${funcname.toUpperCase()}',`)
+        //call into the JS implementation
+        let tmp: string[] = [];
         args.forEach( (a:ArgSpec) => {
-            preambleCodeList.push(`        '${a.argname}' : ${a.argname},`);
+            tmp.push(a.argname)
         });
 
-        //special flag so we know this is a valid thing that can be drawn
-        preambleCodeList.push("        '_is_drawable_' : True");
+        // preambleCodeList.push(`    _print("@@@ call ${funcname}@@@")`);
 
-        preambleCodeList.push("    }")
+        preambleCodeList.push(`    return browser.self.impl_${funcname}( ${tmp.join(",")})`);
+
+        //construct a dictionary with all of the data we'll need.
+        // preambleCodeList.push("    return {")
+        // preambleCodeList.push(`        'type': '${funcname.toUpperCase()}',`)
+        // args.forEach( (a:ArgSpec) => {
+        //     preambleCodeList.push(`        '${a.argname}' : ${a.argname},`);
+        // });
+
+        //special flag so we know this is a valid thing that can be drawn
+        // preambleCodeList.push("        '_is_drawable_' : True");
+
+        // preambleCodeList.push("    }")
         preambleCodeList.push("");
     });
 
@@ -407,7 +438,13 @@ def assertIsColor(x):
     return all( [ assertIsByte(q) for q in x] )
 
 def assertIsDrawable(obj):
-    return type(obj) == dict and obj.get('_is_drawable_') == True and obj.get("type") != None
+    try:
+        tmp = obj.to_dict()
+        if tmp.get("_is_drawable_") != True:
+            return False
+        return True
+    except Exception as e:
+        return False
 
 def assertIsListOfDrawable(obj):
     if type(obj) != tuple and type(obj) != list:
@@ -435,17 +472,14 @@ def assertIsNonnegativeInteger(obj):
 def assertIsPositiveInteger(obj):
     return type(obj) == int and obj > 0
 
-__PRINT__=[]
-_print = print
-
 def print(*args):
     lst=[]
     for a in args:
         lst.append(str(a))
     tmp = " ".join(lst)
-    __PRINT__.append(tmp)
+    browser.self.impl_print(tmp)
 
-__DRAW__=[]
+#__DRAW__=[]
 
 def draw(*objs):
     _drawHelper(objs,[])
@@ -472,7 +506,13 @@ def _drawHelper(objs,nested):
             if obj[k] == None:
                 obj[k] = javascript.UNDEFINED
 
-        __DRAW__.append(obj)
+        browser.self.impl_draw(obj)
+#__DRAW__.append(obj)
+
+#def fooby(x):
+#    y = browser.self.foobar(x)
+#    _print("JS gave back:",y)
+
 
 #ref: Wikipedia
 pi = 3.141592653589793238462643383279

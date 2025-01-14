@@ -4,6 +4,7 @@
         "lib":["es2015","webworker"],
         "module":"es2020",
         "paths":{
+            "../ext/manifold/manifold.js": ["../ext/manifold/manifold.js"]
             // "Message" : ["../common/Message.ts"],
             /*paths in the lists are relative to tsconfig's location*/
             // "./worker/*" : ["./*"],

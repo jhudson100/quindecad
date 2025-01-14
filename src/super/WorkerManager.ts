@@ -4,7 +4,7 @@
 
 
 import {Mesh} from "Mesh";
-import {ComputeGeometryMessage, GeometryComputedMessage, PythonCodeResultMessage, RunPythonCodeMessage, WorkerToSuperMessage} from "Message";
+import { PythonCodeResultMessage, RunPythonCodeMessage, WorkerToSuperMessage} from "Message";
 import {DrawCommand} from "DrawCommand";
 
 const WORKERPATH="./worker/workerbootstrap.js";
@@ -17,9 +17,10 @@ type ResponseCallback = (m: WorkerToSuperMessage|undefined) => void;
 
 type WorkerStatusCallback = (isBusy: boolean) => void;
 
-interface PythonResult {
-    //things to draw/compute CSG for
-    commands: DrawCommand[];    
+export interface PythonResult {
+    //things to draw
+    //commands: DrawCommand[];    
+    meshes: Mesh[];
     //messages the worker wrote with print()
     printables: string[];       
     //line numbers where errors occurred (a traceback); most recent
@@ -37,16 +38,16 @@ function receivedMessageFromWorker(ev: MessageEvent){
 }
 
 
-export class RunAndComputeResult{
-    result: PythonResult
-    meshes: Mesh[];
-    error: string;
-    constructor(result:PythonResult, meshes:Mesh[], error: string){
-        this.result=result;
-        this.meshes=meshes;
-        this.error=error;
-    }
-}
+// export class RunAndComputeResult{
+//     result: PythonResult
+//     meshes: Mesh[];
+//     error: string;
+//     constructor(result:PythonResult, meshes:Mesh[], error: string){
+//         this.result=result;
+//         this.meshes=meshes;
+//         this.error=error;
+//     }
+// }
 
    
 export class WorkerManager{
@@ -197,8 +198,8 @@ export class WorkerManager{
         return WorkerManager.instance;
     }
 
-    runPythonAndComputeGeometry(code: string): Promise<RunAndComputeResult>{
-        let p = new Promise<RunAndComputeResult>( (res,rej) => {
+    runPythonAndComputeGeometry(code: string): Promise<PythonResult>{
+        let p = new Promise<PythonResult>( (res,rej) => {
 
             //mark worker as busy
             this.workerIsNowBusy();
@@ -232,30 +233,29 @@ export class WorkerManager{
         let p = wmsg as PythonCodeResultMessage;
 
         //construct message asking for geometry to be computed
-        let msg = new ComputeGeometryMessage(p.commands);
+        // let msg = new ComputeGeometryMessage(p.commands);
 
         //when geometry has been computed, the promise can
         //be resolved.
-        this.callbacks.set( msg.unique, (wsmsg: WorkerToSuperMessage) => {
-            this.runPythonAndComputeGeometryPart3( res, rej, p, wsmsg);
-        });
-        this.worker.postMessage(msg);
-    }
-
-    private runPythonAndComputeGeometryPart3( res: any, rej: any, p: PythonCodeResultMessage, wsmsg: WorkerToSuperMessage|undefined) {
-        if( wsmsg === undefined ){
+        // this.callbacks.set( msg.unique, (wsmsg: WorkerToSuperMessage) => {
+            // this.runPythonAndComputeGeometryPart3( res, rej, p, wsmsg);
+        // });
+        // this.worker.postMessage(msg);
+    // }
+// 
+    // private runPythonAndComputeGeometryPart3( res: any, rej: any, p: PythonCodeResultMessage, wsmsg: WorkerToSuperMessage|undefined) {
+        // if( wsmsg === undefined ){
             //worker was terminated
-            rej("Worker was terminated");
-            return;
-        }
+            // rej("Worker was terminated");
+            // return;
+        // }
 
-        let wmsg = wsmsg as GeometryComputedMessage
-        if(verbose)
-            console.log("Super: Got computed geometry",wmsg);
+        // let wmsg = wsmsg as GeometryComputedMessage
+        // if(verbose)
+            // console.log("Super: Got computed geometry",wmsg);
 
         this.workerIsNowIdle();
-        let tmp = new RunAndComputeResult(p,wmsg.meshes,wmsg.error);
-        res(tmp);
+        res(p);
     }
 }
 

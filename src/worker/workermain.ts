@@ -1,27 +1,16 @@
 //FIXME: Find some way to run python and manifold code interleaved
 //so we can use results like bbox size in python code
 
-import {SuperToWorkerMessage,IAmReadyMessage,MessageType, RunPythonCodeMessage, PythonCodeResultMessage,
-     ComputeGeometryMessage, GeometryComputedMessage} from "../common/Message.js";
+import {SuperToWorkerMessage,IAmReadyMessage,MessageType, RunPythonCodeMessage, PythonCodeResultMessage} from "../common/Message.js";
 import {Color, Mesh} from "../common/Mesh.js";
 import {DrawCommand, DrawCommandType, Cube, Sphere, Cylinder, Difference, Union, Intersection, Translate, Scale, Rotate, Frustum, Hull, BoundingBox, Cut, Extrude, Revolve} from "../common/DrawCommand.js";
 
-import Module, {Manifold, ManifoldToplevel, Mat4, Vec3} from "../../ext/manifold/manifold.js";
+import Module, {Manifold, ManifoldToplevel, Mat4, Vec3} from "../ext/manifold/manifold.js";
 
 
 // @ts-ignore
 var __BRYTHON__: any;
 
-
-let verbose=false;
-
-
-async function loadBrython(): Promise<boolean> {
-    let p = new Promise<boolean>( (resolveFunc, rejectFunc) => {
-        __BRYTHON__.whenReady.then( () => { resolveFunc(true); } );
-    });
-    return p;
-}
 
 let manifold: ManifoldToplevel;
 
@@ -34,6 +23,42 @@ class ManifoldMeshWrapper{
         this.color=color;
     }
 }
+
+class MeshHandle{
+    index: number;
+    _is_drawable_: boolean
+    constructor(mw: ManifoldMeshWrapper){
+        this.index=manifoldMeshes.length;
+        this._is_drawable_ = true;
+        manifoldMeshes.push(mw);
+    }
+}
+
+//all the meshes we create during a python execution
+let manifoldMeshes: ManifoldMeshWrapper[] = [];
+
+//indices of the meshes in manifoldMeshes which we want to draw
+let toDraw: MeshHandle[] = [];
+
+let verbose=false;
+
+type FoobyType = (x:number) => number;
+declare global {
+    interface WorkerGlobalScope { foobar : FoobyType }
+};
+
+self.foobar = (y: number) => {
+    console.log("We got fooby to be",y);
+    return y*2;
+}
+
+async function loadBrython(): Promise<boolean> {
+    let p = new Promise<boolean>( (resolveFunc, rejectFunc) => {
+        __BRYTHON__.whenReady.then( () => { resolveFunc(true); } );
+    });
+    return p;
+}
+
 
 async function manifoldLoad(){
     const manifoldTopLevel = await Module();
@@ -74,16 +99,16 @@ export async function main(__BRYTHON__1: any){
                 break;
             case MessageType.RUN_PYTHON_CODE:
                 //supervisor wants us to run some python code
-                //and report back the results.
+                //and report back the resulting meshes.
                 if(verbose)
                     console.log("worker: run python");
                 runPythonCode(msg as RunPythonCodeMessage);
                 break;
-            case MessageType.COMPUTE_GEOMETRY:
-                if(verbose)
-                    console.log("worker: compute geometry");
-                computeGeometry(msg as ComputeGeometryMessage);
-                break;
+            // case MessageType.COMPUTE_GEOMETRY:
+            //     if(verbose)
+            //         console.log("worker: compute geometry");
+            //     computeGeometry(msg as ComputeGeometryMessage);
+            //     break;
             default:
                 console.error("Unknown message type:"+msg.type);
         }
@@ -102,6 +127,7 @@ export async function main(__BRYTHON__1: any){
         console.log("Leaving worker main");
 }
 
+/*
 function computeGeometry( msg: ComputeGeometryMessage)
 {
     //https://manifoldcad.org/jsdocs/
@@ -142,7 +168,78 @@ function computeGeometry( msg: ComputeGeometryMessage)
     // console.log("Worker: Posting geometry back:",resp);
     // self.postMessage(resp);
 }
+*/
 
+// name: "cube",
+// doc: "Creates a cube.",
+// args: [
+//     { argname: "xsize", argtype: [ArgType.POSITIVE_NUMBER], doc:"size of the cube in the x direction" },
+//     { argname: "ysize", argtype: [ArgType.POSITIVE_NUMBER], doc:"size of the cube in the y direction"  },
+//     { argname: "zsize", argtype: [ArgType.POSITIVE_NUMBER], doc:"size of the cube in the z direction"  },
+//     { argname: "centered", argtype: [ArgType.BOOLEAN], defaultValue: "False",
+//         doc:"True if the cube should be centered around (x,y,z); False if the minimum coordinate should be (x,y,z)"
+//      },
+//     { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: colordoc }
+// ],
+
+
+type PyColor = [number,number,number,number?];
+type ImplCubeType = (xsize: number, ysize: number, zsize: number, centered: boolean, color: PyColor) => MeshHandle;
+declare global {
+    interface WorkerGlobalScope { impl_cube : ImplCubeType }
+};
+
+self.impl_cube = (xsize: number, ysize: number, zsize: number, centered: boolean, color: PyColor) : MeshHandle =>
+{
+    console.log("IN impl_cube");
+    let c = manifold.Manifold.cube(
+        [xsize, ysize, zsize],
+        centered
+    );
+    return new MeshHandle( new ManifoldMeshWrapper(c,color) );
+}
+
+type ImplSphereType = (x:number, y: number, z: number, radius: number, color: PyColor, resolution: number) => MeshHandle;
+declare global {
+    interface WorkerGlobalScope { impl_sphere : ImplSphereType }
+};
+self.impl_sphere = (x:number, y: number, z: number, radius: number, color: PyColor, resolution: number) => {
+    console.log("in impl_sphere");
+    let s = manifold.Manifold.sphere(radius, resolution);
+    let s2 = s.translate([x, y,z]);
+    s.delete();
+    return new MeshHandle( new ManifoldMeshWrapper(s2,color) );
+}
+
+type ImplDifferenceType = (obj1: MeshHandle, obj2: MeshHandle, color: PyColor) => MeshHandle;
+declare global {
+    interface WorkerGlobalScope { impl_difference : ImplDifferenceType }
+};
+self.impl_difference = (obj1: MeshHandle, obj2: MeshHandle, color: PyColor) => { 
+    console.log("in impl_difference");
+    let o1 = manifoldMeshes[ obj1.index ];
+    let o2 = manifoldMeshes[ obj2.index ];
+    
+    let d = manifold.Manifold.difference(o1.mesh,o2.mesh);
+    if( !color )
+        color = o1.color;
+    return new MeshHandle( new ManifoldMeshWrapper(d,color) );
+}
+
+
+
+type ImplDrawType = (drawable: MeshHandle) => void ;
+declare global {
+    interface WorkerGlobalScope { impl_draw : ImplDrawType }
+};
+self.impl_draw = (drawable: MeshHandle ) => {
+    toDraw.push(drawable);
+}
+
+self.foobar = (y: number) => {
+    console.log("We got fooby to be",y);
+    return y*2;
+}
 
 function evaluateDrawCommand(cmd: DrawCommand): ManifoldMeshWrapper{
   
@@ -417,67 +514,87 @@ function evaluateDrawCommand(cmd: DrawCommand): ManifoldMeshWrapper{
 //no line numbers.
 function runPythonCode( pmsg: RunPythonCodeMessage )
 {
-    let errorLines: number[] = [];
-    let errorPositions: number[][] = [];
-    let errorMessages: string[] = [];
 
-    //FIXME: Add type annotation
-    let drawables: any[] = [];
-    let printables: string[] = [];
     try{
-        let js = __BRYTHON__.pythonToJS(pmsg.code);
-        // console.log("python to js gives:",js);
-        let pyres = eval(js);
-        if( pyres["__DRAW__"] ){
-            drawables = __BRYTHON__.pyobj2jsobj( pyres["__DRAW__"] );
-        }
-        if( pyres["__PRINT__"] ){
-            printables = __BRYTHON__.pyobj2jsobj( pyres["__PRINT__"] );
-        }
+        let errorLines: number[] = [];
+        let errorPositions: number[][] = [];
+        let errorMessages: string[] = [];
 
-    } catch(e: any){
-        console.log("Exception:",e);
-        for(let k in e){
-            console.log("Exception key:",k,e[k]);
-        }
-
-        console.log("Line numbers:",e.$linenums);
-        if(e.$linenums && e.$linenums.length > 0){
-            errorLines = __BRYTHON__.pyobj2jsobj(e.$linenums);
-        } else if( e.lineno !== undefined ){
-            errorLines=[e.lineno];
-        } else {
-            console.log("e does not have line numbers",e);
-        }
-        if(e.$positions){
-            errorPositions = __BRYTHON__.pyobj2jsobj(e.$positions);
-        } else if( e.offset !== undefined ){
-            errorPositions = [ [ e.offset, e.offset, e.offset+1 ] ]
-        } else {
-            console.log("e does not have positions",e.$positions);
-        }
-        if(e.args){
-            let errorMessages1 = __BRYTHON__.pyobj2jsobj(e.args);
-            for(let i=0;i<errorMessages1.length;++i){
-                if( typeof(errorMessages1[i]) === "string" ){
-                    errorMessages.push(errorMessages1[i]);
-                }
+        //FIXME: Add type annotation
+        // let drawables: any[] = [];
+        let printables: string[] = [];
+        try{
+            let js = __BRYTHON__.pythonToJS(pmsg.code);
+            // console.log("python to js gives:",js);
+            let pyres = eval(js);
+            // if( pyres["__DRAW__"] ){
+            //     drawables = __BRYTHON__.pyobj2jsobj( pyres["__DRAW__"] );
+            // }
+            if( pyres["__PRINT__"] ){
+                printables = __BRYTHON__.pyobj2jsobj( pyres["__PRINT__"] );
             }
-        } else {
-            console.log("e does not have args");
+
+        } catch(e: any){
+            console.log("Exception:",e);
+            for(let k in e){
+                console.log("Exception key:",k,e[k]);
+            }
+
+            console.log("Line numbers:",e.$linenums);
+            if(e.$linenums && e.$linenums.length > 0){
+                errorLines = __BRYTHON__.pyobj2jsobj(e.$linenums);
+            } else if( e.lineno !== undefined ){
+                errorLines=[e.lineno];
+            } else {
+                console.log("e does not have line numbers",e);
+            }
+            if(e.$positions){
+                errorPositions = __BRYTHON__.pyobj2jsobj(e.$positions);
+            } else if( e.offset !== undefined ){
+                errorPositions = [ [ e.offset, e.offset, e.offset+1 ] ]
+            } else {
+                console.log("e does not have positions",e.$positions);
+            }
+            if(e.args){
+                let errorMessages1 = __BRYTHON__.pyobj2jsobj(e.args);
+                for(let i=0;i<errorMessages1.length;++i){
+                    if( typeof(errorMessages1[i]) === "string" ){
+                        errorMessages.push(errorMessages1[i]);
+                    }
+                }
+            } else {
+                console.log("e does not have args");
+            }
         }
+
+
+        //convert from manifold mesh wrapper to mesh
+        let meshes: Mesh[] = [];
+        toDraw.forEach( (mh: MeshHandle) => {
+            let mw: ManifoldMeshWrapper = manifoldMeshes[ mh.index ];
+            let m = mw.mesh.getMesh();
+            let me = new Mesh(m.vertProperties,m.triVerts,mw.color);
+            meshes.push(me);
+            //defer mw.mesh.delete() to the finally block
+        });
+
+        let resp = new PythonCodeResultMessage(
+            pmsg.unique, 
+            meshes,
+            printables,
+            errorLines, 
+            errorPositions, 
+            errorMessages
+        );
+
+        if(verbose)
+            console.log("Worker posting response:",resp);
+        self.postMessage(resp);
+    } finally {
+        toDraw=[];
+        manifoldMeshes.forEach( (mw: ManifoldMeshWrapper) => {
+            mw.mesh.delete();
+        })
+        manifoldMeshes = [];
     }
-
-    let resp = new PythonCodeResultMessage(
-        pmsg.unique, 
-        drawables,
-        printables,
-        errorLines, 
-        errorPositions, 
-        errorMessages
-    );
-
-    if(verbose)
-        console.log("Worker posting response:",resp);
-    self.postMessage(resp);
 }

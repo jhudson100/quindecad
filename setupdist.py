@@ -10,22 +10,22 @@ def link(existing,new):
         pass
     
 os.makedirs("dist/super",exist_ok=True)
-shutil.copyfile("index.html","dist/index.html")
+shutil.copyfile("src/index.html","dist/index.html")
 shutil.copyfile("src/about.txt","dist/about.txt")
 shutil.copyfile("src/help.html","dist/help.html")
 
 for fname in [
-    "ext/ace/ace/ace.js",
-    "ext/ace/ace/ext-language_tools.js",
-    "ext/ace/ace/mode-python.js",
-    "ext/ace/ace/theme-eclipse.js", 
-    "ext/brython/brython/brython.js", 
-    "ext/brython/brython/brython_stdlib.js",
-    "ext/manifold/package/manifold.js",
-    "ext/manifold/package/manifold.wasm", 
-    "ext/three/package/build/three.core.min.js",
-    "ext/three/package/build/three.module.min.js", 
-    "ext/three/package/examples/jsm/controls/OrbitControls.js"
+    "src/ext/ace/ace-builds/src-min/ace.js",
+    "src/ext/ace/ace-builds/src-min/ext-language_tools.js",
+    "src/ext/ace/ace-builds/src-min/mode-python.js",
+    "src/ext/ace/ace-builds/src-min/theme-eclipse.js", 
+    "src/ext/brython/Brython-3.13.0/brython.js", 
+    "src/ext/brython/Brython-3.13.0/brython_stdlib.js",
+    "src/ext/manifold/package/manifold.js",
+    "src/ext/manifold/package/manifold.wasm", 
+    "src/ext/three/package/build/three.core.min.js",
+    "src/ext/three/package/build/three.module.min.js", 
+    "src/ext/three/package/examples/jsm/controls/OrbitControls.js"
 ]:
     tmp = fname.split("/")
     libname = tmp[1]

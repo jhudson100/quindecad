@@ -8,9 +8,7 @@ import {Mesh} from "Mesh";
 import * as THREE from "three";
 
 // @ts-ignore
-import {OrbitControls} from "../../ext/three/OrbitControls.js";
-
-// import {OrbitControls} from "../../ext/three/package/examples/jsm/controls/OrbitControls.js";
+import {OrbitControls} from "OrbitControls";
 
 
 export class View{

@@ -6,7 +6,7 @@
 
 import {Editor} from "Editor";
 import { ErrorReporter } from "ErrorReporter";
-import {RunAndComputeResult, WorkerManager} from "WorkerManager";
+import {PythonResult, WorkerManager} from "WorkerManager";
 import {DrawCommand, DrawCommandType} from "../common/DrawCommand";
 import {Mesh} from "../common/Mesh";
 import {View} from "View";
@@ -48,9 +48,9 @@ export class PythonManager{
             }
         }
 
-        let combinedResult: RunAndComputeResult;
+        let result: PythonResult;
         try{
-            combinedResult = await WorkerManager.get().runPythonAndComputeGeometry(finalCode);
+            result = await WorkerManager.get().runPythonAndComputeGeometry(finalCode);
         } catch(c){
             //promise was rejected. Worker might have been cancelled.
             //in that case, don't update the meshes or do anything else
@@ -58,9 +58,9 @@ export class PythonManager{
             return;
         }
         
-        let result = combinedResult.result;
-        let meshes = combinedResult.meshes;
-        let csgerrors = combinedResult.error;
+        // let result = combinedResult.result;
+        // let meshes = result.meshes;
+        // let csgerrors = combinedResult.error;
 
         if(verbose){
             console.log("super: PythonManager got result:",result);
@@ -87,22 +87,22 @@ export class PythonManager{
             return;
         }
 
-        if( !result.commands || !result.commands.length ){
+        if( !result.meshes || !result.meshes.length ){
             ErrorReporter.get().addMessage( "Warning: This code does not draw any objects.", "#aa8000");
             ErrorReporter.get().addMessage( "Hint: call draw() with an object or list of objects.", "#aa8000");
             return;
         }
 
-        if( csgerrors ){
-            ErrorReporter.get().addMessage(csgerrors);
-        }
+        // if( csgerrors ){
+            // ErrorReporter.get().addMessage(csgerrors);
+        // }
 
         //compute the surface associated with these drawables
         // let drawables: DrawCommand[] = result.commands;
         // let M: Mesh[] = await WorkerManager.get().computeGeometry(drawables);
-        if(meshes){
-            View.get().setMeshes(meshes);
-            if(!result.printables && !csgerrors){
+        if(result.meshes){
+            View.get().setMeshes(result.meshes);
+            if(!result.printables ){
                 ErrorReporter.get().nothingToReport();
             }
         } else {
