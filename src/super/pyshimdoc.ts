@@ -21,35 +21,35 @@ let preambleFunctions: FuncSpec[] = [
     name: 'cube',
     doc: 'Creates a cube', 
     args: [
-        { argname: "xsize", argtype: [ArgType.POSITIVE_NUMBER], doc: "Size of the cube in the x direction" },
-        { argname: "ysize", argtype: [ArgType.POSITIVE_NUMBER], doc: "Size of the cube in the y direction" },
-        { argname: "zsize", argtype: [ArgType.POSITIVE_NUMBER], doc: "Size of the cube in the z direction" },
-        { argname: "x", argtype: [ArgType.NUMBER], doc: "X coordinate of the cube" },
-        { argname: "y", argtype: [ArgType.NUMBER], doc: "Y coordinate of the cube" },
-        { argname: "z", argtype: [ArgType.NUMBER], doc: "Z coordinate of the cube" },
-        { argname: "centered", argtype: [ArgType.BOOLEAN], doc: "True if the cube should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z)." },
-        { argname: "color", argtype: [ArgType.COLOR], doc: "Color for the object, or None for default color." },
+        { argname: "xsize", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Size of the cube in the x direction" },
+        { argname: "ysize", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Size of the cube in the y direction" },
+        { argname: "zsize", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Size of the cube in the z direction" },
+        { argname: "x", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "X coordinate of the cube" },
+        { argname: "y", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Y coordinate of the cube" },
+        { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Z coordinate of the cube" },
+        { argname: "centered", argtype: [ArgType.BOOLEAN], defaultValue: "False", doc: "True if the cube should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z)." },
+        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
     ]
     },
     {
     name: 'sphere',
     doc: 'Creates a sphere.', 
     args: [
-        { argname: "radius", argtype: [ArgType.POSITIVE_NUMBER], doc: "Sphere radius" },
-        { argname: "x", argtype: [ArgType.NUMBER], doc: "Sphere center x" },
-        { argname: "y", argtype: [ArgType.NUMBER], doc: "Sphere center y" },
-        { argname: "z", argtype: [ArgType.NUMBER], doc: "Sphere center z" },
-        { argname: "color", argtype: [ArgType.COLOR], doc: "Color for the object, or None for default color." },
-        { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], doc: "How finely tessellated the sphere should be" },
+        { argname: "radius", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Sphere radius" },
+        { argname: "x", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center x" },
+        { argname: "y", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center y" },
+        { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center z" },
+        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
+        { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "48", doc: "How finely tessellated the sphere should be" },
     ]
     },
     {
     name: 'difference',
     doc: 'Compute the difference of two objects (a solid that encloses those points that are in object1 but not in object2)', 
     args: [
-        { argname: "object1", argtype: [ArgType.DRAWABLE], doc: "The first object" },
-        { argname: "object2", argtype: [ArgType.DRAWABLE], doc: "The second object" },
-        { argname: "color", argtype: [ArgType.COLOR], doc: "Color for the object, if None, use object1 color" },
+        { argname: "object1", argtype: [ArgType.DRAWABLE], defaultValue: undefined, doc: "The first object" },
+        { argname: "object2", argtype: [ArgType.DRAWABLE], defaultValue: undefined, doc: "The second object" },
+        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use object1 color" },
     ]
     },
 ] //end preambleFunctions list

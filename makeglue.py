@@ -61,9 +61,9 @@ def cube(xsize: POSITIVE_NUMBER,
     pass
 
 def sphere( radius: POSITIVE_NUMBER,
-            x: NUMBER=0,
-            y: NUMBER=0,
-            z: NUMBER=0,
+            x: NUMBER=0.0,
+            y: NUMBER=0.0,
+            z: NUMBER=0.0,
             color: COLOR=None,
             resolution: POSITIVE_INTEGER=48):
     """Creates a sphere.
@@ -135,7 +135,7 @@ def difference(object1: DRAWABLE, object2: DRAWABLE, color: COLOR=None):
     """Compute the difference of two objects (a solid that encloses those points that are in object1 but not in object2)
         @param object1 The first object
         @param object2 The second object
-        @param color Color for the object, if None, use object1 color
+        @param color Color for the object; if None, use object1 color
     """
     pass
 
@@ -459,8 +459,13 @@ def _outputDoc(fp,name):
         else:
             doc=""
             print("Warning: No documentation for parameter",pname,"of",name)
+        defval = pinfo.default
+        if defval == inspect.Parameter.empty:
+            defval = "undefined"
+        else:
+            defval = f'"{defval}"'
 
-        print(f'        {{ argname: "{pname}", argtype: [ArgType.{anno.__name__}], doc: "{doc}" }},',file=fp)
+        print(f'        {{ argname: "{pname}", argtype: [ArgType.{anno.__name__}], defaultValue: {defval}, doc: "{doc}" }},',file=fp)
     print("    ]",file=fp)
     print("    },",file=fp)
 

@@ -44,14 +44,14 @@ def cube ( xsize,ysize,zsize,x=0.0,y=0.0,z=0.0,centered=False,color=None ):
     if color is None: color = javascript.UNDEFINED
     return browser.self.impl_cube(xsize , ysize , zsize , x , y , z , centered , color)
 
-def sphere ( radius,x=0,y=0,z=0,color=None,resolution=48 ):
+def sphere ( radius,x=0.0,y=0.0,z=0.0,color=None,resolution=48 ):
     if not assertIsPositiveNumber(radius):
         raise Exception('Parameter radius has wrong type (expected positive number)')
-    if x != 0 and not assertIsNumber(x):
+    if x != 0.0 and not assertIsNumber(x):
         raise Exception('Parameter x has wrong type (expected number)')
-    if y != 0 and not assertIsNumber(y):
+    if y != 0.0 and not assertIsNumber(y):
         raise Exception('Parameter y has wrong type (expected number)')
-    if z != 0 and not assertIsNumber(z):
+    if z != 0.0 and not assertIsNumber(z):
         raise Exception('Parameter z has wrong type (expected number)')
     if color != None and not assertIsColor(color):
         raise Exception('Parameter color has wrong type (expected color)')
