@@ -7,8 +7,6 @@
 import {Editor} from "Editor";
 import { ErrorReporter } from "ErrorReporter";
 import {PythonResult, WorkerManager} from "WorkerManager";
-import {DrawCommand, DrawCommandType} from "../common/DrawCommand";
-import {Mesh} from "../common/Mesh";
 import {View} from "View";
 import { numPreambleLines, preambleStr, initialize as pythonBuiltinsInitialize } from "./PythonBuiltins.js";
 
@@ -22,7 +20,6 @@ export class PythonManager{
     private static instance: PythonManager;
 
     private constructor(){
-        pythonBuiltinsInitialize();
     }
 
     static get() {

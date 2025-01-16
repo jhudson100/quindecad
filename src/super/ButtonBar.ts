@@ -4,7 +4,6 @@ import {Mesh} from "../common/Mesh";
 import { Dialog } from "Dialog";
 import { WorkerManager } from "WorkerManager";
 import { Spinner } from "Spinner";
-import { ArgSpec, ArgType, FuncSpec, getPreambleFunctionInfo } from "PythonBuiltins";
 
 type ButtonCallback = ()=>void;
 
@@ -215,69 +214,69 @@ export class ButtonBar{
 
                     L.push("<ul>");
 
-                    getPreambleFunctionInfo().forEach( (fs: FuncSpec) => {
-                        let funcname = fs.name;
-                        let eacharg: string[] = [];
-                        let args : ArgSpec[] = fs.args;
-                        args.forEach( (a: ArgSpec ) => {
-                            let tmp = `<span class="argname">${a.argname}</span>`;
-                            if(a.defaultValue){
-                                tmp += ` <span class="defaultvalue">= ${a.defaultValue}</span>`;
-                            }
-                            eacharg.push(tmp);
-                        });
-                        let tmp = `<li>${funcname}(${eacharg.join(" , ")})<br>`;
-                        L.push(tmp);
+                    // getPreambleFunctionInfo().forEach( (fs: FuncSpec) => {
+                    //     let funcname = fs.name;
+                    //     let eacharg: string[] = [];
+                    //     let args : ArgSpec[] = fs.args;
+                    //     args.forEach( (a: ArgSpec ) => {
+                    //         let tmp = `<span class="argname">${a.argname}</span>`;
+                    //         if(a.defaultValue){
+                    //             tmp += ` <span class="defaultvalue">= ${a.defaultValue}</span>`;
+                    //         }
+                    //         eacharg.push(tmp);
+                    //     });
+                    //     let tmp = `<li>${funcname}(${eacharg.join(" , ")})<br>`;
+                    //     L.push(tmp);
 
-                        L.push( fs.doc );
+                    //     L.push( fs.doc );
                         
-                        L.push("<ul>");
-                        args.forEach( (a: ArgSpec ) => {
-                            let explanations: string[]=[];
-                            a.argtype.forEach( (atype: ArgType) => {
-                                let explanation: string;
-                                switch(atype){
-                                    case ArgType.BOOLEAN:
-                                        explanation = "a boolean"; 
-                                        break;
-                                    case ArgType.COLOR:
-                                        explanation = "a color"
-                                        break;
-                                    case ArgType.DRAWABLE:
-                                        explanation = "a drawable object"
-                                        break;
-                                    case ArgType.LIST_OF_DRAWABLE:
-                                        explanation = "a list of drawable objects"
-                                        break;
-                                    case ArgType.NUMBER:
-                                        explanation = "a number";
-                                        break;
-                                    case ArgType.POSITIVE_NUMBER:
-                                        explanation = "a positive number";
-                                        break;
-                                    case ArgType.NONNEGATIVE_INTEGER:
-                                        explanation = "an integer >= 0";
-                                        break;
-                                    case ArgType.POSITIVE_INTEGER:
-                                        explanation = "a positive integer";
-                                        break;
-                                    case ArgType.VEC2:
-                                        explanation = "a list of two numbers";
-                                        break;
-                                    case ArgType.POLYGON2D:
-                                        explanation = "a list of [x,y] pairs";
-                                        break;
-                                    default:
-                                        explanation = "an argument of some type";
-                                        break;
-                                }
-                                explanations.push(explanation);
-                            });
+                    //     L.push("<ul>");
+                    //     args.forEach( (a: ArgSpec ) => {
+                    //         let explanations: string[]=[];
+                    //         a.argtype.forEach( (atype: ArgType) => {
+                    //             let explanation: string;
+                    //             switch(atype){
+                    //                 case ArgType.BOOLEAN:
+                    //                     explanation = "a boolean"; 
+                    //                     break;
+                    //                 case ArgType.COLOR:
+                    //                     explanation = "a color"
+                    //                     break;
+                    //                 case ArgType.DRAWABLE:
+                    //                     explanation = "a drawable object"
+                    //                     break;
+                    //                 case ArgType.LIST_OF_DRAWABLE:
+                    //                     explanation = "a list of drawable objects"
+                    //                     break;
+                    //                 case ArgType.NUMBER:
+                    //                     explanation = "a number";
+                    //                     break;
+                    //                 case ArgType.POSITIVE_NUMBER:
+                    //                     explanation = "a positive number";
+                    //                     break;
+                    //                 case ArgType.NONNEGATIVE_INTEGER:
+                    //                     explanation = "an integer >= 0";
+                    //                     break;
+                    //                 case ArgType.POSITIVE_INTEGER:
+                    //                     explanation = "a positive integer";
+                    //                     break;
+                    //                 case ArgType.VEC2:
+                    //                     explanation = "a list of two numbers";
+                    //                     break;
+                    //                 case ArgType.POLYGON2D:
+                    //                     explanation = "a list of [x,y] pairs";
+                    //                     break;
+                    //                 default:
+                    //                     explanation = "an argument of some type";
+                    //                     break;
+                    //             }
+                    //             explanations.push(explanation);
+                    //         });
 
-                            L.push(`<li><span class="argname">${a.argname}</span> is <span class="argtype">${explanations.join(" or ")}</span>: ${a.doc}</li>`)
-                        });
-                        L.push("</ul>");
-                    });
+                    //         L.push(`<li><span class="argname">${a.argname}</span> is <span class="argtype">${explanations.join(" or ")}</span>: ${a.doc}</li>`)
+                    //     });
+                    //     L.push("</ul>");
+                    // });
 
                     L.push("</ul>");
 

@@ -1,5 +1,5 @@
 import {Editor} from "Editor";
-import { preambleList } from "PythonBuiltins";
+// import { preambleList } from "PythonBuiltins";
 
 export class ErrorReporter{
     div: HTMLElement;
@@ -131,7 +131,7 @@ export class ErrorReporter{
         while( linenums.length > 0 && linenums[ linenums.length-1 ] < deltaLine ){
             let li = linenums[linenums.length-1];
             console.log("Error in preamble line "+li);
-            console.log("Preamble line: "+preambleList[li-1]);
+            // console.log("Preamble line: "+preambleList[li-1]);
             linenums.pop();
             if( positions.length )
                 positions.pop();

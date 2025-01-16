@@ -16,7 +16,6 @@ var window = self;  //so brython_stdlib will work
 self.importScripts("../ext/brython/brython.js");
 self.importScripts("../ext/brython/brython_stdlib.js");
 
-
 import("./workermain.js").then( 
     (w:any) => {
         w.main(__BRYTHON__).then( ()=> { 

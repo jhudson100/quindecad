@@ -1,4 +1,4 @@
-import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "./PythonBuiltins.js";
+import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 
 // @ts-ignore
 let ace = window.ace;
@@ -19,6 +19,7 @@ c = cube(xsize=3,ysize=2,zsize=1,centered=True,color=(255,255,0))
 s = sphere(x=0, y=0, z=0, radius=1.5)
 d = difference(c,s)
 draw(d)
+print("Hello, world!")
 
 `
 

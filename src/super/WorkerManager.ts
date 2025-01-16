@@ -5,7 +5,7 @@
 
 import {Mesh} from "Mesh";
 import { PythonCodeResultMessage, RunPythonCodeMessage, WorkerToSuperMessage} from "Message";
-import {DrawCommand} from "DrawCommand";
+// import {DrawCommand} from "DrawCommand";
 
 const WORKERPATH="./worker/workerbootstrap.js";
 

@@ -10,7 +10,7 @@
 				"showReuseMessage": true,
 				"clear": true
 			},
-			"dependsOn":["setupDist"],
+			"dependsOn":["setupDist","makeGlue"],
 			"type": "typescript",
 			"tsconfig": "src/super/tsconfig.json",
 			"problemMatcher": [
@@ -26,6 +26,12 @@
 			"command": "setupdist.py",
 			"args": [],
 			"label": "setupDist",
+			"icon": {"id":"copy"},
+		},
+		{ 
+			"command": "makeglue.py",
+			"args": [],
+			"label": "makeGlue",
 			"icon": {"id":"copy"},
 		}
 	]

@@ -1,7 +1,7 @@
 
 //need to use full path since we import from worker script too
 //and we can't use a source map there
-import {DrawCommand} from "/dist/common/DrawCommand.js";
+// import {DrawCommand} from "/dist/common/DrawCommand.js";
 import {Mesh} from "/dist/common/Mesh.js";
 
 export enum MessageType{
