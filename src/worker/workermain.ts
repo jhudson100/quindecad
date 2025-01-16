@@ -37,16 +37,6 @@ self.impl_print = ( s: string ) => {
 
 
 
-type FoobyType = (x:number) => number;
-declare global {
-    interface WorkerGlobalScope { foobar : FoobyType }
-};
-
-self.foobar = (y: number) => {
-    console.log("We got fooby to be",y);
-    return y*2;
-}
-
 async function loadBrython(): Promise<boolean> {
     let p = new Promise<boolean>( (resolveFunc, rejectFunc) => {
         __BRYTHON__.whenReady.then( () => { resolveFunc(true); } );
@@ -100,11 +90,6 @@ export async function main(__BRYTHON__1: any){
                     console.log("worker: run python");
                 runPythonCode(msg as RunPythonCodeMessage);
                 break;
-            // case MessageType.COMPUTE_GEOMETRY:
-            //     if(verbose)
-            //         console.log("worker: compute geometry");
-            //     computeGeometry(msg as ComputeGeometryMessage);
-            //     break;
             default:
                 console.error("Unknown message type:"+msg.type);
         }
@@ -122,106 +107,8 @@ export async function main(__BRYTHON__1: any){
     if(verbose)
         console.log("Leaving worker main");
 }
-
-/*
-function computeGeometry( msg: ComputeGeometryMessage)
-{
-    //https://manifoldcad.org/jsdocs/
-
-    let meshes: Mesh[] = [];
-    
-    let lastCommand: any;   //for error reporting
-
-    try{
-        if(msg.commands && msg.commands.length){
-            msg.commands.forEach( (cmd: DrawCommand) => {
-                lastCommand=cmd;
-                let wrapper = evaluateDrawCommand(cmd);
-                let m = wrapper.mesh.getMesh();
-                let me = new Mesh(m.vertProperties,m.triVerts,wrapper.color);
-                meshes.push(me);
-                wrapper.mesh.delete();
-            });
-        }
-        self.postMessage( new GeometryComputedMessage(msg.unique,meshes,undefined));
-    } catch(e1){
-        let e = e1 as Error;
-        console.error(e);
-        console.log(lastCommand);
-        self.postMessage( new GeometryComputedMessage(msg.unique,meshes,e.name+": "+e.message) );
-    }
-
-    // let box = manifold.Manifold.cube([1,2,1],true);
-    // let sphere = manifold.Manifold.sphere(1,72);
-    // let diff = box.subtract(sphere);
-    // let m = diff.getMesh();
-    // let nv = m.numVert;
-    // let nt = m.numTri;
-    // let positions = m.vertProperties;
-    // let tris = m.triVerts;
-    // let mesh = new Mesh(positions,tris);
-    // let resp = new GeometryComputedMessage(msg.unique,mesh,undefined);
-    // console.log("Worker: Posting geometry back:",resp);
-    // self.postMessage(resp);
-}
-*/
-
-// name: "cube",
-// doc: "Creates a cube.",
-// args: [
-//     { argname: "xsize", argtype: [ArgType.POSITIVE_NUMBER], doc:"size of the cube in the x direction" },
-//     { argname: "ysize", argtype: [ArgType.POSITIVE_NUMBER], doc:"size of the cube in the y direction"  },
-//     { argname: "zsize", argtype: [ArgType.POSITIVE_NUMBER], doc:"size of the cube in the z direction"  },
-//     { argname: "centered", argtype: [ArgType.BOOLEAN], defaultValue: "False",
-//         doc:"True if the cube should be centered around (x,y,z); False if the minimum coordinate should be (x,y,z)"
-//      },
-//     { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: colordoc }
-// ],
-
-
-// type ImplCubeType = (xsize: number, ysize: number, zsize: number, centered: boolean, color: PyColor) => MeshHandle;
-// declare global {
-//     interface WorkerGlobalScope { impl_cube : ImplCubeType }
-// };
-
-// self.impl_cube = (xsize: number, ysize: number, zsize: number, centered: boolean, color: PyColor) : MeshHandle =>
-// {
-//     console.log("IN impl_cube");
-//     let c = manifold.Manifold.cube(
-//         [xsize, ysize, zsize],
-//         centered
-//     );
-//     return new MeshHandle( new ManifoldMeshWrapper(c,color) );
-// }
-
-// type ImplSphereType = (x:number, y: number, z: number, radius: number, color: PyColor, resolution: number) => MeshHandle;
-// declare global {
-//     interface WorkerGlobalScope { impl_sphere : ImplSphereType }
-// };
-// self.impl_sphere = (x:number, y: number, z: number, radius: number, color: PyColor, resolution: number) => {
-//     console.log("in impl_sphere");
-//     let s = manifold.Manifold.sphere(radius, resolution);
-//     let s2 = s.translate([x, y,z]);
-//     s.delete();
-//     return new MeshHandle( new ManifoldMeshWrapper(s2,color) );
-// }
-
-// type ImplDifferenceType = (obj1: MeshHandle, obj2: MeshHandle, color: PyColor) => MeshHandle;
-// declare global {
-//     interface WorkerGlobalScope { impl_difference : ImplDifferenceType }
-// };
-// self.impl_difference = (obj1: MeshHandle, obj2: MeshHandle, color: PyColor) => { 
-//     console.log("in impl_difference");
-//     let o1 = manifoldMeshes[ obj1.index ];
-//     let o2 = manifoldMeshes[ obj2.index ];
-    
-//     let d = manifold.Manifold.difference(o1.mesh,o2.mesh);
-//     if( !color )
-//         color = o1.color;
-//     return new MeshHandle( new ManifoldMeshWrapper(d,color) );
-// }
-
-
+ 
+  
 
 type ImplDrawType = (drawable: MeshHandle) => void ;
 declare global {
@@ -231,11 +118,7 @@ self.impl_draw = (drawable: MeshHandle ) => {
     toDraw.push(drawable);
 }
 
-
-// self.foobar = (y: number) => {
-//     console.log("We got fooby to be",y);
-//     return y*2;
-// }
+ 
 
 // function evaluateDrawCommand(cmd: DrawCommand): ManifoldMeshWrapper{
   
@@ -243,23 +126,6 @@ self.impl_draw = (drawable: MeshHandle ) => {
 //         console.log("worker: Evalute draw command:",cmd);
 
 //     switch(cmd.type){
-//         case DrawCommandType.CUBE:
-//         {
-//             let spec = cmd as Cube;
-//             let c = manifold.Manifold.cube(
-//                     [spec.xsize, spec.ysize, spec.zsize],
-//                     spec.centered
-//             );
-//             return new ManifoldMeshWrapper(c,cmd.color);
-//         }
-//         case DrawCommandType.SPHERE:
-//         {
-//             let spec = cmd as Sphere;
-//             let s = manifold.Manifold.sphere(spec.radius, spec.resolution);
-//             let s2 = s.translate([spec.x, spec.y,spec.z]);
-//             s.delete();
-//             return new ManifoldMeshWrapper(s2,cmd.color);
-//         }
 //         case DrawCommandType.CYLINDER:
 //         {
 //             let spec = cmd as Cylinder;
@@ -360,7 +226,9 @@ self.impl_draw = (drawable: MeshHandle ) => {
 //             });
 //             return new ManifoldMeshWrapper( o2, cmd.color );
 //         }
-//         case DrawCommandType.BOUNDINGBOX: 
+//          case BoundingBox:
+//              call m.boundingBox and return back the two corners of the box as a list
+//         case DrawCommandType.BBOX <-- maybe have better name for this: 
 //         {
 //             let spec = cmd as BoundingBox;
 //             let mins: Vec3=[Infinity,Infinity,Infinity];
@@ -504,6 +372,10 @@ self.impl_draw = (drawable: MeshHandle ) => {
 //     }
 // }
 
+//FIXME: Add a way to immediately delete a mesh handle's wrapped mesh
+// with the caveat that any further use of that object will give an error.
+// This would allow manual garbage collection if a large number of temporaries
+// are being produced.
 
 //FIXME: If you specify the same keyword argument twice to a Python function,
 //Brython throws an exception with an unhelpful message and
@@ -516,16 +388,9 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
         let errorPositions: number[][] = [];
         let errorMessages: string[] = [];
         
-        //FIXME: Add type annotation
-        // let drawables: any[] = [];
         try{
             let js = __BRYTHON__.pythonToJS(pmsg.code);
-            // console.log("python to js gives:",js);
-            let pyres = eval(js);
-            // if( pyres["__DRAW__"] ){
-            //     drawables = __BRYTHON__.pyobj2jsobj( pyres["__DRAW__"] );
-            // }
-
+            eval(js);
         } catch(e: any){
             console.log("Exception:",e);
             for(let k in e){
