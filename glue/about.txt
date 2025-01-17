@@ -1,0 +1,2 @@
+This directory contains files for creating the
+Python <-> Typescript glue/shims.

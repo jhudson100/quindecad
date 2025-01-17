@@ -189,7 +189,10 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
         self.postMessage(resp);
     } finally {
         manifoldMeshes.forEach( (mw: ManifoldMeshWrapper) => {
-            mw.mesh.delete();
+            if( !mw.freed ){
+                mw.mesh.delete();
+                mw.freed=true;
+            }
         })
         manifoldMeshes.splice(0,manifoldMeshes.length);
         printed.splice(0,printed.length);
