@@ -49,6 +49,22 @@ class LIST_OF_DRAWABLE:
     checker="assertIsListOfDrawable"
     name="list of drawable objects"
 
+def free( obj: Drawable):
+    """
+    Free the memory associated with the given object. Note: The object may not be used after this function has been called or an exception may occur.
+    @param obj The object to free.
+    """
+    pass
+
+def box( min: VEC3, max: VEC3, color: COLOR=None):
+    """
+    Create a box that goes from the given minimum coordinate to the given maximum coordinate
+    @param min The minimum coordinate
+    @param max The maximum coordinate
+    @param color Color for the object, or None for default color.
+    """
+    pass
+
 def cube(xsize: POSITIVE_NUMBER,
          ysize: POSITIVE_NUMBER,
          zsize: POSITIVE_NUMBER,
@@ -58,14 +74,14 @@ def cube(xsize: POSITIVE_NUMBER,
          centered: BOOLEAN=False,
          color: COLOR=None):
     """
-    Creates a cube
-    @param xsize Size of the cube in the x direction
-    @param ysize Size of the cube in the y direction
-    @param zsize Size of the cube in the z direction
-    @param x X coordinate of the cube
-    @param y Y coordinate of the cube
-    @param z Z coordinate of the cube
-    @param centered True if the cube should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z).
+    Creates a cuboid
+    @param xsize Size of the cuboid in the x direction
+    @param ysize Size of the cuboid in the y direction
+    @param zsize Size of the cuboid in the z direction
+    @param x X coordinate of the cuboid
+    @param y Y coordinate of the cuboid
+    @param z Z coordinate of the cuboid
+    @param centered True if the cuboid should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z).
     @param color Color for the object, or None for default color.
     """
     pass
@@ -146,51 +162,50 @@ def intersection(objects: LIST_OF_DRAWABLE, color: COLOR=None):
     """
     pass
 
-def difference(object1: DRAWABLE, object2: DRAWABLE, color: COLOR=None):
+def difference(objects: DRAWABLE|LIST_OF_DRAWABLE, color: COLOR=None):
     """
-        Compute the difference of two objects (a solid that encloses those points that are in object1 but not in object2)
-        @param object1 The first object
-        @param object2 The second object
-        @param color Color for the object; if None, use object1 color
+        Compute the set difference: objects[0] - objects[1] - objects[2] - ... . The set difference a-b consists of those points that are in a but not in b.
+        @param objects A list of the objects for the computation.
+        @param color Color for the object; if None, use the color of the first object in the list
     """
     pass
 
-def translate(objects: LIST_OF_DRAWABLE, tx:NUMBER, ty:NUMBER, tz: NUMBER, color:COLOR=None):
+def translate(objects: DRAWABLE|LIST_OF_DRAWABLE, tx:NUMBER, ty:NUMBER, tz: NUMBER, color:COLOR=None):
     """
-        Move objects to another location.
+        Move objects to another location. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
         @param objects The objects to translate
         @param tx Change in x
         @param ty Change in y
         @param tz Change in z
-        @param color Color for the object; if None, use the color of the first object in the list
+        @param color Color for the resulting objects; if None, use each individual object's color.
     """
     pass
 
 
-def scale(objects: LIST_OF_DRAWABLE, sx:NUMBER, sy:NUMBER, sz: NUMBER, centroid: VEC3=None, color:COLOR=None):
+def scale(objects: DRAWABLE|LIST_OF_DRAWABLE, sx:NUMBER, sy:NUMBER, sz: NUMBER, centroid: VEC3=None, color:COLOR=None):
     """
         Scale objects.
-        @param objects The objects to translate
+        @param objects The objects to translate. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
         @param sx x factor; 1.0=no change
         @param sy y factor; 1.0=no change
         @param yz z factor; 1.0=no change
         @param centroid Point to scale the objects around; if None, scale each object around its own centroid
-        @param color Color for the object; if None, use the color of the first object in the list
+        @param color Color for the resulting objects; if None, use each individual object's color.
     """
     pass
 
-def rotate(objects: LIST_OF_DRAWABLE, axis: NONZERO_VEC3, angle: NUMBER, centroid: VEC3=None, color: COLOR=None):
+def rotate(objects: DRAWABLE|LIST_OF_DRAWABLE, axis: NONZERO_VEC3, angle: NUMBER, centroid: VEC3=None, color: COLOR=None):
     """
-        Rotate an object by 'angle' *radians* around the given axis.
+        Rotate objects by 'angle' *degrees* around the given axis. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
         @param objects The objects to translate
         @param axis The axis of rotation; must not be zero length
-        @param angle The angle of rotation in radians
+        @param angle The angle of rotation in degrees
         @param centroid The point around which to rotate; if None, each object is rotated around its own centeroid
-        @param color Color for the object; if None, use the color of the first object in the list
+        @param color Color for the resulting objects; if None, use each individual object's color.
     """
     pass
 
-def hull(objects: LIST_OF_DRAWABLE, color: COLOR=None):
+def hull(objects: DRAWABLE|LIST_OF_DRAWABLE, color: COLOR=None):
     """
         Compute the convex hull of the given objects.
         @param objects The objects for the hull computation.
@@ -198,7 +213,7 @@ def hull(objects: LIST_OF_DRAWABLE, color: COLOR=None):
     """
     pass
 
-def boundingbox(objects: LIST_OF_DRAWABLE):
+def boundingbox(objects: DRAWABLE|LIST_OF_DRAWABLE):
     """
         Compute the bounding box of the given objects. Returns a list of two tuples. The first tuple has the minimum x,y,z; the second has the maximum x,y,z.
         @param objects The objects for the computation.
@@ -223,7 +238,7 @@ def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INT
         @param polygon The polygon to extrude, as a list of [x,y] tuples
         @param height The height of the extrusion
         @param divisions = Number of divisions in the extrusion
-        @param twist Amount of twist (rotation) of the top relative to the bottom in radians
+        @param twist Amount of twist (rotation) of the top relative to the bottom in degrees
         @param scale Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom.
         @param zcenter If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value.
         @param color Color for the object; if None, use default color
@@ -234,7 +249,7 @@ def revolve(polygon: POLYGON2D, angle: NUMBER=None, color: COLOR=None, resolutio
     """
         Create a solid of revolution. The axis of the solid is the z axis.
         @param polygon The polygon to revolve, as a list of (x,y) pairs
-        @param angle Angle of revolution in radians. If None, use 2pi (=360 degrees)
+        @param angle Angle of revolution in degrees. If None, use 360 degrees
         @param color Color for the object; if None, use default color
         @param resolution The number of steps for the revolution
     """
@@ -277,6 +292,8 @@ def assertIsDrawable(obj):
 
 def assertIsListOfDrawable(obj):
     if type(obj) != tuple and type(obj) != list:
+        return False
+    if len(obj) == 0:
         return False
     return all( [ assertIsDrawable(q) for q in obj ] )
 
@@ -353,26 +370,7 @@ def _main():
         print(file=fp)
         print(file=fp)
 
-        print("import javascript  #type: ignore",file=fp)
-        print("import browser  #type: ignore", file=fp)
-
-        #ref: Wikipedia
-        print("pi = 3.141592653589793238462643383279",file=fp)
-
-        print("_print = print",file=fp)
-        print(file=fp)
-
-        #if we send a single thing to print(),
-        #brython does not wrap it in a tuple as
-        #CPython does.
-        print("def print(*args):",file=fp)
-        print("    if type(args) != list and type(args) != tuple:",file=fp)
-        print("        args=[args]",file=fp)
-        print("    lst=[]",file=fp)
-        print("    for a in args:",file=fp)
-        print("        lst.append(str(a))",file=fp)
-        print("    tmp = ' '.join(lst)",file=fp)
-        print("    browser.self.impl_print(tmp)",file=fp)
+        print(pypreamble, file=fp)
 
         G=globals()
         for name in G:
@@ -425,16 +423,7 @@ def _main():
         print("//This file is autogenerated. Do not edit.",file=fp)
         print(file=fp)
         print(file=fp)
-        print('import Module, {Manifold, ManifoldToplevel, Mat4, Vec3} from "../ext/manifold/manifold.js";',file=fp)
-        print('import { ManifoldMeshWrapper, MeshHandle, manifoldMeshes } from "./workertypes.js";',file=fp)
-        print('let manifold: ManifoldToplevel;',file=fp)
-        print(file=fp)
-        print("export function setManifold(m: ManifoldToplevel){",file=fp)
-        print("    manifold=m;",file=fp)
-        print("}",file=fp)
-        print(file=fp)
-        print("type PyColor = [number,number,number,number?];",file=fp)
-        print(file=fp)
+        print(tspreamble,file=fp)
         for name in pyshimNames:
             _generateTSShim(name,fp)
 
@@ -635,17 +624,43 @@ tsImpl = {
 """,
 
 "difference":"""
-    let o1 = manifoldMeshes[ object1.index ];
-    let o2 = manifoldMeshes[ object2.index ];
-    let d = manifold.Manifold.difference(o1.mesh,o2.mesh);
-    if( !color )
-        color = o1.color;
-    return new MeshHandle( new ManifoldMeshWrapper(d,color) );
+    if( objects.length === 1 )
+        return objects[0];
+    let ob = manifold.Manifold.difference( objects[0].mesh, objects[1].mesh );
+    for(let i=2;i<objects.length;++i){
+        let ob2 = manifold.Manifold.difference( ob, objects[i].mesh );
+        ob.delete();
+        ob=ob2;
+    }
+    let color = (color ?? objects[0].color);
+    return new ManifoldMeshWrapper(ob,color);
 """,
-"union":
-    ??remember to use list of drawables,
-"intersection":
-    ??remember to use list of drawables,
+
+"union": """
+    if( objects.length === 1 )
+        return objects[0];
+    let ob = manifold.Manifold.union( objects[0].mesh, objects[1].mesh );
+    for(let i=2;i<objects.length;++i){
+        let ob2 = manifold.Manifold.union( ob, objects[i].mesh );
+        ob.delete();
+        ob=ob2;
+    }
+    let color = (color ?? objects[0].color);
+    return new ManifoldMeshWrapper(ob,color);
+""",
+
+"intersection": """
+    if( objects.length === 1 )
+        return objects[0];
+    let ob = manifold.Manifold.intersection( objects[0].mesh, objects[1].mesh );
+    for(let i=2;i<objects.length;++i){
+        let ob2 = manifold.Manifold.intersection( ob, objects[i].mesh );
+        ob.delete();
+        ob=ob2;
+    }
+    let color = (color ?? objects[0].color);
+    return new ManifoldMeshWrapper(ob,color);
+""",
 
 "cylinder": """
     let c = manifold.Manifold.cylinder(height,
@@ -656,6 +671,7 @@ tsImpl = {
     c.delete();
     return new ManifoldMeshWrapper(c2,color);
 """,
+
 "frustum": """
     let c = manifold.Manifold.cylinder(height,
         radius1, radius2, resolution,
@@ -664,7 +680,288 @@ tsImpl = {
     let c2 = c.translate([x, y, z]);
     c.delete();
     return new ManifoldMeshWrapper(c2,color);
+""",
+
+"translate":"""
+    let objs: ManifoldMeshWrapper[];
+    if( objects.length === undefined ){
+        //it's a single object
+        objs = [ objects as ManifoldMeshWrapper ];
+    } else {
+        //it's a list
+        objs = objects as ManifoldMeshWrapper[];
+    }
+
+    let output: ManifoldMeshWrapper[] = [];
+    for(let i=0;i<objs.length;++i){
+        let ob = objs[i].mesh.translate( tx,ty,tz );
+        output.push(new ManifoldMeshWrapper( ob, color ?? objs[i].color ) );
+    }
+
+    if( objects.length === undefined ){
+        //single object in; single object out
+        return output[0];
+    } else {
+        //list in; list out
+        return output;
+    }
+}
+
+""",
+
+
+"scale":"""
+    let objs: ManifoldMeshWrapper[];
+    if( objects.length === undefined ){
+        //it's a single object
+        objs = [ objects as ManifoldMeshWrapper ];
+    } else {
+        //it's a list
+        objs = objects as ManifoldMeshWrapper[];
+    }
+
+    let output: ManifoldMeshWrapper[] = [];
+    for(let i=0;i<objs.length;++i){
+        output.push( transformAroundCentroid( centroid, color, objs[i],
+            (m: Manifold) => { return m.scale(sx,sy,sz); }
+        ));
+    }
+
+    if( objects.length === undefined ){
+        //single object in; single object out
+        return output[0];
+    } else {
+        //list in; list out
+        return output;
+    }
+}
+""",
+
+"rotate" : """
+    let objs: ManifoldMeshWrapper[];
+    if( objects.length === undefined ){
+        //it's a single object
+        objs = [ objects as ManifoldMeshWrapper ];
+    } else {
+        //it's a list
+        objs = objects as ManifoldMeshWrapper[];
+    }
+
+
+    let output: ManifoldMeshWrapper[] = [];
+
+    let x = axis[0];
+    let y = axis[1];
+    let z = axis[2];
+    let len = Math.sqrt(x*x+y*y+z*z);
+    //Python code already verified that length is not zero
+    x /= len;
+    y /= len;
+    z /= len;
+
+    let rotV: Vec3;
+    if( x === 1.0 && y === 0.0 && z === 0.0 ){
+        rotV = [angle,0,0];
+    } else if( x === -1.0 && y === 0.0 && z === 0.0 ){
+        rotV = [-angle,0,0];
+    } else if( x ===  0.0 && y === 1.0 && z === 0.0 ){
+        rotV = [0,angle,0];
+    } else if( x ===  0.0 && y === -1.0 && z === 0.0 ){
+        rotV = [0,-angle,0];
+    } else if( x ===  0.0 && y === 0.0 && z === 1.0 ){
+        rotV = [0,0,angle];
+    } else if( x ===  0.0 && y === 0.0 && z === -1.0 ){
+        rotV = [0,0,-angle];
+    } else {
+        //need to use slow path
+    }
+
+    if( rotV !== undefined ){
+        for(let i=0;i<objs.length;++i){
+            output.push( transformAroundCentroid( centroid, color, objs[i],
+                (m: Manifold) => { return m.rotate(rotV); }
+            ));
+        }
+    } else {
+        let M = computeRotationMatrix(x,y,z,angle);
+        for(let i=0;i<objs.length;++i){
+            output.push( transformAroundCentroid( centroid, color, objs[i],
+                (m: Manifold) => { return m.transform(M); }
+            ));
+        }
+    }
+
+    if( objects.length === undefined ){
+        //single object in; single object out
+        return output[0];
+    } else {
+        //list in; list out
+        return output;
+    }
+}
+""",
+
+"hull": """
+    let ob: Manifold;
+    let needFree=false;
+
+    if( objects.length === undefined ){
+        //one object
+        ob = objects;
+    } else if( objects.length === 1 ){
+        ob = objects[0];
+    } else {
+        //Python code ensured length of list > 0
+        let ob = manifold.Manifold.union( objects[0].mesh, objects[1].mesh );
+        for(let i=2;i<objects.length;++i){
+            let ob2 = manifold.Manifold.union( ob, objects[i].mesh );
+            ob.delete();
+            ob=ob2;
+        }
+        needFree=true;
+    }
+
+    let o2 = manifold.Manifold.hull(ob);
+    if(needFree)
+        ob.delete()
+
+    return new ManifoldMeshWrapper( o2, color ?? ob.color );
+""",
+
+"cut": """
+    let results = object.mesh.splitByPlane( planeNormal, planeD);
+    let ki = ( keepPositive ? 0 : 1 );
+    results[1-ki].delete();
+    return new ManifoldMeshWrapper( results[ki], spec.color ?? object.color );
+"""
+
+"extrude": """
+    let o1 = manifold.Manifold.extrude(
+            polygon,
+            height ?? 1,
+            divisions ?? 1,
+            twist ?? 0,
+            scale ?? [1,1],
+            zcenter
+    );
+    return new ManifoldMeshWrapper( o1, color );
+""",
+
+"revolve": """
+    let o1 = manifold.Manifold.revolve(
+            polygon,
+            resolution ?? 36,
+            angle ?? 360
+    );
+    return new ManifoldMeshWrapper( o1, color );
+
+"""
+
+
 } #end of tsImpl dictionary
 
+
+tspreamble = """
+import Module, {Manifold, ManifoldToplevel, Mat4, Vec3} from "../ext/manifold/manifold.js";
+import { ManifoldMeshWrapper, MeshHandle, manifoldMeshes } from "./workertypes.js";
+let manifold: ManifoldToplevel;
+
+export function setManifold(m: ManifoldToplevel){
+    manifold=m;
+}
+type PyColor = [number,number,number,number?];
+
+function transformAroundCentroid(centroid: Vec3|undefined, color: Color|undefined, obj: ManifoldMeshWrapper, callback: TransformFunction)
+{
+    let cx: number;
+    let cy: number;
+    let cz: number;
+    if( !centroid ){
+        //transform object around its own centroid
+        let bbox = obj.mesh.boundingBox();
+        let cx = 0.5*( bbox.min[0] + bbox.max[0] );
+        let cy = 0.5*( bbox.min[1] + bbox.max[1] );
+        let cz = 0.5*( bbox.min[2] + bbox.max[2] );
+    } else {
+        cx = centroid[0];
+        cy = centroid[1];
+        cz = centroid[2];
+    }
+
+    if( cx === 0.0 && cy === 0.0 && cz === 0.0 ){
+        //fast path
+        let ob = callback( objs[i].mesh );
+        return new ManifoldMeshWrapper( ob, color ?? obj.color ) );
+    } else {
+        let o2 = obj.mesh.translate([-cx,-cy,-cz]);
+        let o3 = callback( o2.mesh );
+        o2.delete();
+        let o4 = o3.translate([cx,cy,cz]);
+        o3.delete();
+        return new ManifoldMeshWrapper(o4, color ?? obj.color ) );
+    }
+}
+
+
+function computeRotationMatrix(x,y,z,angle){
+    angle = angle / 180 * Math.PI;
+    let c = Math.cos(angle);
+    let c1 = 1-c;
+    let s = Math.sin(angle);
+    //this is in COLUMN major order!
+    //ref: https://en.wikipedia.org/wiki/Rotation_matrix
+    //ref: https://ai.stackexchange.com/questions/14041/how-can-i-derive-the-rotation-matrix-from-the-axis-angle-rotation-vector
+    let M: Mat4 = [
+        x*x*c1+c,
+        x*y*c1+z*s,
+        x*z*c1-y*s,
+        0,
+
+        y*x*c1-z*s,
+        y*y*c1+c,
+        y*z*c1+x*s,
+        0,
+
+        x*z*c1+y*s,
+        y*z*c1-x*s,
+        z*z*c1+c,
+        0,
+
+        0,0,0,1
+    ]
+    return M;
+}
+
+"""
+
+
+pypreamble = """
+import javascript  #type: ignore
+import browser  #type: ignore
+
+#ref: Wikipedia
+pi = 3.141592653589793238462643383279
+
+_print = print
+
+#if we send a single thing to print(),
+#brython does not wrap it in a tuple as
+#CPython does.
+def print(*args):
+    if type(args) != list and type(args) != tuple:
+        args=[args]
+    lst=[]
+    for a in args:
+        lst.append(str(a))
+    tmp = ' '.join(lst)
+    browser.self.impl_print(tmp)
+
+def degrees(radians):
+    return radians / 3.141592653589793238462643383279 * 180
+
+def radians(degrees):
+    return degrees/180 * 3.141592653589793238462643383279
+
+"""
 
 _main()
