@@ -29,7 +29,13 @@ class POLYGON2D:
     name="2D polygon"
 class VEC2:
     checker="assertIsVec2"
-    name="vec2"
+    name="tuple of two numbers"
+class VEC3:
+    checker="assertIsVec3"
+    name="tuple of three numbers"
+class NONZERO_VEC3:
+    checker="assertIsNonzeroVec3"
+    name="tuple of three numbers with x**2 + y**2 + z**2 > 0"
 class NONNEGATIVE_INTEGER:
     checker="assertIsNonnegativeInteger"
     name="integer >= 0"
@@ -39,6 +45,9 @@ class POSITIVE_INTEGER:
 class BOOLEAN:
     checker="assertIsBoolean"
     name="boolean"
+class LIST_OF_DRAWABLE:
+    checker="assertIsListOfDrawable"
+    name="list of drawable objects"
 
 def cube(xsize: POSITIVE_NUMBER,
          ysize: POSITIVE_NUMBER,
@@ -48,7 +57,8 @@ def cube(xsize: POSITIVE_NUMBER,
          z:NUMBER=0.0,
          centered: BOOLEAN=False,
          color: COLOR=None):
-    """Creates a cube
+    """
+    Creates a cube
     @param xsize Size of the cube in the x direction
     @param ysize Size of the cube in the y direction
     @param zsize Size of the cube in the z direction
@@ -66,7 +76,8 @@ def sphere( radius: POSITIVE_NUMBER,
             z: NUMBER=0.0,
             color: COLOR=None,
             resolution: POSITIVE_INTEGER=48):
-    """Creates a sphere.
+    """
+    Creates a sphere.
     @param x Sphere center x
     @param y Sphere center y
     @param z Sphere center z
@@ -76,171 +87,160 @@ def sphere( radius: POSITIVE_NUMBER,
     """
     pass
 
-# ~ def cylinder(   x: float,
-                # ~ y: float,
-                # ~ z: float,
-                # ~ radius: POSITIVE_NUMBER,
-                # ~ height: POSITIVE_NUMBER,
-                # ~ zcenter: bool=True,
-                # ~ color:COLOR=None,
-                # ~ resolution: POSITIVE_INTEGER=36):
-    # ~ """Creates a cylinder; the cylinder's axis is parallel to the z axis.
-    # ~ @param x Cylinder center x
-    # ~ @param y Cylinder center y
-    # ~ @param z Cylinder z. See the zcenter argument.
-    # ~ @param radius Radius of the cylinder
-    # ~ @param height Height of the cylinder
-    # ~ @param zcenter If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder.
-    # ~ @param resolution Number of edges around the cylinder's circumference
-    # ~ """
-    # ~ pass
+def cylinder(   x: NUMBER,
+                y: NUMBER,
+                z: NUMBER,
+                radius: POSITIVE_NUMBER,
+                height: POSITIVE_NUMBER,
+                zcenter: BOOLEAN=True,
+                color:COLOR=None,
+                resolution: POSITIVE_INTEGER=36):
+    """
+    Creates a cylinder; the cylinder's axis is parallel to the z axis.
+    @param x Cylinder center x
+    @param y Cylinder center y
+    @param z Cylinder z. See the zcenter argument.
+    @param radius Radius of the cylinder
+    @param height Height of the cylinder
+    @param zcenter If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder.
+    @param resolution Number of edges around the cylinder's circumference
+    @param color Color for the object, or None for default color.
+    """
+    pass
 
-# ~ FuncSpec(
-    # ~ name= "frustum",
-    # ~ doc= "Creates a frustum",
-    # ~ args=[
-        # ~ ArgSpec( argname= "x", argtype= [ArgType.NUMBER], doc= "Frustum center x" },
-        # ~ ArgSpec( argname= "y", argtype= [ArgType.NUMBER], doc= "Frustum center y" },
-        # ~ ArgSpec( argname= "z", argtype= [ArgType.NUMBER], doc= "Frustum center z. See zcenter." },
-        # ~ ArgSpec( argname= "radius1", argtype= [ArgType.POSITIVE_NUMBER], doc= "Radius at frustum minimum z" },
-        # ~ ArgSpec( argname= "radius2", argtype= [ArgType.POSITIVE_NUMBER], doc= "Radius at frustum maximum z" },
-        # ~ ArgSpec( argname= "height", argtype= [ArgType.POSITIVE_NUMBER], doc= "Height (z direction) of frustum" },
-        # ~ ArgSpec( argname= "zcenter", argtype= [ArgType.BOOLEAN], defaultValue= "False",
-            # ~ doc="If true, z is the coordinate of the frustum's center. If false, z is the lowest z value of the frustum."
-        # ~ },
-        # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc},
-        # ~ ArgSpec( argname= "resolution", argtype= [ArgType.POSITIVE_INTEGER], defaultValue="36",doc= "How many edges are around the cylinder's circumference" },
-    # ~ ]
-# ~ },
-# ~ FuncSpec(
-    # ~ name= "union",
-    # ~ doc= "Compute the union of two objects (a solid that encloses those points that are in either or both objects)",
-    # ~ args= [
-        # ~ ArgSpec( argname= "object1", argtype= [ArgType.DRAWABLE], doc= "The first object to union" },
-        # ~ ArgSpec( argname= "object2", argtype= [ArgType.DRAWABLE], doc= "The second object to union" },
-        # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc2}
-    # ~ ]
-# ~ },
-# ~ FuncSpec(
-    # ~ name= "intersection",
-    # ~ doc= "Compute the intersection of two objects (a solid that encloses those points that are in both objects)",
-    # ~ args= [
-        # ~ ArgSpec( argname= "object1", argtype= [ArgType.DRAWABLE], doc= "The first object to intersect" },
-        # ~ ArgSpec( argname= "object2", argtype= [ArgType.DRAWABLE], doc= "The second object to intersect" },
-        # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc2}
-    # ~ ]
-# ~ },
+
+def frustum(radius1:POSITIVE_NUMBER,
+            radius2:POSITIVE_NUMBER,
+            height: POSITIVE_NUMBER,
+            x:NUMBER=0.0, y:NUMBER=0.0, z:NUMBER=0.0,
+            zcenter: BOOLEAN=True,
+            color:COLOR=None,
+            resolution: POSITIVE_INTEGER=36):
+    """
+        Creates a frustum; the frustum's axis is parallel to the z axis.
+        @param x Frustum center x
+        @param y Frustum center y
+        @param z Frustum z. See the zcenter argument.
+        @param radius1 Radius of the frustum at minimum z
+        @param radius2 Radius of the frustum at maximum z
+        @param height Height of the frustum
+        @param zcenter If True, (x,y,z) is the coordinate of the frustum's center. If false, (x,y,z) is the center of the bottom of the frustum.
+        @param color Color for the object, or None for default color.
+        @param resolution Number of edges around the cylinder's circumference
+    """
+    pass
+
+def union(objects: LIST_OF_DRAWABLE, color: COLOR=None):
+    """
+        Compute the union of several objects (a solid that encloses those points that are in any object)
+        @param objects A list of the objects to join together.
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
+
+def intersection(objects: LIST_OF_DRAWABLE, color: COLOR=None):
+    """
+        Compute the intersection of several objects (a solid that encloses those points that are in all of the objects)
+        @param objects A list of the objects to intersect.
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
 
 def difference(object1: DRAWABLE, object2: DRAWABLE, color: COLOR=None):
-    """Compute the difference of two objects (a solid that encloses those points that are in object1 but not in object2)
+    """
+        Compute the difference of two objects (a solid that encloses those points that are in object1 but not in object2)
         @param object1 The first object
         @param object2 The second object
         @param color Color for the object; if None, use object1 color
     """
     pass
 
-# ~ FuncSpec(
-        # ~ name= "translate",
-        # ~ doc= "Move an object to another location.",
-        # ~ args= [
-            # ~ ArgSpec( argname= "object1", argtype= [ArgType.DRAWABLE], doc= "The object to move" },
-            # ~ ArgSpec( argname= "tx", argtype= [ArgType.NUMBER], doc= "Translation x"},
-            # ~ ArgSpec( argname= "ty", argtype= [ArgType.NUMBER], doc= "Translation y"},
-            # ~ ArgSpec( argname= "tz", argtype= [ArgType.NUMBER], doc= "Translation z"},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc2}
-        # ~ ]
-    # ~ },
-    # ~ FuncSpec(
-        # ~ name= "scale",
-        # ~ doc= "Scale an object. Note that if the object is located away from the origin, it will move closer or further from the origin.",
-        # ~ args= [
-            # ~ ArgSpec( argname= "object1", argtype= [ArgType.DRAWABLE], doc= "The object to scale" },
-            # ~ ArgSpec( argname= "sx", argtype= [ArgType.NUMBER], doc= "x factor; 1.0=no change"},
-            # ~ ArgSpec( argname= "sy", argtype= [ArgType.NUMBER], doc= "y factor; 1.0=no change"},
-            # ~ ArgSpec( argname= "sz", argtype= [ArgType.NUMBER], doc= "z factor; 1.0=no change"},
-            # ~ ArgSpec( argname= "centroid", argtype= [ArgType.BOOLEAN], defaultValue= "True", doc="If true, scale around object's centroid. If false, scale relative to origin."},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc2}
-        # ~ ]
-    # ~ },
-    # ~ FuncSpec(
-        # ~ name= "rotate",
-        # ~ doc="Rotate an object by 'angle' *radians* around the given axis.",
-        # ~ args= [
-            # ~ ArgSpec( argname= "object1", argtype= [ArgType.DRAWABLE], doc= "The object to rotate" },
-            # ~ ArgSpec( argname= "axisx", argtype= [ArgType.NUMBER], doc= "The axis of rotation (x)"},
-            # ~ ArgSpec( argname= "axisy", argtype= [ArgType.NUMBER], doc= "The axis of rotation (y)"},
-            # ~ ArgSpec( argname= "axisz", argtype= [ArgType.NUMBER], doc= "The axis of rotation (z)"},
-            # ~ ArgSpec( argname= "angle", argtype= [ArgType.NUMBER], doc= "The angle in radians" },
-            # ~ ArgSpec( argname= "centroid", argtype= [ArgType.BOOLEAN], defaultValue= "True", doc="If true, rotate around object's centroid. If false, rotate relative to origin."},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc2}
-        # ~ ],
-        # ~ additionalChecks= ['if axisx*axisx + axisy*axisy + axisz*axisz < 0.01= raise Exception("Axis is nearly zero length")']
-    # ~ },
-    # ~ FuncSpec(
-        # ~ name= "hull",
-        # ~ doc="Compute the convex hull of the given objects.",
-        # ~ args= [
-            # ~ ArgSpec( argname= "objects", argtype= [ArgType.LIST_OF_DRAWABLE], doc= "The objects for the hull computation"},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc}
-        # ~ ]
-    # ~ },
-    # ~ FuncSpec(
-        # ~ name= "boundingbox",
-        # ~ doc= "Compute the bounding box of the given objects. Returns a cuboid (as if cube() was called).",
-        # ~ args= [
-            # ~ ArgSpec( argname= "objects", argtype= [ArgType.LIST_OF_DRAWABLE,ArgType.DRAWABLE], doc= "The objects for the bounding box computation"},
-            # ~ ArgSpec( argname= "offsetnx", argtype= [ArgType.NUMBER], defaultValue="0", doc= "Amount to offset the negative x side of the bounding box"},
-            # ~ ArgSpec( argname= "offsetpx", argtype= [ArgType.NUMBER], defaultValue="0", doc= "Amount to offset the positive x side of the bounding box"},
-            # ~ ArgSpec( argname= "offsetny", argtype= [ArgType.NUMBER], defaultValue="0", doc= "Amount to offset the negative y side of the bounding box"},
-            # ~ ArgSpec( argname= "offsetpy", argtype= [ArgType.NUMBER], defaultValue="0", doc= "Amount to offset the positive y side of the bounding box"},
-            # ~ ArgSpec( argname= "offsetnz", argtype= [ArgType.NUMBER], defaultValue="0", doc= "Amount to offset the negative z side of the bounding box"},
-            # ~ ArgSpec( argname= "offsetpz", argtype= [ArgType.NUMBER], defaultValue="0", doc= "Amount to offset the positive z side of the bounding box"},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc}
-        # ~ ]
-    # ~ },
-    # ~ FuncSpec(
-        # ~ name= "cut",    //note= This is Manifold's splitByPlane
-        # ~ doc= "Cuts the given object with a plane and discards one half. A plane is defined by the equation Ax + By + Cz + D = 0",
-        # ~ args= [
-            # ~ ArgSpec( argname= "object1", argtype= [ArgType.DRAWABLE], doc= "The object to cut"},
-            # ~ ArgSpec( argname= "planeA", argtype= [ArgType.NUMBER], doc= "The plane normal's x coordinate"},
-            # ~ ArgSpec( argname= "planeB", argtype= [ArgType.NUMBER], doc= "The plane normal's y coordinate"},
-            # ~ ArgSpec( argname= "planeC", argtype= [ArgType.NUMBER], doc= "The plane normal's z coordinate"},
-            # ~ ArgSpec( argname= "planeD", argtype= [ArgType.NUMBER], doc= "The D value of the plane equation"},
-            # ~ ArgSpec( argname= "keepPositive", argtype= [ArgType.BOOLEAN], doc= "If True, keep the part of the object on the positive side of the plane. Otherwise, keep the part on the negative side."},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc2}
-        # ~ ]
-    # ~ },
-    # ~ FuncSpec(
-        # ~ //FIXME= Manifold can handle a CrossSection object here too...
-        # ~ name= "extrude",
-        # ~ doc= "Extrude a 2D polygon (in the XY plane) in the Z direction.",
-        # ~ args= [
-            # ~ ArgSpec( argname= "polygon", argtype= [ArgType.POLYGON2D], doc= "The polygon to extrude, as a list of [x,y] pairs"},
-            # ~ ArgSpec( argname= "height", argtype= [ArgType.POSITIVE_NUMBER], doc= "The height of the extrusion"},
-            # ~ ArgSpec( argname= "divisions", argtype= [ArgType.POSITIVE_INTEGER], defaultValue= "None", doc= "Number of divisions in the extrusion"},
-            # ~ ArgSpec( argname= "twist", argtype= [ArgType.NUMBER], defaultValue= "None", doc= "Amount of twist (rotation) of the top relative to the bottom in radians"},
-            # ~ ArgSpec( argname= "scale", argtype= [ArgType.VEC2], defaultValue= "None", doc= "Amount to scale the top coordinates; 0 gives a cone; 1 gives the same size as the bottom"},
-            # ~ ArgSpec( argname= "zcenter", argtype= [ArgType.BOOLEAN], defaultValue= "False",
-                # ~ doc="If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value."
-            # ~ },
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc}
+def translate(objects: LIST_OF_DRAWABLE, tx:NUMBER, ty:NUMBER, tz: NUMBER, color:COLOR=None):
+    """
+        Move objects to another location.
+        @param objects The objects to translate
+        @param tx Change in x
+        @param ty Change in y
+        @param tz Change in z
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
 
-        # ~ ]
-    # ~ },
-    # ~ FuncSpec(
-        # ~ name= "revolve",
-        # ~ doc= "Create a solid of revolution. The axis of the solid is the z axis.",
-        # ~ args= [
-            # ~ ArgSpec( argname= "polygon", argtype= [ArgType.POLYGON2D], doc= "The polygon to revolve, as a list of [x,y] pairs"},
-            # ~ ArgSpec( argname= "angle", argtype= [ArgType.NUMBER], defaultValue= "None", doc= "Angle of revolution in radians. If omitted, use 2pi (=360 degrees)"},
-            # ~ ArgSpec( argname= "color", argtype= [ArgType.COLOR], defaultValue= "None", doc= colordoc},
-            # ~ ArgSpec( argname= "resolution", argtype= [ArgType.POSITIVE_INTEGER], defaultValue= "36", doc= "The number of steps for the revolution"}
-        # ~ ]
-    # ~ }
 
-    # ~ //TODO: mirror, refine, refineToTolerance, slice, split
-# ~ ];
+def scale(objects: LIST_OF_DRAWABLE, sx:NUMBER, sy:NUMBER, sz: NUMBER, centroid: VEC3=None, color:COLOR=None):
+    """
+        Scale objects.
+        @param objects The objects to translate
+        @param sx x factor; 1.0=no change
+        @param sy y factor; 1.0=no change
+        @param yz z factor; 1.0=no change
+        @param centroid Point to scale the objects around; if None, scale each object around its own centroid
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
+
+def rotate(objects: LIST_OF_DRAWABLE, axis: NONZERO_VEC3, angle: NUMBER, centroid: VEC3=None, color: COLOR=None):
+    """
+        Rotate an object by 'angle' *radians* around the given axis.
+        @param objects The objects to translate
+        @param axis The axis of rotation; must not be zero length
+        @param angle The angle of rotation in radians
+        @param centroid The point around which to rotate; if None, each object is rotated around its own centeroid
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
+
+def hull(objects: LIST_OF_DRAWABLE, color: COLOR=None):
+    """
+        Compute the convex hull of the given objects.
+        @param objects The objects for the hull computation.
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
+
+def boundingbox(objects: LIST_OF_DRAWABLE):
+    """
+        Compute the bounding box of the given objects. Returns a list of two tuples. The first tuple has the minimum x,y,z; the second has the maximum x,y,z.
+        @param objects The objects for the computation.
+    """
+    pass
+
+def cut(object: DRAWABLE, planeNormal: VEC3, planeD: NUMBER, keepPositive: BOOLEAN, color:COLOR=None):
+    """
+        Cuts the given object with a plane and discards one half. A plane is defined by the equation Ax + By + Cz + D = 0 where the plane normal is (A,B,C) and D depends on the plane's distance from the origin.
+        @param object The object to cut
+        @param planeNormal The normal to the plane
+        @param planeD Fourth component of plane equation
+        @param keepPositive If True, keep the part of the object on the side that planeNormal points to; if False, keep the part of the object on the other side of the plane
+        @param color Color for the object; if None, use the color of the first object in the list
+    """
+    pass
+
+# FIXME: Manifold can handle a CrossSection object here too...
+def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INTEGER=None, twist: NUMBER=None, scale: VEC2=None, zcenter: BOOLEAN=False, color: COLOR=None):
+    """
+        Extrude a 2D polygon (polygon which lies in the XY plane). The extrusion is in the Z direction.
+        @param polygon The polygon to extrude, as a list of [x,y] tuples
+        @param height The height of the extrusion
+        @param divisions = Number of divisions in the extrusion
+        @param twist Amount of twist (rotation) of the top relative to the bottom in radians
+        @param scale Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom.
+        @param zcenter If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value.
+        @param color Color for the object; if None, use default color
+    """
+    pass
+
+def revolve(polygon: POLYGON2D, angle: NUMBER=None, color: COLOR=None, resolution: POSITIVE_INTEGER=36):
+    """
+        Create a solid of revolution. The axis of the solid is the z axis.
+        @param polygon The polygon to revolve, as a list of (x,y) pairs
+        @param angle Angle of revolution in radians. If None, use 2pi (=360 degrees)
+        @param color Color for the object; if None, use default color
+        @param resolution The number of steps for the revolution
+    """
+    pass
+
+#TODO: mirror, refine, refineToTolerance, slice, split
 
 
 
@@ -293,6 +293,25 @@ def assertIsVec2(obj):
     if len(obj) != 2:
         return False
     return all( [ assertIsNumber(q) for q in obj] )
+
+def assertIsVec3(obj):
+    if type(obj) != tuple and type(obj) != list:
+        return False
+    if len(obj) != 3:
+        return False
+    return all( [ assertIsNumber(q) for q in obj] )
+
+
+def assertIsNonzeroVec3(obj):
+    if type(obj) != tuple and type(obj) != list:
+        return False
+    if len(obj) != 3:
+        return False
+    if not all( [ assertIsNumber(q) for q in obj] ):
+        return False
+    if obj[0]*obj[0] + obj[1]*obj[1] + obj[2]*obj[2] < 0.001:
+        return False
+    return True
 
 
 def assertIsNonnegativeInteger(obj):
@@ -505,6 +524,8 @@ def _generateTSShim(name,fp):
     print(f"}};",file=fp)
     print(file=fp)
     print(f"self.impl_{name} = ( {','.join(tmp)} ) => {{",file=fp)
+    if name not in tsImpl:
+        print("No TypeScript implementation for",name)
     print(tsImpl[name],file=fp)
     print(f"}}",file=fp)
 
@@ -620,7 +641,29 @@ tsImpl = {
     if( !color )
         color = o1.color;
     return new MeshHandle( new ManifoldMeshWrapper(d,color) );
-"""
+""",
+"union":
+    ??remember to use list of drawables,
+"intersection":
+    ??remember to use list of drawables,
+
+"cylinder": """
+    let c = manifold.Manifold.cylinder(height,
+        radius, radius, resolution,
+        zcenter
+    );
+    let c2 = c.translate([x, y, z]);
+    c.delete();
+    return new ManifoldMeshWrapper(c2,color);
+""",
+"frustum": """
+    let c = manifold.Manifold.cylinder(height,
+        radius1, radius2, resolution,
+        zcenter
+    );
+    let c2 = c.translate([x, y, z]);
+    c.delete();
+    return new ManifoldMeshWrapper(c2,color);
 } #end of tsImpl dictionary
 
 

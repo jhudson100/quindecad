@@ -126,41 +126,6 @@ self.impl_draw = (drawable: MeshHandle ) => {
 //         console.log("worker: Evalute draw command:",cmd);
 
 //     switch(cmd.type){
-//         case DrawCommandType.CYLINDER:
-//         {
-//             let spec = cmd as Cylinder;
-//             let c = manifold.Manifold.cylinder(spec.height,
-//                 spec.radius, spec.radius, spec.resolution,
-//                 spec.zcenter
-//             );
-//             let c2 = c.translate([spec.x, spec.y,spec.z]);
-//             c.delete();
-//             return new ManifoldMeshWrapper(c2,cmd.color);
-//         }
-//         case DrawCommandType.FRUSTUM:
-//         {
-//             let spec = cmd as Frustum;
-//             let c = manifold.Manifold.cylinder(spec.height,
-//                 spec.radius1, spec.radius2, spec.resolution,
-//                 spec.zcenter
-//             );
-//             let c2 = c.translate([spec.x, spec.y,spec.z]);
-//             c.delete();
-//             return new ManifoldMeshWrapper(c2,cmd.color);
-//         }
-//         case DrawCommandType.DIFFERENCE:
-//         {
-//             let spec = cmd as Difference;
-//             let o1 = evaluateDrawCommand(spec.object1);
-//             let o2 = evaluateDrawCommand(spec.object2);
-//             let d = manifold.Manifold.difference(o1.mesh,o2.mesh);
-//             o1.mesh.delete();
-//             o2.mesh.delete();
-//             let color = cmd.color;
-//             if( !color )
-//                 color = o1.color;
-//             return new ManifoldMeshWrapper(d,color);
-//         }
 //         case DrawCommandType.UNION:
 //         {
 //             let spec = cmd as Union;

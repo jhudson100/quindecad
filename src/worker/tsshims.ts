@@ -42,18 +42,9 @@ self.impl_sphere = ( radius : number,x : number,y : number,z : number,color : Py
     return new MeshHandle( new ManifoldMeshWrapper(s2,color) );
 
 }
-type difference_t = ( object1 : MeshHandle,object2 : MeshHandle,color : PyColor ) => any;
+type cylinder_t = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number ) => any;
 declare global {
-    interface WorkerGlobalScope { impl_difference : difference_t }
+    interface WorkerGlobalScope { impl_cylinder : cylinder_t }
 };
 
-self.impl_difference = ( object1 : MeshHandle,object2 : MeshHandle,color : PyColor ) => {
-
-    let o1 = manifoldMeshes[ object1.index ];
-    let o2 = manifoldMeshes[ object2.index ];
-    let d = manifold.Manifold.difference(o1.mesh,o2.mesh);
-    if( !color )
-        color = o1.color;
-    return new MeshHandle( new ManifoldMeshWrapper(d,color) );
-
-}
+self.impl_cylinder = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number ) => {
