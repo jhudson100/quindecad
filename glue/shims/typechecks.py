@@ -101,5 +101,8 @@ def assertIsPositiveInteger(obj):
     """ """
     return type(obj) == int and obj > 0
 
+def assertIsString(obj):
+    """ """
+    return type(obj) == str
 
 TS=None

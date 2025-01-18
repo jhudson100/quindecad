@@ -8,7 +8,9 @@ def cylinder(   x: NUMBER,
                 height: POSITIVE_NUMBER,
                 zcenter: BOOLEAN=True,
                 color:COLOR=None,
-                resolution: POSITIVE_INTEGER=36) -> MESH_HANDLE:
+                resolution: POSITIVE_INTEGER=36,
+                name: STRING=None
+    ) -> MESH_HANDLE:
     """
     Creates a cylinder; the cylinder's axis is parallel to the z axis.
     @param x Cylinder center x
@@ -19,6 +21,7 @@ def cylinder(   x: NUMBER,
     @param zcenter If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder.
     @param resolution Number of edges around the cylinder's circumference
     @param color Color for the object, or None for default color.
+    @param name Name for the object
     """
     pass
 
@@ -30,5 +33,5 @@ TS="""
     );
     let c2 = c.translate([x, y, z]);
     c.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
 """

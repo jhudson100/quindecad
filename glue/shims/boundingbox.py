@@ -6,6 +6,7 @@ def boundingbox(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE) -> LIST_OF_VEC3:
     """
         Compute the bounding box of the given objects. Returns a list of two tuples. The first tuple has the minimum x,y,z; the second has the maximum x,y,z.
         @param objects The objects for the computation.
+        @param name Name for the object
     """
     pass
 

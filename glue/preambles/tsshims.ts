@@ -8,7 +8,7 @@ export function setManifold(m: ManifoldToplevel){
 type PyColor = [number,number,number,number?];
 type TransformFunction = (m: Manifold) => Manifold;
 
-function transformAroundCentroid(centroid: Vec3|undefined, color: PyColor|undefined, obj: ManifoldMeshWrapper, callback: TransformFunction)
+function transformAroundCentroid(centroid: Vec3|undefined, obj: ManifoldMeshWrapper, callback: TransformFunction)
 {
     let cx: number;
     let cy: number;
@@ -28,14 +28,14 @@ function transformAroundCentroid(centroid: Vec3|undefined, color: PyColor|undefi
     if( cx === 0.0 && cy === 0.0 && cz === 0.0 ){
         //fast path
         let ob = callback( obj.mesh );
-        return new ManifoldMeshWrapper( ob, color ?? obj.color );
+        return ob;
     } else {
         let o2 = obj.mesh.translate([-cx,-cy,-cz]);
         let o3 = callback( o2 );
         o2.delete();
         let o4 = o3.translate([cx,cy,cz]);
         o3.delete();
-        return new ManifoldMeshWrapper(o4, color ?? obj.color );
+        return o4;
     }
 }
 

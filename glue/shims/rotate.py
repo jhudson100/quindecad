@@ -2,7 +2,8 @@ from shims.gluetypes import *
 
 
 
-def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: NUMBER, centroid: VEC3=None, color: COLOR=None) -> MESH_HANDLE|LIST_OF_MESH_HANDLE:
+def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: NUMBER,
+        centroid: VEC3=None, color: COLOR=None, name: STRING=None) -> MESH_HANDLE|LIST_OF_MESH_HANDLE:
     """
         Rotate objects by 'angle' *degrees* around the given axis. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
         @param objects The objects to translate
@@ -10,6 +11,7 @@ def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: 
         @param angle The angle of rotation in degrees
         @param centroid The point around which to rotate; if None, each object is rotated around its own centeroid
         @param color Color for the resulting objects; if None, use each individual object's color.
+        @param name Name for the object
     """
     pass
 
@@ -48,12 +50,20 @@ TS="""
 
     function rotHelper(mw: ManifoldMeshWrapper){
         if( rotV !== undefined ){
-            return transformAroundCentroid( centroid, color, mw,
-                (m: Manifold) => { return m.rotate(rotV); }
+            return new ManifoldMeshWrapper(
+                transformAroundCentroid( centroid, mw,
+                    (m: Manifold) => { return m.rotate(rotV); }
+                ),
+                color ?? mw.color,
+                name
             );
         } else {
-            return transformAroundCentroid( centroid, color, mw,
-                (m: Manifold) => { return m.transform(M); }
+            return new ManifoldMeshWrapper(
+                transformAroundCentroid( centroid, mw,
+                    (m: Manifold) => { return m.transform(M); }
+                ),
+                color ?? mw.color,
+                name
             );
         }
     }

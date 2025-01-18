@@ -10,7 +10,8 @@ def cube(xsize: POSITIVE_NUMBER,
          y:NUMBER=0.0,
          z:NUMBER=0.0,
          centered: BOOLEAN=False,
-         color: COLOR=None) -> MESH_HANDLE:
+         color: COLOR=None,
+         name: STRING=None) -> MESH_HANDLE:
     """
     Creates a cuboid
     @param xsize Size of the cuboid in the x direction
@@ -21,6 +22,7 @@ def cube(xsize: POSITIVE_NUMBER,
     @param z Z coordinate of the cuboid
     @param centered True if the cuboid should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z).
     @param color Color for the object, or None for default color.
+    @param name Name for the object
     """
     pass
 
@@ -32,5 +34,5 @@ TS="""
     );
     let c2 = c.translate([x,y,z]);
     c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
 """

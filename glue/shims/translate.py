@@ -1,7 +1,9 @@
 from shims.gluetypes import *
 
 
-def translate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, tx:NUMBER, ty:NUMBER, tz: NUMBER, color:COLOR=None) -> MESH_HANDLE|LIST_OF_MESH_HANDLE:
+def translate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE,
+        tx:NUMBER, ty:NUMBER, tz: NUMBER,
+        color:COLOR=None, name: STRING=None) -> MESH_HANDLE|LIST_OF_MESH_HANDLE:
     """
         Move objects to another location. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
         @param objects The objects to translate
@@ -9,6 +11,7 @@ def translate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, tx:NUMBER, ty:NUMBER, tz
         @param ty Change in y
         @param tz Change in z
         @param color Color for the resulting objects; if None, use each individual object's color.
+        @param name Name for the object
     """
     pass
 
@@ -19,7 +22,7 @@ TS="""
         return new MeshHandle(
             new ManifoldMeshWrapper(
                 mw.mesh.translate(tx,ty,tz),
-                color ?? mw.color
+                color ?? mw.color,name
             )
         );
     } else {
@@ -32,7 +35,7 @@ TS="""
             output.push(
                 new MeshHandle(
                     new ManifoldMeshWrapper(
-                        ob, color ?? mw.color
+                        ob, color ?? mw.color,name
                     )
                 )
             );

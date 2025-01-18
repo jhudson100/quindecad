@@ -170,7 +170,7 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
         toDraw.forEach( (mh: MeshHandle) => {
             let mw: ManifoldMeshWrapper = manifoldMeshes[ mh.index ];
             let m = mw.mesh.getMesh();
-            let me = new Mesh(m.vertProperties,m.triVerts,mw.color);
+            let me = new Mesh(m.vertProperties,m.triVerts,mw.color,mw.name);
             meshes.push(me);
             //defer mw.mesh.delete() to the finally block
         });

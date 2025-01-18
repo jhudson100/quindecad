@@ -4,9 +4,11 @@ export type Color = [number,number,number,number?];
 export class Mesh{
     vertices:  Float32Array;
     color: Color;
+    name: string;
 
-    constructor(positions: Float32Array, indices: Uint32Array, color: Color)
+    constructor(positions: Float32Array, indices: Uint32Array, color: Color, name: string)
     {
+        this.name=name;
         //convert to faceted, no shared vertices
         this.vertices = new Float32Array(indices.length*3);
         for(let i=0,j=0;i<indices.length;++i){

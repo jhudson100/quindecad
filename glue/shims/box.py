@@ -1,12 +1,13 @@
 from shims.gluetypes import *
 
 
-def box( min: VEC3, max: VEC3, color: COLOR=None) -> MESH_HANDLE:
+def box( min: VEC3, max: VEC3, color: COLOR=None, name: STRING=None) -> MESH_HANDLE:
     """
     Create a box that goes from the given minimum coordinate to the given maximum coordinate
     @param min The minimum coordinate
     @param max The maximum coordinate
     @param color Color for the object, or None for default color.
+    @param name Name for the object
     """
     pass
 
@@ -28,5 +29,5 @@ TS="""
     );
     let c2 = c.translate(min);
     c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
 """

@@ -2,7 +2,9 @@ from shims.gluetypes import *
 
 
 # FIXME: Manifold can handle a CrossSection object here too...
-def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INTEGER=None, twist: NUMBER=None, scale: VEC2=None, zcenter: BOOLEAN=False, color: COLOR=None) -> MESH_HANDLE:
+def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INTEGER=None,
+            twist: NUMBER=None, scale: VEC2=None, zcenter: BOOLEAN=False,
+            color: COLOR=None, name: STRING=None) -> MESH_HANDLE:
     """
         Extrude a 2D polygon (polygon which lies in the XY plane). The extrusion is in the Z direction. Note that the vertices MUST be specified in counterclockwise order.
         @param polygon The polygon to extrude, as a list of [x,y] tuples
@@ -12,6 +14,7 @@ def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INT
         @param scale Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom.
         @param zcenter If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value.
         @param color Color for the object; if None, use default color
+        @param name Name for the object
     """
     pass
 
@@ -40,5 +43,5 @@ TS="""
             scale,
             zcenter
     );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color ,name) );
 """

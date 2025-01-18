@@ -172,4 +172,8 @@ export class ErrorReporter{
         this.div.appendChild(d);
     }
 
+    scrollToBottom(){
+        this.div.scrollTop=99999999;
+    }
+
 } //end class ErrorReporter

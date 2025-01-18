@@ -2,11 +2,12 @@ from shims.gluetypes import *
 
 
 
-def hull(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, color: COLOR=None) -> MESH_HANDLE:
+def hull(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, color: COLOR=None, name: STRING=None) -> MESH_HANDLE:
     """
         Compute the convex hull of the union of the given objects.
         @param objects The objects for the hull computation.
         @param color Color for the object; if None, use the color of the first object in the list
+        @param name Name for the object
     """
     pass
 
@@ -15,13 +16,13 @@ TS="""
     if(!objects.hasOwnProperty("length") ){
         let mw = handleToWrapper( objects as MeshHandle );
         let o2 = mw.mesh.hull();
-        return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color ) );
+        return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color, name ) );
     } else {
         let L = objects as MeshHandle[];
         if( L.length === 1 ){
             let mw = handleToWrapper( L[0] );
             let o2 = mw.mesh.hull();
-            return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color ) );
+            return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color, name ) );
         } else {
             let mw = handleToWrapper(L[0]);
             let ob = mw.mesh;
@@ -39,7 +40,7 @@ TS="""
             //so ob represents the result of a union operation,
             //and we must delete it.
             ob.delete();
-            return new MeshHandle( new ManifoldMeshWrapper( ob3, color ?? mw.color ));
+            return new MeshHandle( new ManifoldMeshWrapper( ob3, color ?? mw.color,name ));
         }
     }
 """

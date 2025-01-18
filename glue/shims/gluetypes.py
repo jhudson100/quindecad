@@ -38,7 +38,9 @@ class LIST_OF_MESH_HANDLE:
 class LIST_OF_VEC3:
     checker="assertIsListOfVec3"
     name="list of tuples, each of which is [x,y,z]"
-
+class STRING:
+    checker="assertIsString"
+    name="string"
 
 #js types for python types
 jstypemap = {
@@ -57,4 +59,5 @@ jstypemap = {
     BOOLEAN: "boolean",
     LIST_OF_MESH_HANDLE: "MeshHandle[]",
     MESH_HANDLE|LIST_OF_MESH_HANDLE: "MeshHandle|MeshHandle[]",
+    STRING: "string"
 }

@@ -1,11 +1,12 @@
 from shims.gluetypes import *
 
 
-def difference(objects: LIST_OF_MESH_HANDLE, color: COLOR=None) -> MESH_HANDLE:
+def difference(objects: LIST_OF_MESH_HANDLE, color: COLOR=None, name: STRING=None) -> MESH_HANDLE:
     """
         Compute the set difference: objects[0] - objects[1] - objects[2] - ... . The set difference a-b consists of those points that are in a but not in b.
         @param objects A list of the objects for the computation.
         @param color Color for the object; if None, use the color of the first object in the list
+        @param name Name for the object
     """
     pass
 
@@ -23,5 +24,5 @@ TS="""
         ob.delete();
         ob=ob2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(ob,color ?? mw1.color) );
+    return new MeshHandle( new ManifoldMeshWrapper(ob,color ?? mw1.color,name) );
 """

@@ -88,7 +88,9 @@ def outputDoc(name,fp,func):
         else:
             defval = f'"{defval}"'
 
-        if typing.get_origin(anno) is types.UnionType:
+        if anno == inspect.Parameter.empty:
+            atype = "[]"
+        elif typing.get_origin(anno) is types.UnionType:
             tmp=[]
             for underlyingType in anno.__args__:
                 tmp.append( f"ArgType.{underlyingType.__name__}" )

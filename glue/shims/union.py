@@ -1,10 +1,13 @@
 from shims.gluetypes import *
 
-def union(objects: LIST_OF_MESH_HANDLE, color: COLOR=None) -> MESH_HANDLE:
+def union(objects: LIST_OF_MESH_HANDLE, color: COLOR=None,
+        name: STRING=None) -> MESH_HANDLE:
     """
         Compute the union of several objects (a solid that encloses those points that are in any object)
         @param objects A list of the objects to join together.
         @param color Color for the object; if None, use the color of the first object in the list
+        @param name Name for the object
+        @param name Name for the object
     """
     pass
 
@@ -24,5 +27,5 @@ TS="""
         ob.delete();
         ob=ob2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color ) );
+    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color,name ) );
 """

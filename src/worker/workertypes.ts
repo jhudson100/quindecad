@@ -4,12 +4,14 @@ import { Manifold } from "../ext/manifold/manifold-encapsulated-types";
 export class ManifoldMeshWrapper{
     mesh: Manifold;
     color: Color;
+    name:string
     freed:boolean;
-    constructor(mesh: Manifold, color: Color)
+    constructor(mesh: Manifold, color: Color, name: string)
     {
         this.mesh=mesh;
         this.color=color;
         this.freed=false;
+        this.name=name;
     }
 }
 

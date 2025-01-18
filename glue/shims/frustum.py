@@ -7,7 +7,7 @@ def frustum(radius1:POSITIVE_NUMBER,
             x:NUMBER=0.0, y:NUMBER=0.0, z:NUMBER=0.0,
             zcenter: BOOLEAN=True,
             color:COLOR=None,
-            resolution: POSITIVE_INTEGER=36) -> MESH_HANDLE:
+            resolution: POSITIVE_INTEGER=36, name: STRING=None) -> MESH_HANDLE:
     """
         Creates a frustum; the frustum's axis is parallel to the z axis.
         @param x Frustum center x
@@ -19,6 +19,7 @@ def frustum(radius1:POSITIVE_NUMBER,
         @param zcenter If True, (x,y,z) is the coordinate of the frustum's center. If false, (x,y,z) is the center of the bottom of the frustum.
         @param color Color for the object, or None for default color.
         @param resolution Number of edges around the cylinder's circumference
+        @param name Name for the object
     """
     pass
 
@@ -30,5 +31,5 @@ TS="""
     );
     let c2 = c.translate([x, y, z]);
     c.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
 """

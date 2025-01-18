@@ -18,6 +18,7 @@ export enum ArgType {
     POSITIVE_NUMBER,
     VEC2,
     VEC3,
+    STRING
 }
 
 export interface ArgSpec {
@@ -52,6 +53,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "min", argtype: [ArgType.VEC3], defaultValue: undefined, doc: "The minimum coordinate" },
         { argname: "max", argtype: [ArgType.VEC3], defaultValue: undefined, doc: "The maximum coordinate" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -66,6 +68,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Z coordinate of the cuboid" },
         { argname: "centered", argtype: [ArgType.BOOLEAN], defaultValue: "False", doc: "True if the cuboid should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z)." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -77,6 +80,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "planeD", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Fourth component of plane equation" },
         { argname: "keepPositive", argtype: [ArgType.BOOLEAN], defaultValue: undefined, doc: "If True, keep the part of the object on the side that planeNormal points to; if False, keep the part of the object on the other side of the plane" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -91,6 +95,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "zcenter", argtype: [ArgType.BOOLEAN], defaultValue: "True", doc: "If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
         { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "Number of edges around the cylinder's circumference" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -99,6 +104,7 @@ let preambleFunctions: FuncSpec[] = [
     args: [
         { argname: "objects", argtype: [ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "A list of the objects for the computation." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -119,6 +125,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "scale", argtype: [ArgType.VEC2], defaultValue: "None", doc: "Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom." },
         { argname: "zcenter", argtype: [ArgType.BOOLEAN], defaultValue: "False", doc: "If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use default color" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -141,6 +148,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "zcenter", argtype: [ArgType.BOOLEAN], defaultValue: "True", doc: "If True, (x,y,z) is the coordinate of the frustum's center. If false, (x,y,z) is the center of the bottom of the frustum." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
         { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "Number of edges around the cylinder's circumference" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -149,6 +157,7 @@ let preambleFunctions: FuncSpec[] = [
     args: [
         { argname: "objects", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "The objects for the hull computation." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -157,6 +166,14 @@ let preambleFunctions: FuncSpec[] = [
     args: [
         { argname: "objects", argtype: [ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "A list of the objects to intersect." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
+    ]
+    },
+    {
+    name: 'print',
+    doc: 'Print data to the screen.', 
+    args: [
+        { argname: "args", argtype: [], defaultValue: undefined, doc: "One or more things to print" },
     ]
     },
     {
@@ -167,6 +184,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "angle", argtype: [ArgType.NUMBER], defaultValue: "None", doc: "Angle of revolution in degrees. If None, use 360 degrees" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use default color" },
         { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "The number of steps for the revolution" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -178,6 +196,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "angle", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "The angle of rotation in degrees" },
         { argname: "centroid", argtype: [ArgType.VEC3], defaultValue: "None", doc: "The point around which to rotate; if None, each object is rotated around its own centeroid" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the resulting objects; if None, use each individual object's color." },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -190,6 +209,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "sz", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "z factor; 1.0=no change" },
         { argname: "centroid", argtype: [ArgType.VEC3], defaultValue: "None", doc: "Point to scale the objects around; if None, scale each object around its own centroid" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the resulting objects; if None, use each individual object's color." },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -202,6 +222,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center z" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
         { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "48", doc: "How finely tessellated the sphere should be" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -213,6 +234,7 @@ let preambleFunctions: FuncSpec[] = [
         { argname: "ty", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Change in y" },
         { argname: "tz", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Change in z" },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the resulting objects; if None, use each individual object's color." },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
     {
@@ -221,6 +243,7 @@ let preambleFunctions: FuncSpec[] = [
     args: [
         { argname: "objects", argtype: [ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "A list of the objects to join together." },
         { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
+        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
     ]
     },
 ] //end preambleFunctions list

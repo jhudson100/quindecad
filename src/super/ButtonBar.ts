@@ -226,10 +226,12 @@ export class ButtonBar{
                             }
                             eacharg.push(tmp);
                         });
-                        let tmp = `<li>${funcname}(${eacharg.join(" , ")})<br>`;
+                        let tmp = `<div class='functionsignature'><li><span class='functionname'>${funcname}</span>(${eacharg.join(" , ")})</div>`;
                         L.push(tmp);
 
+                        L.push("<div class='functiondocstring'>");
                         L.push( fs.doc );
+                        L.push("</div>");
                         
                         L.push("<ul>");
                         args.forEach( (a: ArgSpec ) => {
@@ -272,6 +274,9 @@ export class ButtonBar{
                                         break;
                                     case ArgType.VEC3:
                                         explanation = "a list of three numbers";
+                                        break;
+                                    case ArgType.STRING:
+                                        explanation = "a string";
                                         break;
                                     default:
                                         explanation = "an argument of some type";

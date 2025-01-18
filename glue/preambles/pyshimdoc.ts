@@ -13,6 +13,7 @@ export enum ArgType {
     POSITIVE_NUMBER,
     VEC2,
     VEC3,
+    STRING
 }
 
 export interface ArgSpec {

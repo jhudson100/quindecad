@@ -5,10 +5,11 @@ div.helptext div.header {
     text-decoration: underline;
     margin-top: 1em;
 }
-div.helptext ul {
-    margin-top: 0px;
-    margin-bottom: 0px;
+
+div.helptext div.functionsignature {
+    background: #eeeeee;
 }
+
 
 /* div.helptext > ul { */
     /* padding-left: 0px; */
@@ -32,10 +33,21 @@ div.helptext span.defaultvalue {
 <div class="header">View Controls</div>
 
 <ul>
-    <li>Rotate: Left mouse
-    <li>Pan: Shift+Left mouse OR Unshifted Middle mouse
-    <li>Zoom (dolly): Right mouse OR wheel
+    <li>Left mouse: Rotate</li>
+    <li>Shift+Left mouse: Pan</li>
+    <li>Middle mouse: Pan</li>
+    <li>Right mouse: Zoom (Dolly)</li>
+    <li>Wheel: Zoom (Dolly)</li>
+</ul>
+
+There are also some key controls available for the view.
+If the Python panel has keyboard focus, you'll need to
+click on the view panel first so it will be active and
+will receive the keystrokes.
+<ul>
     <li>g: Show or hide grid</li>
+    <li>a: Show or hide axes</li>
+    <li>p: Print the coordinates beneath the pointer (the pointer must be over an object)</li>
 </ul>
 
 <div class="header">Run Code</div>
@@ -66,7 +78,8 @@ a color refers to a list or tuple of three values from 0 to 255 inclusive.
 A fourth element may be specified; it represents the opacity
 (255=fully opaque; 0=fully transparent)
 
-
+<div class='functions'>
 <!--FUNCTIONS-->
+</div>
 
 </div>

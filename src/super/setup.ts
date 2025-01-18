@@ -32,10 +32,25 @@ export function setupInterface(){
         │           │  3│              │
         └───────────┴───┴──────────────┘
 
+
+        sz1 = sizer1
+
+          col 1      col2   col3
+        ┌───────────┬───┬──────────────┐
+        │           bbardiv            │    row 1
+        ├───────────┼───┼──────────────┤
+        │ viewdiv   │sz1│    eddiv     │    row 2
+        ├───────────┼───┼──────────────┤
+        │           sizer2             │    row 3
+        ├───────────┼───┼──────────────┤
+        │           errdiv             │    row 4
+        └───────────┴───┴──────────────┘
+
+
     */
 
     let contentArea = createGrid(  document.body, 
-            "auto 1fr 0.1em 1fr", "1fr 0.1em 1fr"
+            "auto 1fr 0.1em 0.25fr", "1fr 0.1em 1fr"
     );
     contentArea.style.width = "99vw";
     contentArea.style.height = "99vh";
@@ -46,16 +61,16 @@ export function setupInterface(){
     let bbar = ButtonBar.get().initialize(bbardiv);
 
 
-    let viewdiv = createGridCell( contentArea, 2,1, 3,1 );
+    let viewdiv = createGridCell( contentArea, 2,1, 1,1 );
     viewdiv.style.width="calc(100%)";
     viewdiv.style.height="calc(100%)";
     viewdiv.style.background="yellow";
 
     View.initialize(viewdiv);
 
-    let sizer1 = createSizer(contentArea, 2,2, 3, 1, SplitDirection.VERTICAL);
+    let sizer1 = createSizer(contentArea, 2,2, 1, 1, SplitDirection.VERTICAL);
 
-    let eddiv = createGridCell( contentArea, 2,3);
+    let eddiv = createGridCell( contentArea, 2,3, 1,1);
     eddiv.style.height="100%";
     Editor.get().initialize(eddiv);
     Editor.get().addKeyEventCommand( (ev: KeyboardEvent) => {
@@ -70,9 +85,9 @@ export function setupInterface(){
         }
     });
 
-    let sizer2 = createSizer(contentArea,3,3, 1,1, SplitDirection.HORIZONTAL);
+    let sizer2 = createSizer(contentArea,3,1, 1,3, SplitDirection.HORIZONTAL);
 
-    let errdiv = createGridCell( contentArea, 4,3);
+    let errdiv = createGridCell( contentArea, 4,1, 1,3);
     errdiv.style.height="100%";
     ErrorReporter.get().initialize(errdiv);
 
