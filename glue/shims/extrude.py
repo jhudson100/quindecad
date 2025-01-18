@@ -4,7 +4,7 @@ from shims.gluetypes import *
 # FIXME: Manifold can handle a CrossSection object here too...
 def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INTEGER=None, twist: NUMBER=None, scale: VEC2=None, zcenter: BOOLEAN=False, color: COLOR=None) -> MESH_HANDLE:
     """
-        Extrude a 2D polygon (polygon which lies in the XY plane). The extrusion is in the Z direction.
+        Extrude a 2D polygon (polygon which lies in the XY plane). The extrusion is in the Z direction. Note that the vertices MUST be specified in counterclockwise order.
         @param polygon The polygon to extrude, as a list of [x,y] tuples
         @param height The height of the extrusion
         @param divisions = Number of divisions in the extrusion
@@ -16,12 +16,28 @@ def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INT
     pass
 
 TS="""
+
+    let poly: Vec2[] = [];
+    for(let i=0;i<polygon.length;++i){
+        poly.push( [polygon[i][0], polygon[i][1]] );
+    }
+    if( height === undefined )
+        height = 1;
+    if( divisions === undefined )
+        divisions = 1;
+    if( twist === undefined )
+        twist = 0;
+    if( scale === undefined )
+        scale = [1,1]
+    else
+        scale = [ scale[0], scale[1] ]
+
     let o1 = manifold.Manifold.extrude(
-            polygon,
-            height ?? 1,
-            divisions ?? 1,
-            twist ?? 0,
-            scale ?? [1,1],
+            poly,
+            height,
+            divisions,
+            twist,
+            scale,
             zcenter
     );
     return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );

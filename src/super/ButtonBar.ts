@@ -241,31 +241,37 @@ export class ButtonBar{
                                         explanation = "a boolean"; 
                                         break;
                                     case ArgType.COLOR:
-                                        explanation = "a color"
-                                        break;
-                                    case ArgType.MESH_HANDLE:
-                                        explanation = "a drawable object"
+                                        explanation = "a color: A list of three values 0...255 with an optional fourth opacity value"
                                         break;
                                     case ArgType.LIST_OF_MESH_HANDLE:
                                         explanation = "a list of drawable objects"
                                         break;
-                                    case ArgType.NUMBER:
-                                        explanation = "a number";
-                                        break;
-                                    case ArgType.POSITIVE_NUMBER:
-                                        explanation = "a positive number";
+                                    case ArgType.MESH_HANDLE:
+                                        explanation = "a drawable object"
                                         break;
                                     case ArgType.NONNEGATIVE_INTEGER:
                                         explanation = "an integer >= 0";
                                         break;
-                                    case ArgType.POSITIVE_INTEGER:
-                                        explanation = "a positive integer";
+                                    case ArgType.NONZERO_VEC3:
+                                        explanation = "A list of three values [x,y,z] with at least one that is nonzero"
                                         break;
-                                    case ArgType.VEC2:
-                                        explanation = "a list of two numbers";
+                                    case ArgType.NUMBER:
+                                        explanation = "a number";
                                         break;
                                     case ArgType.POLYGON2D:
                                         explanation = "a list of [x,y] pairs";
+                                        break;
+                                    case ArgType.POSITIVE_INTEGER:
+                                        explanation = "a positive integer";
+                                        break;
+                                    case ArgType.POSITIVE_NUMBER:
+                                        explanation = "a positive number";
+                                        break;
+                                        case ArgType.VEC2:
+                                        explanation = "a list of two numbers";
+                                        break;
+                                    case ArgType.VEC3:
+                                        explanation = "a list of three numbers";
                                         break;
                                     default:
                                         explanation = "an argument of some type";

@@ -50,18 +50,10 @@ Create one or more drawable objects and send them to the draw() function.
 For example:
 
 <pre>
-c = cube( xsize=4, ysize=3, zsize=2, centered=True )
-s = sphere( x=0, y=0, z=0, radius=2 )
-d = difference(c,s)
-f = frustum(
-    x=5,y=0,z=0, #center
-    radius1=2,      #bottom radius
-    radius2=0.25,   #top radius
-    height=4,      #height
-    zcenter=True,
-    color=(255,128,0) 
-)
-draw(d,f)
+c = cube(xsize=3,ysize=2,zsize=1,centered=True,color=(255,255,0))
+s = sphere(x=0, y=0, z=0, radius=1.5)
+d = difference([c,s])
+draw(d)
 </pre>
 
 <div class="header">Functions</div>
@@ -69,11 +61,10 @@ draw(d,f)
 Many modules from the standard Python library are available and
 can be imported with "import" (ex: "import math").
 <br>
-Some additional functions are available. Each one returns a drawable object.
-Some functions take a color argument. A color is specified as a list
-or tuple of three values from 0...255 inclusive. If a fourth element
-is present, it represents the opacity (255=fully opaque; 
-0=fully transparent)
+Some additional functions are available. In the following descriptions,
+a color refers to a list or tuple of three values from 0 to 255 inclusive.
+A fourth element may be specified; it represents the opacity
+(255=fully opaque; 0=fully transparent)
 
 
 <!--FUNCTIONS-->

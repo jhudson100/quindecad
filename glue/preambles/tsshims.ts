@@ -13,12 +13,12 @@ function transformAroundCentroid(centroid: Vec3|undefined, color: PyColor|undefi
     let cx: number;
     let cy: number;
     let cz: number;
-    if( !centroid ){
+    if( centroid === undefined ){
         //transform object around its own centroid
         let bbox = obj.mesh.boundingBox();
-        let cx = 0.5*( bbox.min[0] + bbox.max[0] );
-        let cy = 0.5*( bbox.min[1] + bbox.max[1] );
-        let cz = 0.5*( bbox.min[2] + bbox.max[2] );
+        cx = 0.5*( bbox.min[0] + bbox.max[0] );
+        cy = 0.5*( bbox.min[1] + bbox.max[1] );
+        cz = 0.5*( bbox.min[2] + bbox.max[2] );
     } else {
         cx = centroid[0];
         cy = centroid[1];

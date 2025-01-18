@@ -1,11 +1,19 @@
 
 
 export enum ArgType {
-        NUMBER, POSITIVE_NUMBER,
-        BOOLEAN, COLOR, MESH_HANDLE, LIST_OF_MESH_HANDLE,
-        POLYGON2D, VEC2, VEC3,
-        NONNEGATIVE_INTEGER, POSITIVE_INTEGER,
-        NONZERO_VEC3 }
+    BOOLEAN,
+    COLOR,
+    LIST_OF_MESH_HANDLE,
+    MESH_HANDLE,
+    NONNEGATIVE_INTEGER,
+    NONZERO_VEC3,
+    NUMBER,
+    POLYGON2D,
+    POSITIVE_INTEGER,
+    POSITIVE_NUMBER,
+    VEC2,
+    VEC3,
+}
 
 export interface ArgSpec {
      argname: string;

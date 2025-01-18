@@ -1,4 +1,8 @@
 
+def assertIsList(x):
+    """ """
+    return type(x) == list or type(x) == tuple or type(x) == javascript.Array
+
 def assertIsNumber(x):
     """ """
     return type(x) == int or type(x) == float
@@ -21,7 +25,7 @@ def assertIsBoolean(x):
 
 def assertIsColor(x):
     """ """
-    if type(x) != list and type(x) != tuple:
+    if not assertIsList(x):
         return False
     if len(x) != 3 and len(x) != 4:
         return False
@@ -39,7 +43,7 @@ def assertIsMeshHandle(obj):
 
 def assertIsListOfMeshHandle(obj):
     """ """
-    if type(obj) != tuple and type(obj) != list:
+    if not assertIsList(obj):
         return False
     if len(obj) == 0:
         return False
@@ -47,7 +51,7 @@ def assertIsListOfMeshHandle(obj):
 
 def assertIsListOfVec3(obj):
     """ """
-    if type(obj) != tuple and type(obj) != list:
+    if not assertIsList(obj):
         return False
     if len(obj) == 0:
         return False
@@ -55,7 +59,7 @@ def assertIsListOfVec3(obj):
 
 def assertIsPolygon2D(obj):
     """ """
-    if type(obj) != tuple and type(obj) != list:
+    if not assertIsList(obj):
         return False
     if len(obj) < 3:
         return False
@@ -63,7 +67,7 @@ def assertIsPolygon2D(obj):
 
 def assertIsVec2(obj):
     """ """
-    if type(obj) != tuple and type(obj) != list:
+    if not assertIsList(obj):
         return False
     if len(obj) != 2:
         return False
@@ -71,7 +75,7 @@ def assertIsVec2(obj):
 
 def assertIsVec3(obj):
     """ """
-    if type(obj) != tuple and type(obj) != list:
+    if not assertIsList(obj):
         return False
     if len(obj) != 3:
         return False
@@ -79,7 +83,7 @@ def assertIsVec3(obj):
 
 def assertIsNonzeroVec3(obj):
     """ """
-    if type(obj) != tuple and type(obj) != list:
+    if not assertIsList(obj):
         return False
     if len(obj) != 3:
         return False

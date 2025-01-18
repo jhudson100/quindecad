@@ -135,7 +135,7 @@ def generatePythonShim(name,fp,func):
             else:
                 print(f"    if not {checker}({pname}):",file=fp)
 
-        print(f"        raise Exception('Parameter {pname} has wrong type (expected {expectedType})')",file=fp)
+        print(f"""        raise Exception(f'Parameter "{pname}" has wrong type (expected {expectedType}); got {{type({pname})}}')""",file=fp)
 
     if src2 == "pass":
         #no function body provided, so we autogenerate

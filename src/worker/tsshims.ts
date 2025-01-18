@@ -18,12 +18,12 @@ function transformAroundCentroid(centroid: Vec3|undefined, color: PyColor|undefi
     let cx: number;
     let cy: number;
     let cz: number;
-    if( !centroid ){
+    if( centroid === undefined ){
         //transform object around its own centroid
         let bbox = obj.mesh.boundingBox();
-        let cx = 0.5*( bbox.min[0] + bbox.max[0] );
-        let cy = 0.5*( bbox.min[1] + bbox.max[1] );
-        let cz = 0.5*( bbox.min[2] + bbox.max[2] );
+        cx = 0.5*( bbox.min[0] + bbox.max[0] );
+        cy = 0.5*( bbox.min[1] + bbox.max[1] );
+        cz = 0.5*( bbox.min[2] + bbox.max[2] );
     } else {
         cx = centroid[0];
         cy = centroid[1];
@@ -74,232 +74,35 @@ function computeRotationMatrix(x:number,y:number,z:number,angle:number){
     return M;
 }
 
-type extrude_t = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : PyColor ) => MeshHandle ;
+type boundingbox_t = ( objects : MeshHandle|MeshHandle[] ) => Vec3[] ;
 declare global {
-    interface WorkerGlobalScope { impl_extrude : extrude_t }
+    interface WorkerGlobalScope { impl_boundingbox : boundingbox_t }
 };
 
-self.impl_extrude = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : PyColor ) : MeshHandle => {
+self.impl_boundingbox = ( objects : MeshHandle|MeshHandle[] ) : Vec3[] => {
 
-    let o1 = manifold.Manifold.extrude(
-            polygon,
-            height ?? 1,
-            divisions ?? 1,
-            twist ?? 0,
-            scale ?? [1,1],
-            zcenter
-    );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
-
-}
-type difference_t = ( objects : MeshHandle[],color : PyColor ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_difference : difference_t }
-};
-
-self.impl_difference = ( objects : MeshHandle[],color : PyColor ) : MeshHandle => {
-
-    if( objects.length === 1 )
-        return objects[0];
-
-    let mw1 = handleToWrapper(objects[0]);
-    let mw2 = handleToWrapper(objects[1]);
-    let ob = manifold.Manifold.difference( mw1.mesh, mw2.mesh );
-    for(let i=2;i<objects.length;++i){
-        mw2 = handleToWrapper(objects[i]);
-        let ob2 = manifold.Manifold.difference( ob, mw2.mesh );
-        ob.delete();
-        ob=ob2;
-    }
-    return new MeshHandle( new ManifoldMeshWrapper(ob,color ?? mw1.color) );
-
-}
-type cylinder_t = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_cylinder : cylinder_t }
-};
-
-self.impl_cylinder = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number ) : MeshHandle => {
-
-    let c = manifold.Manifold.cylinder(height,
-        radius, radius, resolution,
-        zcenter
-    );
-    let c2 = c.translate([x, y, z]);
-    c.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
-
-}
-type union_t = ( objects : MeshHandle[],color : PyColor ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_union : union_t }
-};
-
-self.impl_union = ( objects : MeshHandle[],color : PyColor ) : MeshHandle => {
-
-    if( objects.length === 1 )
-        return objects[0];
-    let mw1 = handleToWrapper(objects[0]);
-    let mw2 = handleToWrapper(objects[1]);
-    let ob = manifold.Manifold.union(
-        mw1.mesh, mw2.mesh
-    );
-    for(let i=2;i<objects.length;++i){
-        let ob2 = manifold.Manifold.union(
-            ob,
-            handleToWrapper( objects[i] ).mesh
-        );
-        ob.delete();
-        ob=ob2;
-    }
-    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color ) );
-
-}
-type frustum_t = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : PyColor,resolution : number ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_frustum : frustum_t }
-};
-
-self.impl_frustum = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : PyColor,resolution : number ) : MeshHandle => {
-
-    let c = manifold.Manifold.cylinder(height,
-        radius1, radius2, resolution,
-        zcenter
-    );
-    let c2 = c.translate([x, y, z]);
-    c.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
-
-}
-type scale_t = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : PyColor ) => MeshHandle|MeshHandle[] ;
-declare global {
-    interface WorkerGlobalScope { impl_scale : scale_t }
-};
-
-self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : PyColor ) : MeshHandle|MeshHandle[] => {
-
-    if( !objects.hasOwnProperty("length") ){
-        let object = objects as MeshHandle;
-        let mw = handleToWrapper(object);
-        let mw2 = transformAroundCentroid(centroid,color,mw,
-            (m: Manifold) => { return m.scale([sx,sy,sz]); }
-        );
-        return new MeshHandle(mw2);
+    if(!objects.hasOwnProperty("length") ){
+        let mw = handleToWrapper( objects as MeshHandle );
+        let bb = mw.mesh.boundingBox();
+        return [ bb.min, bb.max ];
     } else {
         let L = objects as MeshHandle[];
-        let output: MeshHandle[] = [];
-        for(let i=0;i<L.length;++i){
-            let mw = handleToWrapper(L[i]);
-            let mw2 = transformAroundCentroid( centroid, color, mw,
-                (m: Manifold) => { return m.scale([sx,sy,sz]); }
-            );
-            output.push( new MeshHandle(mw2) );
+        let objs: MeshHandle[] = [];
+        let mw = handleToWrapper( L[0] );
+        let tmp = mw.mesh.boundingBox();
+        let minimum = tmp.min;
+        let maximum = tmp.max;
+        for(let i=1;i<objs.length;++i){
+            mw = handleToWrapper( L[i] );
+            let box = mw.mesh.boundingBox();
+            for(let i=0;i<3;++i){
+                if( box.min[i] < minimum[i] )
+                    minimum[i] = box.min[i];
+                if( box.max[i] > maximum[i] )
+                    maximum[i] = box.max[i];
+            }
         }
-        return output;
-    }
-
-}
-type sphere_t = ( radius : number,x : number,y : number,z : number,color : PyColor,resolution : number ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_sphere : sphere_t }
-};
-
-self.impl_sphere = ( radius : number,x : number,y : number,z : number,color : PyColor,resolution : number ) : MeshHandle => {
-
-    let s = manifold.Manifold.sphere(radius, resolution);
-    let s2 = s.translate([x, y,z]);
-    s.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(s2,color) );
-
-}
-type intersection_t = ( objects : MeshHandle[],color : PyColor ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_intersection : intersection_t }
-};
-
-self.impl_intersection = ( objects : MeshHandle[],color : PyColor ) : MeshHandle => {
-
-    if( objects.length === 1 )
-        return objects[0];
-
-    let mw1 = handleToWrapper(objects[0]);
-    let mw2 = handleToWrapper(objects[1]);
-    let ob = manifold.Manifold.intersection(
-        mw1.mesh, mw2.mesh
-    );
-    for(let i=2;i<objects.length;++i){
-        let ob2 = manifold.Manifold.intersection(
-            ob,
-            handleToWrapper(objects[i]).mesh
-        );
-        ob.delete();
-        ob=ob2;
-    }
-    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color ) );
-
-}
-type cut_t = ( object : MeshHandle,planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_cut : cut_t }
-};
-
-self.impl_cut = ( object : MeshHandle,planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor ) : MeshHandle => {
-
-    let mw = handleToWrapper(object);
-    let results = mw.mesh.splitByPlane( planeNormal, planeD);
-    let ki = ( keepPositive ? 0 : 1 );
-    results[1-ki].delete();
-    return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color ) );
-
-}
-type revolve_t = ( polygon : Vec2[],angle : number,color : PyColor,resolution : number ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_revolve : revolve_t }
-};
-
-self.impl_revolve = ( polygon : Vec2[],angle : number,color : PyColor,resolution : number ) : MeshHandle => {
-
-    let o1 = manifold.Manifold.revolve(
-            polygon,
-            resolution ?? 36,
-            angle ?? 360
-    );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
-
-
-}
-type translate_t = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : PyColor ) => MeshHandle|MeshHandle[] ;
-declare global {
-    interface WorkerGlobalScope { impl_translate : translate_t }
-};
-
-self.impl_translate = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : PyColor ) : MeshHandle|MeshHandle[] => {
-
-    if( !objects.hasOwnProperty("length") ){
-        //it's a single object
-        let mw = handleToWrapper(objects as MeshHandle);
-        return new MeshHandle(
-            new ManifoldMeshWrapper(
-                mw.mesh.translate(tx,ty,tz),
-                color ?? mw.color
-            )
-        );
-    } else {
-        //list of objects
-        let L: MeshHandle[] = objects as MeshHandle[];
-        let output: MeshHandle[] = [];
-        for(let i=0;i<L.length;++i){
-            let mw = handleToWrapper(L[i]);
-            let ob = mw.mesh.translate(tx,ty,tz);
-            output.push(
-                new MeshHandle(
-                    new ManifoldMeshWrapper(
-                        ob, color ?? mw.color
-                    )
-                )
-            );
-        }
-        return output;
+        return [ minimum, maximum ];
     }
 
 }
@@ -329,6 +132,108 @@ self.impl_box = ( min : Vec3,max : Vec3,color : PyColor ) : MeshHandle => {
     return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
 
 }
+type cube_t = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_cube : cube_t }
+};
+
+self.impl_cube = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : PyColor ) : MeshHandle => {
+
+    let c = manifold.Manifold.cube(
+        [xsize, ysize, zsize],
+        centered
+    );
+    let c2 = c.translate([x,y,z]);
+    c.delete()
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+
+}
+type cut_t = ( object : MeshHandle,planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_cut : cut_t }
+};
+
+self.impl_cut = ( object : MeshHandle,planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor ) : MeshHandle => {
+
+    let mw = handleToWrapper(object);
+    let results = mw.mesh.splitByPlane( planeNormal, planeD);
+    let ki = ( keepPositive ? 0 : 1 );
+    results[1-ki].delete();
+    return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color ) );
+
+}
+type cylinder_t = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_cylinder : cylinder_t }
+};
+
+self.impl_cylinder = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number ) : MeshHandle => {
+
+    let c = manifold.Manifold.cylinder(height,
+        radius, radius, resolution,
+        zcenter
+    );
+    let c2 = c.translate([x, y, z]);
+    c.delete();
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+
+}
+type difference_t = ( objects : MeshHandle[],color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_difference : difference_t }
+};
+
+self.impl_difference = ( objects : MeshHandle[],color : PyColor ) : MeshHandle => {
+
+    if( objects.length === 1 )
+        return objects[0];
+
+    let mw1 = handleToWrapper(objects[0]);
+    let mw2 = handleToWrapper(objects[1]);
+    let ob = manifold.Manifold.difference( mw1.mesh, mw2.mesh );
+    for(let i=2;i<objects.length;++i){
+        mw2 = handleToWrapper(objects[i]);
+        let ob2 = manifold.Manifold.difference( ob, mw2.mesh );
+        ob.delete();
+        ob=ob2;
+    }
+    return new MeshHandle( new ManifoldMeshWrapper(ob,color ?? mw1.color) );
+
+}
+type extrude_t = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_extrude : extrude_t }
+};
+
+self.impl_extrude = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : PyColor ) : MeshHandle => {
+
+
+    let poly: Vec2[] = [];
+    for(let i=0;i<polygon.length;++i){
+        poly.push( [polygon[i][0], polygon[i][1]] );
+    }
+    if( height === undefined )
+        height = 1;
+    if( divisions === undefined )
+        divisions = 1;
+    if( twist === undefined )
+        twist = 0;
+    if( scale === undefined )
+        scale = [1,1]
+    else
+        scale = [ scale[0], scale[1] ]
+
+    let o1 = manifold.Manifold.extrude(
+            poly,
+            height,
+            divisions,
+            twist,
+            scale,
+            zcenter
+    );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
+
+}
 type free_t = ( obj : MeshHandle ) => void ;
 declare global {
     interface WorkerGlobalScope { impl_free : free_t }
@@ -339,6 +244,104 @@ self.impl_free = ( obj : MeshHandle ) : void => {
     let mw = handleToWrapper( obj );
     mw.mesh.delete();
     mw.freed=true;
+
+}
+type frustum_t = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : PyColor,resolution : number ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_frustum : frustum_t }
+};
+
+self.impl_frustum = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : PyColor,resolution : number ) : MeshHandle => {
+
+    let c = manifold.Manifold.cylinder(height,
+        radius1, radius2, resolution,
+        zcenter
+    );
+    let c2 = c.translate([x, y, z]);
+    c.delete();
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
+
+}
+type hull_t = ( objects : MeshHandle|MeshHandle[],color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_hull : hull_t }
+};
+
+self.impl_hull = ( objects : MeshHandle|MeshHandle[],color : PyColor ) : MeshHandle => {
+
+
+    if(!objects.hasOwnProperty("length") ){
+        let mw = handleToWrapper( objects as MeshHandle );
+        let o2 = mw.mesh.hull();
+        return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color ) );
+    } else {
+        let L = objects as MeshHandle[];
+        if( L.length === 1 ){
+            let mw = handleToWrapper( L[0] );
+            let o2 = mw.mesh.hull();
+            return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color ) );
+        } else {
+            let mw = handleToWrapper(L[0]);
+            let ob = mw.mesh;
+            for(let i=1;i<L.length;++i){
+                let ob2 = manifold.Manifold.union(
+                    ob,
+                    handleToWrapper( L[i] ).mesh
+                );
+                if( i !== 1 )
+                    ob.delete();
+                ob = ob2;
+            }
+            let ob3 = ob.hull();
+            //at this point, we had at least two things in the list
+            //so ob represents the result of a union operation,
+            //and we must delete it.
+            ob.delete();
+            return new MeshHandle( new ManifoldMeshWrapper( ob3, color ?? mw.color ));
+        }
+    }
+
+}
+type intersection_t = ( objects : MeshHandle[],color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_intersection : intersection_t }
+};
+
+self.impl_intersection = ( objects : MeshHandle[],color : PyColor ) : MeshHandle => {
+
+    if( objects.length === 1 )
+        return objects[0];
+
+    let mw1 = handleToWrapper(objects[0]);
+    let mw2 = handleToWrapper(objects[1]);
+    let ob = manifold.Manifold.intersection(
+        mw1.mesh, mw2.mesh
+    );
+    for(let i=2;i<objects.length;++i){
+        let ob2 = manifold.Manifold.intersection(
+            ob,
+            handleToWrapper(objects[i]).mesh
+        );
+        ob.delete();
+        ob=ob2;
+    }
+    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color ) );
+
+}
+type revolve_t = ( polygon : Vec2[],angle : number,color : PyColor,resolution : number ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_revolve : revolve_t }
+};
+
+self.impl_revolve = ( polygon : Vec2[],angle : number,color : PyColor,resolution : number ) : MeshHandle => {
+
+    let o1 = manifold.Manifold.revolve(
+            polygon,
+            resolution ?? 36,
+            angle ?? 360
+    );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
+
 
 }
 type rotate_t = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : number,centroid : Vec3,color : PyColor ) => MeshHandle|MeshHandle[] ;
@@ -409,91 +412,104 @@ self.impl_rotate = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : numbe
     }
 
 }
-type cube_t = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : PyColor ) => MeshHandle ;
+type scale_t = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : PyColor ) => MeshHandle|MeshHandle[] ;
 declare global {
-    interface WorkerGlobalScope { impl_cube : cube_t }
+    interface WorkerGlobalScope { impl_scale : scale_t }
 };
 
-self.impl_cube = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : PyColor ) : MeshHandle => {
+self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : PyColor ) : MeshHandle|MeshHandle[] => {
 
-    let c = manifold.Manifold.cube(
-        [xsize, ysize, zsize],
-        centered
+    if( !objects.hasOwnProperty("length") ){
+        let object = objects as MeshHandle;
+        let mw = handleToWrapper(object);
+        let mw2 = transformAroundCentroid(centroid,color,mw,
+            (m: Manifold) => { return m.scale([sx,sy,sz]); }
+        );
+        return new MeshHandle(mw2);
+    } else {
+        let L = objects as MeshHandle[];
+        let output: MeshHandle[] = [];
+        for(let i=0;i<L.length;++i){
+            let mw = handleToWrapper(L[i]);
+            let mw2 = transformAroundCentroid( centroid, color, mw,
+                (m: Manifold) => { return m.scale([sx,sy,sz]); }
+            );
+            output.push( new MeshHandle(mw2) );
+        }
+        return output;
+    }
+
+}
+type sphere_t = ( radius : number,x : number,y : number,z : number,color : PyColor,resolution : number ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_sphere : sphere_t }
+};
+
+self.impl_sphere = ( radius : number,x : number,y : number,z : number,color : PyColor,resolution : number ) : MeshHandle => {
+
+    let s = manifold.Manifold.sphere(radius, resolution);
+    let s2 = s.translate([x, y,z]);
+    s.delete();
+    return new MeshHandle( new ManifoldMeshWrapper(s2,color) );
+
+}
+type translate_t = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : PyColor ) => MeshHandle|MeshHandle[] ;
+declare global {
+    interface WorkerGlobalScope { impl_translate : translate_t }
+};
+
+self.impl_translate = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : PyColor ) : MeshHandle|MeshHandle[] => {
+
+    if( !objects.hasOwnProperty("length") ){
+        //it's a single object
+        let mw = handleToWrapper(objects as MeshHandle);
+        return new MeshHandle(
+            new ManifoldMeshWrapper(
+                mw.mesh.translate(tx,ty,tz),
+                color ?? mw.color
+            )
+        );
+    } else {
+        //list of objects
+        let L: MeshHandle[] = objects as MeshHandle[];
+        let output: MeshHandle[] = [];
+        for(let i=0;i<L.length;++i){
+            let mw = handleToWrapper(L[i]);
+            let ob = mw.mesh.translate(tx,ty,tz);
+            output.push(
+                new MeshHandle(
+                    new ManifoldMeshWrapper(
+                        ob, color ?? mw.color
+                    )
+                )
+            );
+        }
+        return output;
+    }
+
+}
+type union_t = ( objects : MeshHandle[],color : PyColor ) => MeshHandle ;
+declare global {
+    interface WorkerGlobalScope { impl_union : union_t }
+};
+
+self.impl_union = ( objects : MeshHandle[],color : PyColor ) : MeshHandle => {
+
+    if( objects.length === 1 )
+        return objects[0];
+    let mw1 = handleToWrapper(objects[0]);
+    let mw2 = handleToWrapper(objects[1]);
+    let ob = manifold.Manifold.union(
+        mw1.mesh, mw2.mesh
     );
-    let c2 = c.translate([x,y,z]);
-    c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
-
-}
-type hull_t = ( objects : MeshHandle|MeshHandle[],color : PyColor ) => MeshHandle ;
-declare global {
-    interface WorkerGlobalScope { impl_hull : hull_t }
-};
-
-self.impl_hull = ( objects : MeshHandle|MeshHandle[],color : PyColor ) : MeshHandle => {
-
-
-    if(!objects.hasOwnProperty("length") ){
-        let mw = handleToWrapper( objects as MeshHandle );
-        let o2 = mw.mesh.hull();
-        return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color ) );
-    } else {
-        let L = objects as MeshHandle[];
-        if( L.length === 1 ){
-            let mw = handleToWrapper( L[0] );
-            let o2 = mw.mesh.hull();
-            return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color ) );
-        } else {
-            let mw = handleToWrapper(L[0]);
-            let ob = mw.mesh;
-            for(let i=1;i<L.length;++i){
-                let ob2 = manifold.Manifold.union(
-                    ob,
-                    handleToWrapper( L[i] ).mesh
-                );
-                if( i !== 1 )
-                    ob.delete();
-                ob = ob2;
-            }
-            let ob3 = ob.hull();
-            //at this point, we had at least two things in the list
-            //so ob represents the result of a union operation,
-            //and we must delete it.
-            ob.delete();
-            return new MeshHandle( new ManifoldMeshWrapper( ob3, color ?? mw.color ));
-        }
+    for(let i=2;i<objects.length;++i){
+        let ob2 = manifold.Manifold.union(
+            ob,
+            handleToWrapper( objects[i] ).mesh
+        );
+        ob.delete();
+        ob=ob2;
     }
-
-}
-type boundingbox_t = ( objects : MeshHandle|MeshHandle[] ) => Vec3[] ;
-declare global {
-    interface WorkerGlobalScope { impl_boundingbox : boundingbox_t }
-};
-
-self.impl_boundingbox = ( objects : MeshHandle|MeshHandle[] ) : Vec3[] => {
-
-    if(!objects.hasOwnProperty("length") ){
-        let mw = handleToWrapper( objects as MeshHandle );
-        let bb = mw.mesh.boundingBox();
-        return [ bb.min, bb.max ];
-    } else {
-        let L = objects as MeshHandle[];
-        let objs: MeshHandle[] = [];
-        let mw = handleToWrapper( L[0] );
-        let tmp = mw.mesh.boundingBox();
-        let minimum = tmp.min;
-        let maximum = tmp.max;
-        for(let i=1;i<objs.length;++i){
-            mw = handleToWrapper( L[i] );
-            let box = mw.mesh.boundingBox();
-            for(let i=0;i<3;++i){
-                if( box.min[i] < minimum[i] )
-                    minimum[i] = box.min[i];
-                if( box.max[i] > maximum[i] )
-                    maximum[i] = box.max[i];
-            }
-        }
-        return [ minimum, maximum ];
-    }
+    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color ) );
 
 }

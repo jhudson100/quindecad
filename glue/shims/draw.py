@@ -7,12 +7,12 @@ def draw(objs: MESH_HANDLE|LIST_OF_MESH_HANDLE):
     """
     #nested function
     def drawHelper(obj, parameterNumber):
-        if type(obj) == list or type(obj) == tuple:
+        if assertIsList(obj):
             for x in obj:
                 drawHelper(x,parameterNumber)
         else:
             if not assertIsMeshHandle(obj):
-                raise Exception(f"draw(): Parameter {parameterNumber+1} is not a drawable object or contains something that is not a drawable object")
+                raise Exception(f"draw(): Parameter {parameterNumber+1} is not a drawable object or contains something that is not a drawable object ({type(obj)})")
             browser.self.impl_draw(obj)
 
     #if we pass a single thing to draw(),

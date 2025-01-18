@@ -46,7 +46,7 @@ def getFunctionsInFile(fname):
 #scan the shims folder and extract Python code
 #from each file listed there
 shimdir = os.path.join( os.path.dirname(__file__), "shims" )
-for fname in os.listdir(shimdir):
+for fname in sorted(os.listdir(shimdir)):
     if fname.endswith(".py"):
         shimfiles.append( getFunctionsInFile(fname) )
 

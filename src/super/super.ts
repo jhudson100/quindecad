@@ -16,7 +16,7 @@ async function main(){
 
     setupInterface();
 
-    await PythonManager.get().runCodeFromEditor();
+    //await PythonManager.get().runCodeFromEditor();
  
     // let d = new Dialog( [
     //     {name:"OK", callback: ()=>{ console.log("OK!"); d.hide() } },

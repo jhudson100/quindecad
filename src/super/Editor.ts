@@ -7,6 +7,7 @@ let ace = window.ace;
 // https://ace.c9.io/#nav=howto
 // https://ajaxorg.github.io/ace-api-docs/index.html
 // https://stackoverflow.com/questions/28043954/keydown-event-on-ace-editor
+// https://ajaxorg.github.io/ace-api-docs/classes/src_autocomplete.Autocomplete.html
 
 //Note: Can use ed.textInput.getElement() to get HTML text area element
 // (ed = name of Ace edit object)
@@ -17,7 +18,7 @@ const exampleCode=`# example code
  
 c = cube(xsize=3,ysize=2,zsize=1,centered=True,color=(255,255,0))
 s = sphere(x=0, y=0, z=0, radius=1.5)
-d = difference(c,s)
+d = difference([c,s])
 draw(d)
 print("Hello, world!")
 
@@ -226,6 +227,12 @@ export class Editor{
 
         this.ed.setTheme("ace/theme/eclipse");
         this.ed.session.setMode("ace/mode/python");
+
+        //ref: https://stackoverflow.com/questions/44807283/how-to-resize-the-auto-suggestion-menu-width-in-ace-editor
+        // this.ed.completer.popup.container.style.width="20em";
+
+
+
         let code = exampleCode;
         try{
             this.localStorage = window.localStorage;
