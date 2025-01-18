@@ -29,7 +29,7 @@ for fname in [
     "src/ext/three/package/examples/jsm/controls/OrbitControls.js"
 ]:
     tmp = fname.split("/")
-    libname = tmp[1]
+    libname = tmp[2]
     folder=f"dist/ext/{libname}"
     os.makedirs(folder,exist_ok=True)
     shutil.copyfile(fname,f"{folder}/{tmp[-1]}")
