@@ -1,3 +1,5 @@
+from shims.gluetypes import *
+
 
 # FIXME: Manifold can handle a CrossSection object here too...
 def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INTEGER=None, twist: NUMBER=None, scale: VEC2=None, zcenter: BOOLEAN=False, color: COLOR=None) -> MESH_HANDLE:
@@ -22,5 +24,5 @@ TS="""
             scale ?? [1,1],
             zcenter
     );
-    return new ManifoldMeshWrapper( o1, color );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
 """

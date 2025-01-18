@@ -1,3 +1,5 @@
+from shims.gluetypes import *
+
 
 def cylinder(   x: NUMBER,
                 y: NUMBER,
@@ -28,5 +30,5 @@ TS="""
     );
     let c2 = c.translate([x, y, z]);
     c.delete();
-    return new ManifoldMeshWrapper(c2,color);
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color) );
 """

@@ -1,3 +1,4 @@
+from shims.gluetypes import *
 
 def revolve(polygon: POLYGON2D, angle: NUMBER=None, color: COLOR=None, resolution: POSITIVE_INTEGER=36) -> MESH_HANDLE:
     """
@@ -15,6 +16,6 @@ TS="""
             resolution ?? 36,
             angle ?? 360
     );
-    return new ManifoldMeshWrapper( o1, color );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color ) );
 
 """

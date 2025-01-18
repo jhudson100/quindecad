@@ -16,7 +16,7 @@ import importlib
 
 def makeDocFile(shimfiles):
 
-    docfile = "src/super/pyshimdoc.ts"
+    docfile = "../src/super/pyshimdoc.ts"
 
     with open(docfile,"w") as fp:
 
@@ -34,9 +34,8 @@ def makeDocFile(shimfiles):
         print("let preambleFunctions: FuncSpec[] = [",file=fp)
 
         for mod,funcs in shimfiles:
-            assert len(funcs) == 1
-            name,func = funcs[0]
-            outputDoc(name=name,fp=fp,func=func)
+            for name,func in funcs:
+                outputDoc(name=name,fp=fp,func=func)
 
         print("] //end preambleFunctions list",file=fp)
 
@@ -49,11 +48,15 @@ def outputDoc(name,fp,func):
     #delimited with triple " quotes
     i1 = src.find('"""')
     if i1 == -1:
-        assert 0
+        assert 0,src
     else:
         i2 = src.find('"""',i1+1)
 
-    doc = src[i1+3:i2]
+    doc = src[i1+3:i2].strip()
+    if len(doc) == 0:
+        #this function is intentionally not documented
+        return
+
     lst = doc.split("@param")
 
     functionDoc = lst[0].strip()
@@ -68,7 +71,8 @@ def outputDoc(name,fp,func):
 
     print("    {",file=fp)
     print(f"    name: '{name}',",file=fp)
-    print(f"    doc: '{functionDoc}', ",file=fp)
+    tmp = functionDoc.replace("'","\\'")
+    print(f"    doc: '{tmp}', ",file=fp)
     print(f"    args: [",file=fp)
     for pname in sig.parameters:
         pinfo = sig.parameters[pname]

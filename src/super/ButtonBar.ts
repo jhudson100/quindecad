@@ -243,10 +243,10 @@ export class ButtonBar{
                                     case ArgType.COLOR:
                                         explanation = "a color"
                                         break;
-                                    case ArgType.DRAWABLE:
+                                    case ArgType.MESH_HANDLE:
                                         explanation = "a drawable object"
                                         break;
-                                    case ArgType.LIST_OF_DRAWABLE:
+                                    case ArgType.LIST_OF_MESH_HANDLE:
                                         explanation = "a list of drawable objects"
                                         break;
                                     case ArgType.NUMBER:

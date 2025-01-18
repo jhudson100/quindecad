@@ -1,3 +1,5 @@
+from shims.gluetypes import *
+
 
 def cut(object: MESH_HANDLE, planeNormal: VEC3, planeD: NUMBER, keepPositive: BOOLEAN, color:COLOR=None) -> MESH_HANDLE:
     """
@@ -12,8 +14,9 @@ def cut(object: MESH_HANDLE, planeNormal: VEC3, planeD: NUMBER, keepPositive: BO
 
 
 TS="""
-    let results = object.mesh.splitByPlane( planeNormal, planeD);
+    let mw = handleToWrapper(object);
+    let results = mw.mesh.splitByPlane( planeNormal, planeD);
     let ki = ( keepPositive ? 0 : 1 );
     results[1-ki].delete();
-    return new ManifoldMeshWrapper( results[ki], spec.color ?? object.color );
+    return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color ) );
 """

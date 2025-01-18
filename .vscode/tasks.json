@@ -10,7 +10,7 @@
 				"showReuseMessage": true,
 				"clear": true
 			},
-			"dependsOn":["setupDist","makeGlue"],
+			"dependsOn":["setupDist"],
 			"type": "typescript",
 			"tsconfig": "src/super/tsconfig.json",
 			"problemMatcher": [

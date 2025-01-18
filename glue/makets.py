@@ -8,10 +8,10 @@ import os
 import os.path
 import types
 import importlib
-
+from shims.gluetypes import *
 
 def makeTSImpl(shimfiles):
-    tsfile = "src/worker/tsshims.ts"
+    tsfile = "../src/worker/tsshims.ts"
 
     with open(tsfile,"w") as fp:
         print(file=fp)
@@ -26,13 +26,16 @@ def makeTSImpl(shimfiles):
         print(preamble, file=fp)
 
         for mod,funcs in shimfiles:
-            assert len(funcs) == 1
-            name,func = funcs[0]
-            ts = mod.__getattribute__("TS")
-            generateTSShim(name=name, func=func, ts=ts, fp=fp)
+            for name,func in funcs:
+                ts = mod.__getattribute__("TS")
+                if ts == None:
+                    #don't create a TS shim for this
+                    pass
+                else:
+                    generateTSShim(name=name, func=func, ts=ts, fp=fp)
 
 
-def _generateTSShim(name,func,ts,file):
+def generateTSShim(name,func,ts,fp):
     sig = inspect.signature(func)
 
     returns = sig.return_annotation

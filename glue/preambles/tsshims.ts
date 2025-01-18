@@ -1,5 +1,5 @@
-import Module, {Manifold, ManifoldToplevel, Mat4, Vec3} from "../ext/manifold/manifold.js";
-import { ManifoldMeshWrapper, MeshHandle, manifoldMeshes } from "./workertypes.js";
+import {Manifold, ManifoldToplevel, Mat4, Vec2, Vec3} from "../ext/manifold/manifold.js";
+import { ManifoldMeshWrapper, MeshHandle, manifoldMeshes, handleToWrapper } from "./workertypes.js";
 let manifold: ManifoldToplevel;
 
 export function setManifold(m: ManifoldToplevel){

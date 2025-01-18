@@ -1,6 +1,8 @@
+from shims.gluetypes import *
 
 
-def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: NUMBER, centroid: VEC3=None, color: COLOR=None) -> MESH_HANDLE:
+
+def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: NUMBER, centroid: VEC3=None, color: COLOR=None) -> MESH_HANDLE|LIST_OF_MESH_HANDLE:
     """
         Rotate objects by 'angle' *degrees* around the given axis. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
         @param objects The objects to translate
@@ -12,17 +14,7 @@ def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: 
     pass
 
 TS="""
-    let objs: MeshHandle[];
-    if( objects.length === undefined ){
-        //it's a single object
-        objs = [ objects ];
-    } else {
-        //it's a list
-        objs = objects ;
-    }
 
-
-    let output: ManifoldMeshWrapper[] = [];
 
     let x = axis[0];
     let y = axis[1];
@@ -34,6 +26,8 @@ TS="""
     z /= len;
 
     let rotV: Vec3;
+    let M: Mat4 = undefined;
+
     if( x === 1.0 && y === 0.0 && z === 0.0 ){
         rotV = [angle,0,0];
     } else if( x === -1.0 && y === 0.0 && z === 0.0 ){
@@ -48,32 +42,35 @@ TS="""
         rotV = [0,0,-angle];
     } else {
         //need to use slow path
+         M = computeRotationMatrix(x,y,z,angle);
     }
 
-    if( rotV !== undefined ){
-        for(let i=0;i<objs.length;++i){
-            output.push( transformAroundCentroid( centroid, color, objs[i],
+
+    function rotHelper(mw: ManifoldMeshWrapper){
+        if( rotV !== undefined ){
+            return transformAroundCentroid( centroid, color, mw,
                 (m: Manifold) => { return m.rotate(rotV); }
-            ));
-        }
-    } else {
-        let M = computeRotationMatrix(x,y,z,angle);
-        for(let i=0;i<objs.length;++i){
-            output.push( transformAroundCentroid( centroid, color, objs[i],
+            );
+        } else {
+            return transformAroundCentroid( centroid, color, mw,
                 (m: Manifold) => { return m.transform(M); }
-            ));
+            );
         }
     }
 
-    if( objects.length === undefined ){
-        //single object in; single object out
-        return new MeshHandle(output[0]);
+    if( !objects.hasOwnProperty("length") ){
+        //one object
+        let mw = handleToWrapper(objects as MeshHandle);
+        let mw2 = rotHelper(mw);
+        return new MeshHandle(mw2);
     } else {
-        //list in; list out
-        let tmp: MeshHandle[] = [];
-        for(let i=0;i<output.length;++i)
-            tmp.push(new MeshHandle(output[i]));
-        return tmp;
+        let L: MeshHandle[] = objects as MeshHandle[];
+        let result: MeshHandle[] = [];
+        for(let i=0;i<L.length;++i){
+            let mw = handleToWrapper(L[i]);
+            let mw2 = rotHelper(mw);
+            result.push( new MeshHandle(mw2) );
+        }
+        return result;
     }
-}
 """

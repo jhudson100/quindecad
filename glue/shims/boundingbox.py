@@ -1,3 +1,5 @@
+from shims.gluetypes import *
+
 
 
 def boundingbox(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE) -> LIST_OF_VEC3:
@@ -8,25 +10,27 @@ def boundingbox(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE) -> LIST_OF_VEC3:
     pass
 
 TS="""
-    let objs: MeshHandle[] = [];
-    if( objects.length === undefined ){
-        objs = [objects];
-    else
-        objs = objects;
-    let mw:ManifoldMeshWrapper = manifoldMeshes[objs[0].index];
-    let tmp = mw.mesh.boundingbox()
-    let minimum = tmp[0];
-    let maximum = tmp[1];
-    for(let i=1;i<objs.length;++i){
-        mw = manifoldMeshes[objs[i].index];
-        tmp = mw.mesh.boundingbox();
-        for(let i=0;i<3;++i){
-            if( tmp[0][i] < minimum[i] )
-                minimum[i] = tmp[0][i];
-            if( tmp[1][i] > maximum[i] )
-                maximum[i] = tmp[1][i];
+    if(!objects.hasOwnProperty("length") ){
+        let mw = handleToWrapper( objects as MeshHandle );
+        let bb = mw.mesh.boundingBox();
+        return [ bb.min, bb.max ];
+    } else {
+        let L = objects as MeshHandle[];
+        let objs: MeshHandle[] = [];
+        let mw = handleToWrapper( L[0] );
+        let tmp = mw.mesh.boundingBox();
+        let minimum = tmp.min;
+        let maximum = tmp.max;
+        for(let i=1;i<objs.length;++i){
+            mw = handleToWrapper( L[i] );
+            let box = mw.mesh.boundingBox();
+            for(let i=0;i<3;++i){
+                if( box.min[i] < minimum[i] )
+                    minimum[i] = box.min[i];
+                if( box.max[i] > maximum[i] )
+                    maximum[i] = box.max[i];
+            }
         }
+        return [ minimum, maximum ];
     }
-    return [ minimum, maximum ];
-}
 """

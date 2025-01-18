@@ -16,7 +16,7 @@ import importlib
 
 
 def makePythonShims(shimfiles):
-    pyfile = "src/super/pyshims.py"
+    pyfile = "../src/super/pyshims.py"
 
     #create the python shim file
     with open(pyfile,"w") as fp:
@@ -37,15 +37,21 @@ def makePythonShims(shimfiles):
         #scan the shims folder and extract Python code
         #from each file listed there
         for mod,funcs in shimfiles:
-            assert len(funcs) == 1
-            name, func = funcs[0]
-            generatePythonShim(name=name, fp=fp, func=func)
+            for name,func in funcs:
+                generatePythonShim(name=name, fp=fp, func=func)
 
 
-def _generatePythonShim(name,fp,func):
+def generatePythonShim(name,fp,func):
 
     #marks start of function body
-    rex1 = re.compile(r"(?x)  \)  \s*  ( ->\s*\w+\s* )?  :  [ \t]*  \n  ")
+    rex1 = re.compile(r"""(?x)
+            \)                  #paren that closes function param list
+            \s*                 #optional spaces
+            ( ->[^:]+ )?        #optional return type specifier
+            :                   #colon that defines start of function
+            [ \t]*              #optional whitespace
+            \n                  #newline; after this comes the function body
+    """)
 
     #docstring, if there is one. We assume we always have triple """ quotes,
     #(not ''') used to delimit the string
@@ -62,7 +68,7 @@ def _generatePythonShim(name,fp,func):
 
     print(file=fp)
     print("def",name,"(",",".join(pnames),"):",file=fp)
-    src = inspect.getsource(G[name])
+    src = inspect.getsource(func)
 
     #find the colon that starts the function body
     M = rex1.search(src)
@@ -110,8 +116,12 @@ def _generatePythonShim(name,fp,func):
                 checkers.append( f"{checker}({pname})" )
                 expectedTypes.append(underlyingType.name)
 
-            expectedType = "one of: ", ",".join(expectedTypes)
-
+            expectedType = ""
+            for ii,ex in enumerate(expectedTypes[:-1]):
+                if ii != 0:
+                    expectedType += ", "
+                expectedType += ex
+            expectedType += ", or "+expectedTypes[-1]
             print("    if not any([",file=fp,end="")
             print(",".join(checkers),file=fp,end="")
             print("]):",file=fp)

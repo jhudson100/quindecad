@@ -1,4 +1,4 @@
-from gluetypes import MESH_HANDLE
+from shims.gluetypes import MESH_HANDLE
 
 def free( obj: MESH_HANDLE) -> None:
     """
@@ -9,7 +9,7 @@ def free( obj: MESH_HANDLE) -> None:
 
 
 TS = """
-    let mw = manifoldMeshes[obj.index];
+    let mw = handleToWrapper( obj );
     mw.mesh.delete();
     mw.freed=true;
 """

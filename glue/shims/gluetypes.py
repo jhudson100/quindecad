@@ -47,7 +47,7 @@ jstypemap = {
     POSITIVE_NUMBER: "number",
     COLOR: "PyColor",
     MESH_HANDLE: "MeshHandle",
-    POLYGON2D: "vec2[]",
+    POLYGON2D: "Vec2[]",
     VEC2: "Vec2",
     VEC3: "Vec3",
     NONZERO_VEC3: "Vec3",

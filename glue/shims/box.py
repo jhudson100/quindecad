@@ -1,3 +1,5 @@
+from shims.gluetypes import *
+
 
 def box( min: VEC3, max: VEC3, color: COLOR=None) -> MESH_HANDLE:
     """

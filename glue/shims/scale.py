@@ -1,5 +1,7 @@
+from shims.gluetypes import *
 
-def scale(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, sx:NUMBER, sy:NUMBER, sz: NUMBER, centroid: VEC3=None, color:COLOR=None) -> MESH_HANDLE:
+
+def scale(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, sx:NUMBER, sy:NUMBER, sz: NUMBER, centroid: VEC3=None, color:COLOR=None) -> MESH_HANDLE|LIST_OF_MESH_HANDLE:
     """
         Scale objects.
         @param objects The objects to translate. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.
@@ -12,31 +14,23 @@ def scale(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, sx:NUMBER, sy:NUMBER, sz: NU
     pass
 
 TS="""
-    let objs: MeshHandle[];
-    if( objects.length === undefined ){
-        //it's a single object
-        objs = [ objects as ManifoldMeshWrapper ];
+    if( !objects.hasOwnProperty("length") ){
+        let object = objects as MeshHandle;
+        let mw = handleToWrapper(object);
+        let mw2 = transformAroundCentroid(centroid,color,mw,
+            (m: Manifold) => { return m.scale([sx,sy,sz]); }
+        );
+        return new MeshHandle(mw2);
     } else {
-        //it's a list
-        objs = objects as ManifoldMeshWrapper[];
+        let L = objects as MeshHandle[];
+        let output: MeshHandle[] = [];
+        for(let i=0;i<L.length;++i){
+            let mw = handleToWrapper(L[i]);
+            let mw2 = transformAroundCentroid( centroid, color, mw,
+                (m: Manifold) => { return m.scale([sx,sy,sz]); }
+            );
+            output.push( new MeshHandle(mw2) );
+        }
+        return output;
     }
-
-    let output: ManifoldMeshWrapper[] = [];
-    for(let i=0;i<objs.length;++i){
-        output.push( transformAroundCentroid( centroid, color, objs[i],
-            (m: Manifold) => { return m.scale(sx,sy,sz); }
-        ));
-    }
-
-    if( objects.length === undefined ){
-        //single object in; single object out
-        return [ new MeshHandle(output[0]) ];
-    } else {
-        //list in; list out
-        let tmp: MeshHandle[] = [];
-        for(let i=0;i<output.length;++i)
-            tmp.push(new MeshHandle(output[i]));
-        return tmp;
-    }
-}
 """
