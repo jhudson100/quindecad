@@ -12,7 +12,7 @@ import os
 import os.path
 import types
 import importlib
-
+import json
 
 def makeDocFile(shimfiles):
 
@@ -31,15 +31,30 @@ def makeDocFile(shimfiles):
 
         print(preamble, file=fp)
 
-        print("let preambleFunctions: FuncSpec[] = [",file=fp)
+        print("preambleFunctions = new Map<string,FuncSpec>([",file=fp)
 
-        for mod,funcs in shimfiles:
-            for name,func in funcs:
-                outputDoc(name=name,fp=fp,func=func)
+        printFunctionDocs(fp,shimfiles)
 
-        print("] //end preambleFunctions list",file=fp)
 
-def outputDoc(name,fp,func):
+        print("]); //end preambleFunctions map",file=fp)
+
+
+
+def printFunctionDocs(fp,shimfiles):
+
+    for mod,funcs in shimfiles:
+        for name,func in funcs:
+            J = getDoc(name=name,fp=fp,func=func)
+            if J:
+                print("    [",file=fp)
+                print(f'        "{name}" ,   //key for Map<>',file=fp)
+                j = json.dumps(J,indent=4)
+                for line in j.split("\n"):
+                    print("        "+line,file=fp)
+                print("    ],",file=fp)
+
+
+def getDoc(name,fp,func):
 
     sig = inspect.signature(func)
     src = inspect.getsource(func)
@@ -55,11 +70,14 @@ def outputDoc(name,fp,func):
     doc = src[i1+3:i2].strip()
     if len(doc) == 0:
         #this function is intentionally not documented
-        return
+        return None
 
     lst = doc.split("@param")
 
-    functionDoc = lst[0].strip()
+    J={}
+    J["name"] = name
+    J["doc"] = lst[0].strip()
+    J["args"] = []
 
     pdocs={}
     for tmp in lst[1:]:
@@ -69,35 +87,56 @@ def outputDoc(name,fp,func):
         pname = tmp[:i].strip()
         pdocs[pname] = tmp[i:].strip()
 
-    print("    {",file=fp)
-    print(f"    name: '{name}',",file=fp)
-    tmp = functionDoc.replace("'","\\'")
-    print(f"    doc: '{tmp}', ",file=fp)
-    print(f"    args: [",file=fp)
     for pname in sig.parameters:
         pinfo = sig.parameters[pname]
         anno = pinfo.annotation
         if pname in pdocs:
             doc = pdocs[pname]
         else:
-            doc=""
+            doc="This parameter is undocumented"
             print("Warning: No documentation for parameter",pname,"of",name)
         defval = pinfo.default
         if defval == inspect.Parameter.empty:
-            defval = "undefined"
+            defval = None
         else:
             defval = f'"{defval}"'
 
         if anno == inspect.Parameter.empty:
-            atype = "[]"
-        elif typing.get_origin(anno) is types.UnionType:
-            tmp=[]
-            for underlyingType in anno.__args__:
-                tmp.append( f"ArgType.{underlyingType.__name__}" )
-            atype = "[" + ",".join(tmp) + "]"
+            atypes = []
         else:
-            atype = f"[ArgType.{anno.__name__}]"
+            atypes = prettyPrintType( anno )
 
-        print(f'        {{ argname: "{pname}", argtype: {atype}, defaultValue: {defval}, doc: "{doc}" }},',file=fp)
-    print("    ]",file=fp)
-    print("    },",file=fp)
+        J["args"].append( {
+            "argname": pname,
+            "argtypes": [q[0] for q in atypes],
+            "argtypesVerbose": [q[1] for q in atypes],
+            "doc": doc,
+            "defaultValue": defval
+        })
+
+    return J
+
+typeNameMap = {
+    "BOOLEAN": ("bool", "a boolean value (True or False)"),
+    "COLOR": ("color", "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"),
+    "LIST_OF_MESH_HANDLE": ("list[Drawable]", "a list of drawable objects"),
+    "MESH_HANDLE": ("Drawable", "a drawable object"),
+    "NONNEGATIVE_INTEGER": ("nonnegative integer", "an integer greater than or equal to zero"),
+    "NONZERO_VEC3": ("vec3", "a list of three numbers where at least one number is not zero"),
+    "NUMBER": ("number","a number"),
+    "POLYGON2D": ("list[vec2]","a list of 2D points; each point is itself a list or tuple of two numbers"),
+    "POSITIVE_INTEGER": ("int","a positive integer"),
+    "POSITIVE_NUMBER": ("number","a positive number"),
+    "VEC2": ("vec2","a list or tuple of two numbers"),
+    "VEC3": ("vec3","a list or tuple of three numbers"),
+    "STRING": ("str","a string")
+}
+
+def prettyPrintType( anno ):
+    if typing.get_origin(anno) is types.UnionType:
+        tmp=[]
+        for underlyingType in anno.__args__:
+            tmp = tmp + prettyPrintType(underlyingType)
+        return tmp
+    else:
+        return [typeNameMap[anno.__name__]]

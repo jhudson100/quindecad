@@ -4,7 +4,7 @@ import {Mesh} from "../common/Mesh";
 import { Dialog } from "Dialog";
 import { WorkerManager } from "WorkerManager";
 import { Spinner } from "Spinner";
-import { ArgSpec, ArgType, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
+import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 
 type ButtonCallback = ()=>void;
 
@@ -215,7 +215,8 @@ export class ButtonBar{
 
                     L.push("<ul>");
 
-                    getPreambleFunctionInfo().forEach( (fs: FuncSpec) => {
+                    let M: Map<string,FuncSpec> = getPreambleFunctionInfo();
+                    M.forEach( (fs: FuncSpec) => {
                         let funcname = fs.name;
                         let eacharg: string[] = [];
                         let args : ArgSpec[] = fs.args;
@@ -235,57 +236,11 @@ export class ButtonBar{
                         
                         L.push("<ul>");
                         args.forEach( (a: ArgSpec ) => {
-                            let explanations: string[]=[];
-                            a.argtype.forEach( (atype: ArgType) => {
-                                let explanation: string;
-                                switch(atype){
-                                    case ArgType.BOOLEAN:
-                                        explanation = "a boolean"; 
-                                        break;
-                                    case ArgType.COLOR:
-                                        explanation = "a color: A list of three values 0...255 with an optional fourth opacity value"
-                                        break;
-                                    case ArgType.LIST_OF_MESH_HANDLE:
-                                        explanation = "a list of drawable objects"
-                                        break;
-                                    case ArgType.MESH_HANDLE:
-                                        explanation = "a drawable object"
-                                        break;
-                                    case ArgType.NONNEGATIVE_INTEGER:
-                                        explanation = "an integer >= 0";
-                                        break;
-                                    case ArgType.NONZERO_VEC3:
-                                        explanation = "A list of three values [x,y,z] with at least one that is nonzero"
-                                        break;
-                                    case ArgType.NUMBER:
-                                        explanation = "a number";
-                                        break;
-                                    case ArgType.POLYGON2D:
-                                        explanation = "a list of [x,y] pairs";
-                                        break;
-                                    case ArgType.POSITIVE_INTEGER:
-                                        explanation = "a positive integer";
-                                        break;
-                                    case ArgType.POSITIVE_NUMBER:
-                                        explanation = "a positive number";
-                                        break;
-                                        case ArgType.VEC2:
-                                        explanation = "a list of two numbers";
-                                        break;
-                                    case ArgType.VEC3:
-                                        explanation = "a list of three numbers";
-                                        break;
-                                    case ArgType.STRING:
-                                        explanation = "a string";
-                                        break;
-                                    default:
-                                        explanation = "an argument of some type";
-                                        break;
-                                }
-                                explanations.push(explanation);
-                            });
-
-                            L.push(`<li><span class="argname">${a.argname}</span> is <span class="argtype">${explanations.join(" or ")}</span>: ${a.doc}</li>`)
+                            let explanations = a.argtypesVerbose;
+                            L.push(`<li><span class="argname">${a.argname}</span> is <span class="argtype">${explanations.join(" or ")}</span></li>`)
+                            if( a.doc){
+                                L.push(`<ul><li>${a.doc}</li></ul>`);
+                            }
                         });
                         L.push("</ul>");
                     });

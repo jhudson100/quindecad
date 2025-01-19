@@ -5,25 +5,11 @@
 
 
 
-export enum ArgType {
-    BOOLEAN,
-    COLOR,
-    LIST_OF_MESH_HANDLE,
-    MESH_HANDLE,
-    NONNEGATIVE_INTEGER,
-    NONZERO_VEC3,
-    NUMBER,
-    POLYGON2D,
-    POSITIVE_INTEGER,
-    POSITIVE_NUMBER,
-    VEC2,
-    VEC3,
-    STRING
-}
 
 export interface ArgSpec {
      argname: string;
-     argtype: ArgType[];
+     argtypes: string[];
+     argtypesVerbose: string[];       //longer version of argument type, with explanation
      doc: string;
      defaultValue?: string;
 }
@@ -31,219 +17,1215 @@ export interface FuncSpec {
     name: string,
     args: ArgSpec[],
     doc: string,
-    additionalChecks?: string[]
 };
 
-export function getPreambleFunctionInfo() {
+let preambleFunctions: Map<string,FuncSpec>;
+
+export function getPreambleFunctionInfo():  Map<string,FuncSpec> {
     return preambleFunctions;
 }
 
-let preambleFunctions: FuncSpec[] = [
-    {
-    name: 'boundingbox',
-    doc: 'Compute the bounding box of the given objects. Returns a list of two tuples. The first tuple has the minimum x,y,z; the second has the maximum x,y,z.', 
-    args: [
-        { argname: "objects", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "The objects for the computation." },
-    ]
-    },
-    {
-    name: 'box',
-    doc: 'Create a box that goes from the given minimum coordinate to the given maximum coordinate', 
-    args: [
-        { argname: "min", argtype: [ArgType.VEC3], defaultValue: undefined, doc: "The minimum coordinate" },
-        { argname: "max", argtype: [ArgType.VEC3], defaultValue: undefined, doc: "The maximum coordinate" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'cube',
-    doc: 'Creates a cuboid', 
-    args: [
-        { argname: "xsize", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Size of the cuboid in the x direction" },
-        { argname: "ysize", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Size of the cuboid in the y direction" },
-        { argname: "zsize", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Size of the cuboid in the z direction" },
-        { argname: "x", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "X coordinate of the cuboid" },
-        { argname: "y", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Y coordinate of the cuboid" },
-        { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Z coordinate of the cuboid" },
-        { argname: "centered", argtype: [ArgType.BOOLEAN], defaultValue: "False", doc: "True if the cuboid should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z)." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'cut',
-    doc: 'Cuts the given object with a plane and discards one half. A plane is defined by the equation Ax + By + Cz + D = 0 where the plane normal is (A,B,C) and D depends on the plane\'s distance from the origin.', 
-    args: [
-        { argname: "object", argtype: [ArgType.MESH_HANDLE], defaultValue: undefined, doc: "The object to cut" },
-        { argname: "planeNormal", argtype: [ArgType.VEC3], defaultValue: undefined, doc: "The normal to the plane" },
-        { argname: "planeD", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Fourth component of plane equation" },
-        { argname: "keepPositive", argtype: [ArgType.BOOLEAN], defaultValue: undefined, doc: "If True, keep the part of the object on the side that planeNormal points to; if False, keep the part of the object on the other side of the plane" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'cylinder',
-    doc: 'Creates a cylinder; the cylinder\'s axis is parallel to the z axis.', 
-    args: [
-        { argname: "x", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Cylinder center x" },
-        { argname: "y", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Cylinder center y" },
-        { argname: "z", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Cylinder z. See the zcenter argument." },
-        { argname: "radius", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Radius of the cylinder" },
-        { argname: "height", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Height of the cylinder" },
-        { argname: "zcenter", argtype: [ArgType.BOOLEAN], defaultValue: "True", doc: "If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
-        { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "Number of edges around the cylinder's circumference" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'difference',
-    doc: 'Compute the set difference: objects[0] - objects[1] - objects[2] - ... . The set difference a-b consists of those points that are in a but not in b.', 
-    args: [
-        { argname: "objects", argtype: [ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "A list of the objects for the computation." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'draw',
-    doc: 'Draw the given objects.', 
-    args: [
-        { argname: "objs", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "An object or a list. Lists will be recursively examined for objects to draw." },
-    ]
-    },
-    {
-    name: 'extrude',
-    doc: 'Extrude a 2D polygon (polygon which lies in the XY plane). The extrusion is in the Z direction. Note that the vertices MUST be specified in counterclockwise order.', 
-    args: [
-        { argname: "polygon", argtype: [ArgType.POLYGON2D], defaultValue: undefined, doc: "The polygon to extrude, as a list of [x,y] tuples" },
-        { argname: "height", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "The height of the extrusion" },
-        { argname: "divisions", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "None", doc: "= Number of divisions in the extrusion" },
-        { argname: "twist", argtype: [ArgType.NUMBER], defaultValue: "None", doc: "Amount of twist (rotation) of the top relative to the bottom in degrees" },
-        { argname: "scale", argtype: [ArgType.VEC2], defaultValue: "None", doc: "Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom." },
-        { argname: "zcenter", argtype: [ArgType.BOOLEAN], defaultValue: "False", doc: "If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use default color" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'free',
-    doc: 'Free the memory associated with the given object. Note: The object may not be used after this function has been called or an exception may occur.', 
-    args: [
-        { argname: "obj", argtype: [ArgType.MESH_HANDLE], defaultValue: undefined, doc: "The object to free." },
-    ]
-    },
-    {
-    name: 'frustum',
-    doc: 'Creates a frustum; the frustum\'s axis is parallel to the z axis.', 
-    args: [
-        { argname: "radius1", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Radius of the frustum at minimum z" },
-        { argname: "radius2", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Radius of the frustum at maximum z" },
-        { argname: "height", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Height of the frustum" },
-        { argname: "x", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Frustum center x" },
-        { argname: "y", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Frustum center y" },
-        { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Frustum z. See the zcenter argument." },
-        { argname: "zcenter", argtype: [ArgType.BOOLEAN], defaultValue: "True", doc: "If True, (x,y,z) is the coordinate of the frustum's center. If false, (x,y,z) is the center of the bottom of the frustum." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
-        { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "Number of edges around the cylinder's circumference" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'hull',
-    doc: 'Compute the convex hull of the union of the given objects.', 
-    args: [
-        { argname: "objects", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "The objects for the hull computation." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'intersection',
-    doc: 'Compute the intersection of several objects (a solid that encloses those points that are in all of the objects)', 
-    args: [
-        { argname: "objects", argtype: [ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "A list of the objects to intersect." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'print',
-    doc: 'Print data to the screen.', 
-    args: [
-        { argname: "args", argtype: [], defaultValue: undefined, doc: "One or more things to print" },
-    ]
-    },
-    {
-    name: 'revolve',
-    doc: 'Create a solid of revolution. The axis of the solid is the z axis.', 
-    args: [
-        { argname: "polygon", argtype: [ArgType.POLYGON2D], defaultValue: undefined, doc: "The polygon to revolve, as a list of (x,y) pairs. These MUST be specified in counterclockwise order!" },
-        { argname: "angle", argtype: [ArgType.NUMBER], defaultValue: "None", doc: "Angle of revolution in degrees. If None, use 360 degrees" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use default color" },
-        { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "36", doc: "The number of steps for the revolution" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'rotate',
-    doc: 'Rotate objects by \'angle\' *degrees* around the given axis. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.', 
-    args: [
-        { argname: "objects", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "The objects to translate" },
-        { argname: "axis", argtype: [ArgType.NONZERO_VEC3], defaultValue: undefined, doc: "The axis of rotation; must not be zero length" },
-        { argname: "angle", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "The angle of rotation in degrees" },
-        { argname: "centroid", argtype: [ArgType.VEC3], defaultValue: "None", doc: "The point around which to rotate; if None, each object is rotated around its own centeroid" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the resulting objects; if None, use each individual object's color." },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'scale',
-    doc: 'Scale objects.', 
-    args: [
-        { argname: "objects", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "The objects to translate. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list." },
-        { argname: "sx", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "x factor; 1.0=no change" },
-        { argname: "sy", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "y factor; 1.0=no change" },
-        { argname: "sz", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "z factor; 1.0=no change" },
-        { argname: "centroid", argtype: [ArgType.VEC3], defaultValue: "None", doc: "Point to scale the objects around; if None, scale each object around its own centroid" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the resulting objects; if None, use each individual object's color." },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'sphere',
-    doc: 'Creates a sphere.', 
-    args: [
-        { argname: "radius", argtype: [ArgType.POSITIVE_NUMBER], defaultValue: undefined, doc: "Sphere radius" },
-        { argname: "x", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center x" },
-        { argname: "y", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center y" },
-        { argname: "z", argtype: [ArgType.NUMBER], defaultValue: "0.0", doc: "Sphere center z" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object, or None for default color." },
-        { argname: "resolution", argtype: [ArgType.POSITIVE_INTEGER], defaultValue: "48", doc: "How finely tessellated the sphere should be" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'translate',
-    doc: 'Move objects to another location. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.', 
-    args: [
-        { argname: "objects", argtype: [ArgType.MESH_HANDLE,ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "The objects to translate" },
-        { argname: "tx", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Change in x" },
-        { argname: "ty", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Change in y" },
-        { argname: "tz", argtype: [ArgType.NUMBER], defaultValue: undefined, doc: "Change in z" },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the resulting objects; if None, use each individual object's color." },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-    {
-    name: 'union',
-    doc: 'Compute the union of several objects (a solid that encloses those points that are in any object)', 
-    args: [
-        { argname: "objects", argtype: [ArgType.LIST_OF_MESH_HANDLE], defaultValue: undefined, doc: "A list of the objects to join together." },
-        { argname: "color", argtype: [ArgType.COLOR], defaultValue: "None", doc: "Color for the object; if None, use the color of the first object in the list" },
-        { argname: "name", argtype: [ArgType.STRING], defaultValue: "None", doc: "Name for the object" },
-    ]
-    },
-] //end preambleFunctions list
+preambleFunctions = new Map<string,FuncSpec>([
+    [
+        "boundingbox" ,   //key for Map<>
+        {
+            "name": "boundingbox",
+            "doc": "Compute the bounding box of the given objects. Returns a list of two tuples. The first tuple has the minimum x,y,z; the second has the maximum x,y,z.",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "The objects for the computation.",
+                    "defaultValue": null
+                }
+            ]
+        }
+    ],
+    [
+        "box" ,   //key for Map<>
+        {
+            "name": "box",
+            "doc": "Create a box that goes from the given minimum coordinate to the given maximum coordinate",
+            "args": [
+                {
+                    "argname": "min",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "The minimum coordinate",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "max",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "The maximum coordinate",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object, or None for default color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "cube" ,   //key for Map<>
+        {
+            "name": "cube",
+            "doc": "Creates a cuboid",
+            "args": [
+                {
+                    "argname": "xsize",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Size of the cuboid in the x direction",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "ysize",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Size of the cuboid in the y direction",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "zsize",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Size of the cuboid in the z direction",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "x",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "X coordinate of the cuboid",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "y",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Y coordinate of the cuboid",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "z",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Z coordinate of the cuboid",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "centered",
+                    "argtypes": [
+                        "bool"
+                    ],
+                    "argtypesVerbose": [
+                        "a boolean value (True or False)"
+                    ],
+                    "doc": "True if the cuboid should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z).",
+                    "defaultValue": "\"False\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object, or None for default color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "cut" ,   //key for Map<>
+        {
+            "name": "cut",
+            "doc": "Cuts the given object with a plane and discards one half. A plane is defined by the equation Ax + By + Cz + D = 0 where the plane normal is (A,B,C) and D depends on the plane's distance from the origin.",
+            "args": [
+                {
+                    "argname": "object",
+                    "argtypes": [
+                        "Drawable"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object"
+                    ],
+                    "doc": "The object to cut",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "planeNormal",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "The normal to the plane",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "planeD",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Fourth component of plane equation",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "keepPositive",
+                    "argtypes": [
+                        "bool"
+                    ],
+                    "argtypesVerbose": [
+                        "a boolean value (True or False)"
+                    ],
+                    "doc": "If True, keep the part of the object on the side that planeNormal points to; if False, keep the part of the object on the other side of the plane",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use the color of the first object in the list",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "cylinder" ,   //key for Map<>
+        {
+            "name": "cylinder",
+            "doc": "Creates a cylinder; the cylinder's axis is parallel to the z axis.",
+            "args": [
+                {
+                    "argname": "x",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Cylinder center x",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "y",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Cylinder center y",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "z",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Cylinder z. See the zcenter argument.",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "radius",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Radius of the cylinder",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "height",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Height of the cylinder",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "zcenter",
+                    "argtypes": [
+                        "bool"
+                    ],
+                    "argtypesVerbose": [
+                        "a boolean value (True or False)"
+                    ],
+                    "doc": "If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder.",
+                    "defaultValue": "\"True\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object, or None for default color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "resolution",
+                    "argtypes": [
+                        "int"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive integer"
+                    ],
+                    "doc": "Number of edges around the cylinder's circumference",
+                    "defaultValue": "\"36\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "difference" ,   //key for Map<>
+        {
+            "name": "difference",
+            "doc": "Compute the set difference: objects[0] - objects[1] - objects[2] - ... . The set difference a-b consists of those points that are in a but not in b.",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a list of drawable objects"
+                    ],
+                    "doc": "A list of the objects for the computation.",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use the color of the first object in the list",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "draw" ,   //key for Map<>
+        {
+            "name": "draw",
+            "doc": "Draw the given objects.",
+            "args": [
+                {
+                    "argname": "objs",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "An object or a list. Lists will be recursively examined for objects to draw.",
+                    "defaultValue": null
+                }
+            ]
+        }
+    ],
+    [
+        "extrude" ,   //key for Map<>
+        {
+            "name": "extrude",
+            "doc": "Extrude a 2D polygon (polygon which lies in the XY plane). The extrusion is in the Z direction. Note that the vertices MUST be specified in counterclockwise order.",
+            "args": [
+                {
+                    "argname": "polygon",
+                    "argtypes": [
+                        "list[vec2]"
+                    ],
+                    "argtypesVerbose": [
+                        "a list of 2D points; each point is itself a list or tuple of two numbers"
+                    ],
+                    "doc": "The polygon to extrude, as a list of [x,y] tuples",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "height",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "The height of the extrusion",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "divisions",
+                    "argtypes": [
+                        "int"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive integer"
+                    ],
+                    "doc": "= Number of divisions in the extrusion",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "twist",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Amount of twist (rotation) of the top relative to the bottom in degrees",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "scale",
+                    "argtypes": [
+                        "vec2"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of two numbers"
+                    ],
+                    "doc": "Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "zcenter",
+                    "argtypes": [
+                        "bool"
+                    ],
+                    "argtypesVerbose": [
+                        "a boolean value (True or False)"
+                    ],
+                    "doc": "If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value.",
+                    "defaultValue": "\"False\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use default color",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "free" ,   //key for Map<>
+        {
+            "name": "free",
+            "doc": "Free the memory associated with the given object. Note: The object may not be used after this function has been called or an exception may occur.",
+            "args": [
+                {
+                    "argname": "obj",
+                    "argtypes": [
+                        "Drawable"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object"
+                    ],
+                    "doc": "The object to free.",
+                    "defaultValue": null
+                }
+            ]
+        }
+    ],
+    [
+        "frustum" ,   //key for Map<>
+        {
+            "name": "frustum",
+            "doc": "Creates a frustum; the frustum's axis is parallel to the z axis.",
+            "args": [
+                {
+                    "argname": "radius1",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Radius of the frustum at minimum z",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "radius2",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Radius of the frustum at maximum z",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "height",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Height of the frustum",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "x",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Frustum center x",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "y",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Frustum center y",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "z",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Frustum z. See the zcenter argument.",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "zcenter",
+                    "argtypes": [
+                        "bool"
+                    ],
+                    "argtypesVerbose": [
+                        "a boolean value (True or False)"
+                    ],
+                    "doc": "If True, (x,y,z) is the coordinate of the frustum's center. If false, (x,y,z) is the center of the bottom of the frustum.",
+                    "defaultValue": "\"True\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object, or None for default color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "resolution",
+                    "argtypes": [
+                        "int"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive integer"
+                    ],
+                    "doc": "Number of edges around the cylinder's circumference",
+                    "defaultValue": "\"36\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "hull" ,   //key for Map<>
+        {
+            "name": "hull",
+            "doc": "Compute the convex hull of the union of the given objects.",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "The objects for the hull computation.",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use the color of the first object in the list",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "intersection" ,   //key for Map<>
+        {
+            "name": "intersection",
+            "doc": "Compute the intersection of several objects (a solid that encloses those points that are in all of the objects)",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a list of drawable objects"
+                    ],
+                    "doc": "A list of the objects to intersect.",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use the color of the first object in the list",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "print" ,   //key for Map<>
+        {
+            "name": "print",
+            "doc": "Print data to the screen.",
+            "args": [
+                {
+                    "argname": "args",
+                    "argtypes": [],
+                    "argtypesVerbose": [],
+                    "doc": "One or more things to print",
+                    "defaultValue": null
+                }
+            ]
+        }
+    ],
+    [
+        "revolve" ,   //key for Map<>
+        {
+            "name": "revolve",
+            "doc": "Create a solid of revolution. The axis of the solid is the z axis.",
+            "args": [
+                {
+                    "argname": "polygon",
+                    "argtypes": [
+                        "list[vec2]"
+                    ],
+                    "argtypesVerbose": [
+                        "a list of 2D points; each point is itself a list or tuple of two numbers"
+                    ],
+                    "doc": "The polygon to revolve, as a list of (x,y) pairs. These MUST be specified in counterclockwise order!",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "angle",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Angle of revolution in degrees. If None, use 360 degrees",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use default color",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "resolution",
+                    "argtypes": [
+                        "int"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive integer"
+                    ],
+                    "doc": "The number of steps for the revolution",
+                    "defaultValue": "\"36\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "rotate" ,   //key for Map<>
+        {
+            "name": "rotate",
+            "doc": "Rotate objects by 'angle' *degrees* around the given axis. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "The objects to translate",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "axis",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list of three numbers where at least one number is not zero"
+                    ],
+                    "doc": "The axis of rotation; must not be zero length",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "angle",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "The angle of rotation in degrees",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "centroid",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "The point around which to rotate; if None, each object is rotated around its own centeroid",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the resulting objects; if None, use each individual object's color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "scale" ,   //key for Map<>
+        {
+            "name": "scale",
+            "doc": "Scale objects.",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "The objects to translate. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "sx",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "x factor; 1.0=no change",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "sy",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "y factor; 1.0=no change",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "sz",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "z factor; 1.0=no change",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "centroid",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "Point to scale the objects around; if None, scale each object around its own centroid",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the resulting objects; if None, use each individual object's color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "sphere" ,   //key for Map<>
+        {
+            "name": "sphere",
+            "doc": "Creates a sphere.",
+            "args": [
+                {
+                    "argname": "radius",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive number"
+                    ],
+                    "doc": "Sphere radius",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "x",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Sphere center x",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "y",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Sphere center y",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "z",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Sphere center z",
+                    "defaultValue": "\"0.0\""
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object, or None for default color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "resolution",
+                    "argtypes": [
+                        "int"
+                    ],
+                    "argtypesVerbose": [
+                        "a positive integer"
+                    ],
+                    "doc": "How finely tessellated the sphere should be",
+                    "defaultValue": "\"48\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "translate" ,   //key for Map<>
+        {
+            "name": "translate",
+            "doc": "Move objects to another location. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "The objects to translate",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "tx",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Change in x",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "ty",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Change in y",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "tz",
+                    "argtypes": [
+                        "number"
+                    ],
+                    "argtypesVerbose": [
+                        "a number"
+                    ],
+                    "doc": "Change in z",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the resulting objects; if None, use each individual object's color.",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+    [
+        "union" ,   //key for Map<>
+        {
+            "name": "union",
+            "doc": "Compute the union of several objects (a solid that encloses those points that are in any object)",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a list of drawable objects"
+                    ],
+                    "doc": "A list of the objects to join together.",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "color",
+                    "argtypes": [
+                        "color"
+                    ],
+                    "argtypesVerbose": [
+                        "a color (a list of three or four values 0...255 giving red, green, blue, opacity)"
+                    ],
+                    "doc": "Color for the object; if None, use the color of the first object in the list",
+                    "defaultValue": "\"None\""
+                },
+                {
+                    "argname": "name",
+                    "argtypes": [
+                        "str"
+                    ],
+                    "argtypesVerbose": [
+                        "a string"
+                    ],
+                    "doc": "Name for the object",
+                    "defaultValue": "\"None\""
+                }
+            ]
+        }
+    ],
+]); //end preambleFunctions map
