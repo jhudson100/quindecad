@@ -4,6 +4,12 @@ import {Editor} from "Editor";
 import {ButtonBar} from "ButtonBar";
 import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
+import Split from 'split-grid';
+
+
+// @ts-ignore
+// var Split: any;
+
 
 // @ts-ignore
 import Split from 'Split';
@@ -18,6 +24,8 @@ enum SplitDirection{
 
 export function setupInterface(){
     // console.log("In setup");
+
+    console.log(Split);
 
 
     /*│
