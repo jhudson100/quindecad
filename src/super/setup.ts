@@ -6,6 +6,10 @@ import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 
 // @ts-ignore
+import Split from 'Split';
+
+
+// @ts-ignore
 var ace: any = window.ace
 
 enum SplitDirection{
@@ -49,8 +53,10 @@ export function setupInterface(){
 
     */
 
+    //Split.js can't work with em's here; px work though
+    //FIXME: Make this configurable
     let contentArea = createGrid(  document.body, 
-            "auto 1fr 0.1em 0.25fr", "1fr 0.1em 1fr"
+            "auto 1fr 10px 0.25fr", "1fr 10px 1fr"
     );
     contentArea.style.width = "99vw";
     contentArea.style.height = "99vh";
@@ -64,11 +70,16 @@ export function setupInterface(){
     let viewdiv = createGridCell( contentArea, 2,1, 1,1 );
     viewdiv.style.width="calc(100%)";
     viewdiv.style.height="calc(100%)";
-    viewdiv.style.background="yellow";
+    viewdiv.style.background="#cccccc";
 
     View.initialize(viewdiv);
 
-    let sizer1 = createSizer(contentArea, 2,2, 1, 1, SplitDirection.VERTICAL);
+    let sizer1 = createSizer(contentArea, 2,2, 1, 1, SplitDirection.VERTICAL,
+        () => {
+            View.get().resize();
+            Editor.get().resize();
+        }
+    );
 
     let eddiv = createGridCell( contentArea, 2,3, 1,1);
     eddiv.style.height="100%";
@@ -85,7 +96,13 @@ export function setupInterface(){
         }
     });
 
-    let sizer2 = createSizer(contentArea,3,1, 1,3, SplitDirection.HORIZONTAL);
+    let sizer2 = createSizer(contentArea,3,1, 1,3, SplitDirection.HORIZONTAL,
+        () => {
+            View.get().resize();
+            Editor.get().resize();
+            ErrorReporter.get().resize();
+        }
+    );
 
     let errdiv = createGridCell( contentArea, 4,1, 1,3);
     errdiv.style.height="100%";
@@ -101,10 +118,38 @@ export function setupInterface(){
 
 function createSizer(parent: HTMLElement, row: number, column: number,
         rowspan: number, colspan: number,
-        splitDirection: SplitDirection)
+        splitDirection: SplitDirection,
+        dragEndCallback?: () => void )
 {
     let g = createGridCell(parent,row,column,rowspan,colspan);
-    g.style.background="black"; //"fuchsia";
+    g.style.background="#aaaaaa";
+    g.style.borderStyle="outset";
+    g.style.borderColor="lightgrey";
+
+    g.style.cursor = (splitDirection == SplitDirection.VERTICAL) ? "col-resize" : "row-resize";
+    let opts: any = {};
+
+    let key: string;
+    let track: number;
+
+    if( splitDirection == SplitDirection.VERTICAL ){
+        track=column-1;
+        key = "columnGutters";
+    } else {
+        track=row-1;
+        key = "rowGutters";
+    }
+
+    opts[key] = [ { track:track, element: g } ];
+
+    opts["onDragEnd"] = (direction: string, track: number) => { 
+        if(dragEndCallback){
+            dragEndCallback();
+        }
+    };
+
+    Split( opts );
+
     return g;
 }
 

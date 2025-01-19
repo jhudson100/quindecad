@@ -26,7 +26,8 @@ for fname in [
     "src/ext/manifold/package/manifold.wasm",
     "src/ext/three/package/build/three.core.min.js",
     "src/ext/three/package/build/three.module.min.js",
-    "src/ext/three/package/examples/jsm/controls/OrbitControls.js"
+    "src/ext/three/package/examples/jsm/controls/OrbitControls.js",
+    "src/ext/split/package/dist/split-grid.mjs"
 ]:
     tmp = fname.split("/")
     libname = tmp[2]
