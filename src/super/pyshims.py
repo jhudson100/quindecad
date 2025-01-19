@@ -39,13 +39,13 @@ def boundingbox ( objects ):
     return browser.self.impl_boundingbox(objects)
 
 def box ( min,max,color=None,name=None ):
-    if not assertIsVec3(min):
+    if not assertIsVec3(min) :
         raise Exception(f'Parameter "min" has wrong type (expected tuple of three numbers); got {type(min)}')
-    if not assertIsVec3(max):
+    if not assertIsVec3(max) :
         raise Exception(f'Parameter "max" has wrong type (expected tuple of three numbers); got {type(max)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if min is None: min = javascript.UNDEFINED
     if max is None: max = javascript.UNDEFINED
@@ -53,24 +53,30 @@ def box ( min,max,color=None,name=None ):
     if name is None: name = javascript.UNDEFINED
     return browser.self.impl_box(min , max , color , name)
 
+def centroid ( objects ):
+    if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
+        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+    if objects is None: objects = javascript.UNDEFINED
+    return browser.self.impl_centroid(objects)
+
 def cube ( xsize,ysize,zsize,x=0.0,y=0.0,z=0.0,centered=False,color=None,name=None ):
-    if not assertIsPositiveNumber(xsize):
+    if not assertIsPositiveNumber(xsize) :
         raise Exception(f'Parameter "xsize" has wrong type (expected positive number); got {type(xsize)}')
-    if not assertIsPositiveNumber(ysize):
+    if not assertIsPositiveNumber(ysize) :
         raise Exception(f'Parameter "ysize" has wrong type (expected positive number); got {type(ysize)}')
-    if not assertIsPositiveNumber(zsize):
+    if not assertIsPositiveNumber(zsize) :
         raise Exception(f'Parameter "zsize" has wrong type (expected positive number); got {type(zsize)}')
-    if x != 0.0 and not assertIsNumber(x):
+    if not assertIsNumber(x)  and not( type(x) == type(0.0) and x == 0.0):
         raise Exception(f'Parameter "x" has wrong type (expected number); got {type(x)}')
-    if y != 0.0 and not assertIsNumber(y):
+    if not assertIsNumber(y)  and not( type(y) == type(0.0) and y == 0.0):
         raise Exception(f'Parameter "y" has wrong type (expected number); got {type(y)}')
-    if z != 0.0 and not assertIsNumber(z):
+    if not assertIsNumber(z)  and not( type(z) == type(0.0) and z == 0.0):
         raise Exception(f'Parameter "z" has wrong type (expected number); got {type(z)}')
-    if centered != False and not assertIsBoolean(centered):
+    if not assertIsBoolean(centered)  and not( type(centered) == type(False) and centered == False):
         raise Exception(f'Parameter "centered" has wrong type (expected boolean); got {type(centered)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if xsize is None: xsize = javascript.UNDEFINED
     if ysize is None: ysize = javascript.UNDEFINED
@@ -84,17 +90,17 @@ def cube ( xsize,ysize,zsize,x=0.0,y=0.0,z=0.0,centered=False,color=None,name=No
     return browser.self.impl_cube(xsize , ysize , zsize , x , y , z , centered , color , name)
 
 def cut ( object,planeNormal,planeD,keepPositive,color=None,name=None ):
-    if not assertIsMeshHandle(object):
+    if not assertIsMeshHandle(object) :
         raise Exception(f'Parameter "object" has wrong type (expected drawable object); got {type(object)}')
-    if not assertIsVec3(planeNormal):
+    if not assertIsVec3(planeNormal) :
         raise Exception(f'Parameter "planeNormal" has wrong type (expected tuple of three numbers); got {type(planeNormal)}')
-    if not assertIsNumber(planeD):
+    if not assertIsNumber(planeD) :
         raise Exception(f'Parameter "planeD" has wrong type (expected number); got {type(planeD)}')
-    if not assertIsBoolean(keepPositive):
+    if not assertIsBoolean(keepPositive) :
         raise Exception(f'Parameter "keepPositive" has wrong type (expected boolean); got {type(keepPositive)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if object is None: object = javascript.UNDEFINED
     if planeNormal is None: planeNormal = javascript.UNDEFINED
@@ -105,23 +111,23 @@ def cut ( object,planeNormal,planeD,keepPositive,color=None,name=None ):
     return browser.self.impl_cut(object , planeNormal , planeD , keepPositive , color , name)
 
 def cylinder ( x,y,z,radius,height,zcenter=True,color=None,resolution=36,name=None ):
-    if not assertIsNumber(x):
+    if not assertIsNumber(x) :
         raise Exception(f'Parameter "x" has wrong type (expected number); got {type(x)}')
-    if not assertIsNumber(y):
+    if not assertIsNumber(y) :
         raise Exception(f'Parameter "y" has wrong type (expected number); got {type(y)}')
-    if not assertIsNumber(z):
+    if not assertIsNumber(z) :
         raise Exception(f'Parameter "z" has wrong type (expected number); got {type(z)}')
-    if not assertIsPositiveNumber(radius):
+    if not assertIsPositiveNumber(radius) :
         raise Exception(f'Parameter "radius" has wrong type (expected positive number); got {type(radius)}')
-    if not assertIsPositiveNumber(height):
+    if not assertIsPositiveNumber(height) :
         raise Exception(f'Parameter "height" has wrong type (expected positive number); got {type(height)}')
-    if zcenter != True and not assertIsBoolean(zcenter):
+    if not assertIsBoolean(zcenter)  and not( type(zcenter) == type(True) and zcenter == True):
         raise Exception(f'Parameter "zcenter" has wrong type (expected boolean); got {type(zcenter)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if resolution != 36 and not assertIsPositiveInteger(resolution):
+    if not assertIsPositiveInteger(resolution)  and not( type(resolution) == type(36) and resolution == 36):
         raise Exception(f'Parameter "resolution" has wrong type (expected integer > 0); got {type(resolution)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if x is None: x = javascript.UNDEFINED
     if y is None: y = javascript.UNDEFINED
@@ -135,11 +141,11 @@ def cylinder ( x,y,z,radius,height,zcenter=True,color=None,resolution=36,name=No
     return browser.self.impl_cylinder(x , y , z , radius , height , zcenter , color , resolution , name)
 
 def difference ( objects,color=None,name=None ):
-    if not assertIsListOfMeshHandle(objects):
+    if not assertIsListOfMeshHandle(objects) :
         raise Exception(f'Parameter "objects" has wrong type (expected list of drawable objects); got {type(objects)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if color is None: color = javascript.UNDEFINED
@@ -164,21 +170,21 @@ def draw ( objs ):
         drawHelper(objs[i],i)
 
 def extrude ( polygon,height,divisions=None,twist=None,scale=None,zcenter=False,color=None,name=None ):
-    if not assertIsPolygon2D(polygon):
+    if not assertIsPolygon2D(polygon) :
         raise Exception(f'Parameter "polygon" has wrong type (expected 2D polygon); got {type(polygon)}')
-    if not assertIsPositiveNumber(height):
+    if not assertIsPositiveNumber(height) :
         raise Exception(f'Parameter "height" has wrong type (expected positive number); got {type(height)}')
-    if divisions != None and not assertIsPositiveInteger(divisions):
+    if not assertIsPositiveInteger(divisions)  and not( type(divisions) == type(None) and divisions == None):
         raise Exception(f'Parameter "divisions" has wrong type (expected integer > 0); got {type(divisions)}')
-    if twist != None and not assertIsNumber(twist):
+    if not assertIsNumber(twist)  and not( type(twist) == type(None) and twist == None):
         raise Exception(f'Parameter "twist" has wrong type (expected number); got {type(twist)}')
-    if scale != None and not assertIsVec2(scale):
+    if not assertIsVec2(scale)  and not( type(scale) == type(None) and scale == None):
         raise Exception(f'Parameter "scale" has wrong type (expected tuple of two numbers); got {type(scale)}')
-    if zcenter != False and not assertIsBoolean(zcenter):
+    if not assertIsBoolean(zcenter)  and not( type(zcenter) == type(False) and zcenter == False):
         raise Exception(f'Parameter "zcenter" has wrong type (expected boolean); got {type(zcenter)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if polygon is None: polygon = javascript.UNDEFINED
     if height is None: height = javascript.UNDEFINED
@@ -191,31 +197,31 @@ def extrude ( polygon,height,divisions=None,twist=None,scale=None,zcenter=False,
     return browser.self.impl_extrude(polygon , height , divisions , twist , scale , zcenter , color , name)
 
 def free ( obj ):
-    if not assertIsMeshHandle(obj):
+    if not assertIsMeshHandle(obj) :
         raise Exception(f'Parameter "obj" has wrong type (expected drawable object); got {type(obj)}')
     if obj is None: obj = javascript.UNDEFINED
     return browser.self.impl_free(obj)
 
 def frustum ( radius1,radius2,height,x=0.0,y=0.0,z=0.0,zcenter=True,color=None,resolution=36,name=None ):
-    if not assertIsPositiveNumber(radius1):
+    if not assertIsPositiveNumber(radius1) :
         raise Exception(f'Parameter "radius1" has wrong type (expected positive number); got {type(radius1)}')
-    if not assertIsPositiveNumber(radius2):
+    if not assertIsPositiveNumber(radius2) :
         raise Exception(f'Parameter "radius2" has wrong type (expected positive number); got {type(radius2)}')
-    if not assertIsPositiveNumber(height):
+    if not assertIsPositiveNumber(height) :
         raise Exception(f'Parameter "height" has wrong type (expected positive number); got {type(height)}')
-    if x != 0.0 and not assertIsNumber(x):
+    if not assertIsNumber(x)  and not( type(x) == type(0.0) and x == 0.0):
         raise Exception(f'Parameter "x" has wrong type (expected number); got {type(x)}')
-    if y != 0.0 and not assertIsNumber(y):
+    if not assertIsNumber(y)  and not( type(y) == type(0.0) and y == 0.0):
         raise Exception(f'Parameter "y" has wrong type (expected number); got {type(y)}')
-    if z != 0.0 and not assertIsNumber(z):
+    if not assertIsNumber(z)  and not( type(z) == type(0.0) and z == 0.0):
         raise Exception(f'Parameter "z" has wrong type (expected number); got {type(z)}')
-    if zcenter != True and not assertIsBoolean(zcenter):
+    if not assertIsBoolean(zcenter)  and not( type(zcenter) == type(True) and zcenter == True):
         raise Exception(f'Parameter "zcenter" has wrong type (expected boolean); got {type(zcenter)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if resolution != 36 and not assertIsPositiveInteger(resolution):
+    if not assertIsPositiveInteger(resolution)  and not( type(resolution) == type(36) and resolution == 36):
         raise Exception(f'Parameter "resolution" has wrong type (expected integer > 0); got {type(resolution)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if radius1 is None: radius1 = javascript.UNDEFINED
     if radius2 is None: radius2 = javascript.UNDEFINED
@@ -232,9 +238,9 @@ def frustum ( radius1,radius2,height,x=0.0,y=0.0,z=0.0,zcenter=True,color=None,r
 def hull ( objects,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
         raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if color is None: color = javascript.UNDEFINED
@@ -242,11 +248,11 @@ def hull ( objects,color=None,name=None ):
     return browser.self.impl_hull(objects , color , name)
 
 def intersection ( objects,color=None,name=None ):
-    if not assertIsListOfMeshHandle(objects):
+    if not assertIsListOfMeshHandle(objects) :
         raise Exception(f'Parameter "objects" has wrong type (expected list of drawable objects); got {type(objects)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if color is None: color = javascript.UNDEFINED
@@ -352,15 +358,15 @@ def print ( args ):
     browser.self.impl_print(tmp)
 
 def revolve ( polygon,angle=None,color=None,resolution=36,name=None ):
-    if not assertIsPolygon2D(polygon):
+    if not assertIsPolygon2D(polygon) :
         raise Exception(f'Parameter "polygon" has wrong type (expected 2D polygon); got {type(polygon)}')
-    if angle != None and not assertIsNumber(angle):
+    if not assertIsNumber(angle)  and not( type(angle) == type(None) and angle == None):
         raise Exception(f'Parameter "angle" has wrong type (expected number); got {type(angle)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if resolution != 36 and not assertIsPositiveInteger(resolution):
+    if not assertIsPositiveInteger(resolution)  and not( type(resolution) == type(36) and resolution == 36):
         raise Exception(f'Parameter "resolution" has wrong type (expected integer > 0); got {type(resolution)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if polygon is None: polygon = javascript.UNDEFINED
     if angle is None: angle = javascript.UNDEFINED
@@ -372,15 +378,15 @@ def revolve ( polygon,angle=None,color=None,resolution=36,name=None ):
 def rotate ( objects,axis,angle,centroid=None,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
         raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
-    if not assertIsNonzeroVec3(axis):
+    if not assertIsNonzeroVec3(axis) :
         raise Exception(f'Parameter "axis" has wrong type (expected tuple of three numbers with x**2 + y**2 + z**2 > 0); got {type(axis)}')
-    if not assertIsNumber(angle):
+    if not assertIsNumber(angle) :
         raise Exception(f'Parameter "angle" has wrong type (expected number); got {type(angle)}')
-    if centroid != None and not assertIsVec3(centroid):
+    if not assertIsVec3(centroid)  and not( type(centroid) == type(None) and centroid == None):
         raise Exception(f'Parameter "centroid" has wrong type (expected tuple of three numbers); got {type(centroid)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if axis is None: axis = javascript.UNDEFINED
@@ -393,17 +399,17 @@ def rotate ( objects,axis,angle,centroid=None,color=None,name=None ):
 def scale ( objects,sx,sy,sz,centroid=None,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
         raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
-    if not assertIsNumber(sx):
+    if not assertIsNumber(sx) :
         raise Exception(f'Parameter "sx" has wrong type (expected number); got {type(sx)}')
-    if not assertIsNumber(sy):
+    if not assertIsNumber(sy) :
         raise Exception(f'Parameter "sy" has wrong type (expected number); got {type(sy)}')
-    if not assertIsNumber(sz):
+    if not assertIsNumber(sz) :
         raise Exception(f'Parameter "sz" has wrong type (expected number); got {type(sz)}')
-    if centroid != None and not assertIsVec3(centroid):
+    if not assertIsVec3(centroid)  and not( type(centroid) == type(None) and centroid == None):
         raise Exception(f'Parameter "centroid" has wrong type (expected tuple of three numbers); got {type(centroid)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if sx is None: sx = javascript.UNDEFINED
@@ -415,19 +421,19 @@ def scale ( objects,sx,sy,sz,centroid=None,color=None,name=None ):
     return browser.self.impl_scale(objects , sx , sy , sz , centroid , color , name)
 
 def sphere ( radius,x=0.0,y=0.0,z=0.0,color=None,resolution=48,name=None ):
-    if not assertIsPositiveNumber(radius):
+    if not assertIsPositiveNumber(radius) :
         raise Exception(f'Parameter "radius" has wrong type (expected positive number); got {type(radius)}')
-    if x != 0.0 and not assertIsNumber(x):
+    if not assertIsNumber(x)  and not( type(x) == type(0.0) and x == 0.0):
         raise Exception(f'Parameter "x" has wrong type (expected number); got {type(x)}')
-    if y != 0.0 and not assertIsNumber(y):
+    if not assertIsNumber(y)  and not( type(y) == type(0.0) and y == 0.0):
         raise Exception(f'Parameter "y" has wrong type (expected number); got {type(y)}')
-    if z != 0.0 and not assertIsNumber(z):
+    if not assertIsNumber(z)  and not( type(z) == type(0.0) and z == 0.0):
         raise Exception(f'Parameter "z" has wrong type (expected number); got {type(z)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if resolution != 48 and not assertIsPositiveInteger(resolution):
+    if not assertIsPositiveInteger(resolution)  and not( type(resolution) == type(48) and resolution == 48):
         raise Exception(f'Parameter "resolution" has wrong type (expected integer > 0); got {type(resolution)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if radius is None: radius = javascript.UNDEFINED
     if x is None: x = javascript.UNDEFINED
@@ -441,15 +447,15 @@ def sphere ( radius,x=0.0,y=0.0,z=0.0,color=None,resolution=48,name=None ):
 def translate ( objects,tx,ty,tz,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
         raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
-    if not assertIsNumber(tx):
+    if not assertIsNumber(tx) :
         raise Exception(f'Parameter "tx" has wrong type (expected number); got {type(tx)}')
-    if not assertIsNumber(ty):
+    if not assertIsNumber(ty) :
         raise Exception(f'Parameter "ty" has wrong type (expected number); got {type(ty)}')
-    if not assertIsNumber(tz):
+    if not assertIsNumber(tz) :
         raise Exception(f'Parameter "tz" has wrong type (expected number); got {type(tz)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if tx is None: tx = javascript.UNDEFINED
@@ -549,11 +555,11 @@ def assertIsVec3 ( obj ):
     return all( [ assertIsNumber(q) for q in obj] )
 
 def union ( objects,color=None,name=None ):
-    if not assertIsListOfMeshHandle(objects):
+    if not assertIsListOfMeshHandle(objects) :
         raise Exception(f'Parameter "objects" has wrong type (expected list of drawable objects); got {type(objects)}')
-    if color != None and not assertIsColor(color):
+    if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
-    if name != None and not assertIsString(name):
+    if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
     if objects is None: objects = javascript.UNDEFINED
     if color is None: color = javascript.UNDEFINED

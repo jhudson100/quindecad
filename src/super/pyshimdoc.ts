@@ -102,6 +102,28 @@ preambleFunctions = new Map<string,FuncSpec>([
         }
     ],
     [
+        "centroid" ,   //key for Map<>
+        {
+            "name": "centroid",
+            "doc": "Returns the centroid of the object or group of objects; the return value is a list (x,y,z).",
+            "args": [
+                {
+                    "argname": "objects",
+                    "argtypes": [
+                        "Drawable",
+                        "list[Drawable]"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object",
+                        "a list of drawable objects"
+                    ],
+                    "doc": "A drawable object or a list of drawable objects.",
+                    "defaultValue": null
+                }
+            ]
+        }
+    ],
+    [
         "cube" ,   //key for Map<>
         {
             "name": "cube",

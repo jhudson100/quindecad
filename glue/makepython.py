@@ -108,6 +108,11 @@ def generatePythonShim(name,fp,func):
         if typing.get_origin(anno) is types.UnionType:
             #we have a union type, not just a single type
 
+            #we don't handle default values in this case
+            #(but that could be added later if needed)
+            assert pinfo.default == inspect.Parameter.empty
+
+
             checkers=[]
             expectedTypes=[]
             possibleTypes = anno.__args__
@@ -130,10 +135,16 @@ def generatePythonShim(name,fp,func):
             checker = anno.checker
             expectedType = anno.name
 
+            print(f"    if not {checker}({pname}) ",file=fp,end="")
+
+            #the checker might reject the item but if it matches the default
+            #value, we allow it. But: If pname's value is a JS object,
+            #we'll get an error from the != test. So we must code
+            #this to avoid that possibility.
             if pinfo.default != inspect.Parameter.empty:
-                print(f"    if {pname} != {pinfo.default} and not {checker}({pname}):",file=fp)
-            else:
-                print(f"    if not {checker}({pname}):",file=fp)
+                print(f" and not( type({pname}) == type({pinfo.default}) and {pname} == {pinfo.default})",file=fp,end="")
+
+            print(":",file=fp)
 
         print(f"""        raise Exception(f'Parameter "{pname}" has wrong type (expected {expectedType}); got {{type({pname})}}')""",file=fp)
 

@@ -8,7 +8,7 @@ import {Editor} from "Editor";
 import { ErrorReporter } from "ErrorReporter";
 import {PythonResult, WorkerManager} from "WorkerManager";
 import {View} from "View";
-import { numPreambleLines, preambleStr, initialize as pythonBuiltinsInitialize } from "./PythonBuiltins.js";
+import { numPreambleLines, preambleStr } from "./PythonBuiltins.js";
 
 
 //for debugging
@@ -17,6 +17,7 @@ let verbose = false;
 
 export class PythonManager{
 
+    //this is a singleton class
     private static instance: PythonManager;
 
     private constructor(){
@@ -30,6 +31,9 @@ export class PythonManager{
 
     async runCodeFromEditor(){
         
+
+        //clear out messages from previous executions
+        ErrorReporter.get().clear();
 
         //get the user's code
         let userCode = Editor.get().getValue(true);
@@ -51,20 +55,15 @@ export class PythonManager{
         } catch(c){
             //promise was rejected. Worker might have been cancelled.
             //in that case, don't update the meshes or do anything else
+            ErrorReporter.get().addMessage("Computation was interrupted");
             console.log("PythonManager: Rejected promise.");
+            console.log(c);
             return;
         }
-        
-        // let result = combinedResult.result;
-        // let meshes = result.meshes;
-        // let csgerrors = combinedResult.error;
-
+       
         if(verbose){
             console.log("super: PythonManager got result:",result);
         }
-
-        //clear out errors from previous executions
-        ErrorReporter.get().clear();
 
         //if we have things to print, output them first
         if(result.printables){
@@ -73,6 +72,7 @@ export class PythonManager{
             });
         }
 
+        //if there are error messages, report them
         if( result.errorMessages && result.errorMessages.length ){
             console.error(result);
             ErrorReporter.get().reportError(
@@ -81,33 +81,23 @@ export class PythonManager{
                 result.errorMessages,
                 numPreambleLines-1
             );
-            return;
         }
 
         if( !result.meshes || !result.meshes.length ){
-            ErrorReporter.get().addMessage( "Warning: This code does not draw any objects.", "#aa8000");
-            ErrorReporter.get().addMessage( "Hint: call draw() with an object or list of objects.", "#aa8000");
-            return;
+            //only display this message if there are no meshes and there are no error messages
+            if( !result.errorMessages || result.errorMessages.length === 0 ){
+                ErrorReporter.get().addMessage( "Warning: This code does not draw any objects.", "#aa8000");
+                ErrorReporter.get().addMessage( "Hint: call draw() with an object or list of objects.", "#aa8000");
+            }
         }
 
-        // if( csgerrors ){
-            // ErrorReporter.get().addMessage(csgerrors);
-        // }
-
-        //compute the surface associated with these drawables
-        // let drawables: DrawCommand[] = result.commands;
-        // let M: Mesh[] = await WorkerManager.get().computeGeometry(drawables);
         if(result.meshes){
             View.get().setMeshes(result.meshes);
-            if(!result.printables ){
-                ErrorReporter.get().nothingToReport();
-            }
+            // if(!result.printables ){
+                // ErrorReporter.get().nothingToReport();
+            // }
         } else {
-            ErrorReporter.get().reportError(
-                [], [], ["An internal error occurred when computing meshes"],
-                0
-            );
-            return;
+            ErrorReporter.get().addMessage("An error occurred when setting meshes");
         }
     }
 

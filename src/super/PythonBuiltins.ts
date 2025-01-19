@@ -1,6 +1,7 @@
 
 let verbose=false;
 
+//FIXME: Allow named colors
 
 export let preambleStr: string = "";
 export let numPreambleLines: number = 0;
