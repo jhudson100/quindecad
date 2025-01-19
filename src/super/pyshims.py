@@ -89,11 +89,11 @@ def cube ( xsize,ysize,zsize,x=0.0,y=0.0,z=0.0,centered=False,color=None,name=No
     if name is None: name = javascript.UNDEFINED
     return browser.self.impl_cube(xsize , ysize , zsize , x , y , z , centered , color , name)
 
-def cut ( object,planeNormal,planeD,keepPositive,color=None,name=None ):
-    if not assertIsMeshHandle(object) :
-        raise Exception(f'Parameter "object" has wrong type (expected drawable object); got {type(object)}')
-    if not assertIsVec3(planeNormal) :
-        raise Exception(f'Parameter "planeNormal" has wrong type (expected tuple of three numbers); got {type(planeNormal)}')
+def cut ( objects,planeNormal,planeD,keepPositive,color=None,name=None ):
+    if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
+        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+    if not assertIsNonzeroVec3(planeNormal) :
+        raise Exception(f'Parameter "planeNormal" has wrong type (expected tuple of three numbers with x**2 + y**2 + z**2 > 0); got {type(planeNormal)}')
     if not assertIsNumber(planeD) :
         raise Exception(f'Parameter "planeD" has wrong type (expected number); got {type(planeD)}')
     if not assertIsBoolean(keepPositive) :
@@ -102,13 +102,13 @@ def cut ( object,planeNormal,planeD,keepPositive,color=None,name=None ):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
     if not assertIsString(name)  and not( type(name) == type(None) and name == None):
         raise Exception(f'Parameter "name" has wrong type (expected string); got {type(name)}')
-    if object is None: object = javascript.UNDEFINED
+    if objects is None: objects = javascript.UNDEFINED
     if planeNormal is None: planeNormal = javascript.UNDEFINED
     if planeD is None: planeD = javascript.UNDEFINED
     if keepPositive is None: keepPositive = javascript.UNDEFINED
     if color is None: color = javascript.UNDEFINED
     if name is None: name = javascript.UNDEFINED
-    return browser.self.impl_cut(object , planeNormal , planeD , keepPositive , color , name)
+    return browser.self.impl_cut(objects , planeNormal , planeD , keepPositive , color , name)
 
 def cylinder ( x,y,z,radius,height,zcenter=True,color=None,resolution=36,name=None ):
     if not assertIsNumber(x) :

@@ -189,18 +189,32 @@ self.impl_cube = ( xsize : number,ysize : number,zsize : number,x : number,y : n
     return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
 
 }
-type cut_t = ( object : MeshHandle,planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor,name : string ) => MeshHandle ;
+type cut_t = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor,name : string ) => MeshHandle|MeshHandle[] ;
 declare global {
     interface WorkerGlobalScope { impl_cut : cut_t }
 };
 
-self.impl_cut = ( object : MeshHandle,planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor,name : string ) : MeshHandle => {
+self.impl_cut = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor,name : string ) : MeshHandle|MeshHandle[] => {
 
-    let mw = handleToWrapper(object);
-    let results = mw.mesh.splitByPlane( planeNormal, planeD);
-    let ki = ( keepPositive ? 0 : 1 );
-    results[1-ki].delete();
-    return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color,name ) );
+    if( !objects.hasOwnProperty("length") ){
+        let mw = handleToWrapper(objects as MeshHandle);
+        let results = mw.mesh.splitByPlane( planeNormal, planeD);
+        let ki = ( keepPositive ? 0 : 1 );
+        results[1-ki].delete();
+        return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color,name ) );
+    } else {
+        let ki = ( keepPositive ? 0 : 1 );
+        let L = objects as MeshHandle[];
+        let result: MeshHandle[] = [];
+        for(let i=0;i<L.length;++i){
+            let mw = handleToWrapper(L[i]);
+            console.log("mw=",mw);
+            let tmp = mw.mesh.splitByPlane( planeNormal, planeD);
+            tmp[1-ki].delete();
+            result.push( new MeshHandle( new ManifoldMeshWrapper( tmp[ki], color ?? mw.color, name ) ) );
+        }
+        return result;
+    }
 
 }
 type cylinder_t = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number,name : string ) => MeshHandle ;

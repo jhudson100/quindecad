@@ -235,17 +235,19 @@ preambleFunctions = new Map<string,FuncSpec>([
         "cut" ,   //key for Map<>
         {
             "name": "cut",
-            "doc": "Cuts the given object with a plane and discards one half. A plane is defined by the equation Ax + By + Cz + D = 0 where the plane normal is (A,B,C) and D depends on the plane's distance from the origin.",
+            "doc": "Cuts the given object(s) with a plane and discards one half. A plane is defined by the equation Ax + By + Cz + D = 0 where the plane normal is (A,B,C) and D depends on the plane's distance from the origin.",
             "args": [
                 {
-                    "argname": "object",
+                    "argname": "objects",
                     "argtypes": [
-                        "Drawable"
+                        "Drawable",
+                        "list[Drawable]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object"
+                        "a drawable object",
+                        "a list of drawable objects"
                     ],
-                    "doc": "The object to cut",
+                    "doc": "Either a single object or a list of objects.",
                     "defaultValue": null
                 },
                 {
@@ -254,7 +256,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "vec3"
                     ],
                     "argtypesVerbose": [
-                        "a list or tuple of three numbers"
+                        "a list of three numbers where at least one number is not zero"
                     ],
                     "doc": "The normal to the plane",
                     "defaultValue": null

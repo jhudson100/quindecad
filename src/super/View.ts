@@ -1,6 +1,7 @@
 //FIXME: Allow orthographic/perspective view toggle
 //FIXME: Allow user to click edge and then show statistics (length, endpoints) of that edge
 //FIXME: Add wireframe display option: solid, solid+wireframe, wireframe only
+//FIXME: Use +,- to change rotateSpeed and panSpeed on orbitcontrols. Or put slider on screen
 
 import {Mesh} from "Mesh";
 
@@ -34,8 +35,9 @@ export class View{
     //list of all the meshes we're drawing
     meshes: Mesh[] = [];
 
-    //camera for the scene
-    camera: any;
+    //cameras for the scene
+    perspectiveCamera: any;
+    // orthoCamera: any;
 
     //light that is located at the eye
     light: any;
@@ -59,23 +61,30 @@ export class View{
     lastMouseX: number = 0;
     lastMouseY: number = 0;
 
+    //true if the view is stale
+    viewIsStale=true;
+
     private constructor(parent: HTMLElement){
         this.parent=parent;
 
         this.renderer = new THREE.WebGLRenderer({antialias:true} );
         this.renderer.setSize(16,16);   //dummy
 
-        this.camera = new THREE.PerspectiveCamera( 
-            75, //fov
+        this.perspectiveCamera = new THREE.PerspectiveCamera( 
+            45, //fov
             1.0,    //aspect ratio
             0.1,        //hither
             1000        //yon
         );
-        this.camera.position.x=5;
-        this.camera.position.y=-5;
-        this.camera.position.z=5;
-        this.camera.lookAt(0,0,0);
-        this.camera.up = new THREE.Vector3(0,0,1);
+        this.perspectiveCamera.position.x=5;
+        this.perspectiveCamera.position.y=-5;
+        this.perspectiveCamera.position.z=5;
+        this.perspectiveCamera.lookAt(0,0,0);
+        this.perspectiveCamera.up = new THREE.Vector3(0,0,1);
+
+        // this.orthoCamera = new THREE.OrthographicCamera(
+        //     -1,1, 1,-1, 0.1, 1000
+        // )
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
@@ -148,13 +157,15 @@ export class View{
         }
 
         //TODO: Make these controls configurable
-        this.controls = new OrbitControls(this.camera,this.renderer.domElement);
+        this.controls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
         this.controls.enableDamping=false;
         this.controls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.DOLLY
         };
+
+        this.controls.listenToKeyEvents( window );
 
         parent.appendChild(this.renderer.domElement);
 
@@ -167,6 +178,24 @@ export class View{
                 this.lastMouseY = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
             }
         );
+
+        ["over","enter","down","move","up","cancel","out","leave"].forEach( (evname:string) => {
+            this.renderer.domElement.addEventListener("pointer"+evname, () => {
+                this.viewIsStale=true;
+            })
+        });
+        
+        ["wheel","mousewheel"].forEach( (evname: string) => {
+            this.renderer.domElement.addEventListener(evname, () => {
+                this.viewIsStale=true;
+            })
+        });
+
+        ["keydown","keyup"].forEach( (evname: string) => {
+            window.addEventListener(evname, () => {
+                this.viewIsStale=true;
+            })
+        });
 
         //for testing
         // let geom = new THREE.BoxGeometry(1,1,1);
@@ -181,13 +210,13 @@ export class View{
         //requestAnimationFrame pegs the cpu in my tests;
         //we don't need that, so we throttle the rate a bit
         //ref: https://stackoverflow.com/questions/19764018/controlling-fps-with-requestanimationframe
-        let nextDrawTime = 0;
+        // let nextDrawTime = 0;
         let periodicFunc =  (timestamp: DOMHighResTimeStamp) => {
             requestAnimationFrame(periodicFunc);
-            if( timestamp >= nextDrawTime ){
-                nextDrawTime = timestamp + 30;
-                this.controls.update();
-                this.draw();
+            if( this.viewIsStale ){ //timestamp >= nextDrawTime ){
+                // nextDrawTime = timestamp + 30;
+                this.controls.update;
+                this.draw();    
             }
         };
         periodicFunc(0);
@@ -207,7 +236,7 @@ export class View{
                     case "p":
                     {
                         let p = new THREE.Vector2(this.lastMouseX,this.lastMouseY);
-                        this.raycaster.setFromCamera( p, this.camera );
+                        this.raycaster.setFromCamera( p, this.perspectiveCamera );
                         let intersections = this.raycaster.intersectObjects( this.scene.children );
                         //intersections is a list, sorted by distance. Each entry
                         //has these fields:
@@ -300,16 +329,17 @@ export class View{
 
     draw(){
         this.controls.update();
-        let p = this.camera.position;
+        let p = this.perspectiveCamera.position;
         this.light.position.set(p.x,p.y,p.z);
-        this.renderer.render(this.scene, this.camera);
+        this.renderer.render(this.scene, this.perspectiveCamera);
+        this.viewIsStale=false;
     }
 
     resize(){
         let rect = this.parent.getBoundingClientRect();
         this.renderer.setSize( rect.width, rect.height);
-        this.camera.aspect = rect.width/rect.height;
-        this.camera.updateProjectionMatrix();
+        this.perspectiveCamera.aspect = rect.width/rect.height;
+        this.perspectiveCamera.updateProjectionMatrix();
         this.draw();
     }
 

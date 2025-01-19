@@ -2,6 +2,7 @@
 let verbose=false;
 
 //FIXME: Allow named colors
+//FIXME: Should functions that take x,y,z instead take a vec3? Same with sizes.
 
 export let preambleStr: string = "";
 export let numPreambleLines: number = 0;
