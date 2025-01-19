@@ -27,15 +27,11 @@ export function setupInterface(){
         ┌───────────┬───┬──────────────┐
         │           bbardiv            │    row 1
         ├───────────┼───┼──────────────┤
-        │           helpdiv            │    row 2
+        │ viewdiv   │sz1│    eddiv     │    row 2
         ├───────────┼───┼──────────────┤
-        │           sizer3             │    row 3
+        │           sizer2             │    row 3
         ├───────────┼───┼──────────────┤
-        │ viewdiv   │sz1│    eddiv     │    row 4
-        ├───────────┼───┼──────────────┤
-        │           sizer2             │    row 5
-        ├───────────┼───┼──────────────┤
-        │           errdiv             │    row 6
+        │           errdiv             │    row 4
         └───────────┴───┴──────────────┘
 
         
@@ -43,18 +39,9 @@ export function setupInterface(){
     */
 
     //Split.js can't work with em's here; px work though
-    let h = window.innerHeight;
-    let sizerHeight=10;
-    h -= 2*sizerHeight-100;
-    let row1Height = 30;
-    h -= row1Height;
-    let row2Height = 0.25*h;
-    let row4Height = 0.5*h;
-    let row6Height = 0.25*h;
-
     let contentArea = createGrid(  document.body, 
-            `${row1Height}px ${row2Height}px ${sizerHeight}px ${row4Height}px ${sizerHeight}px ${row6Height}px`,         //rows
-            "1fr 10px 1fr"                         //cols
+            "auto 1fr 10px 0.25fr",               //rows
+            "1fr 10px 1fr"                          //cols
     );
     contentArea.style.width = "99vw";
     contentArea.style.height = "99vh";
@@ -67,11 +54,11 @@ export function setupInterface(){
 
     currentRow=2;
 
-    let helpdiv = createGridCell( contentArea, currentRow,1, 1,3 );
-    helpdiv.style.background="red";
-    helpdiv.innerHTML="FOO";
+    // let helpdiv = createGridCell( contentArea, currentRow,1, 1,3 );
+    // helpdiv.style.background="red";
+    // helpdiv.innerHTML="FOO";
 
-    currentRow=4;
+    // currentRow=4;
 
     let viewdiv = createGridCell( contentArea, currentRow,1, 1,1 );
     viewdiv.style.width="calc(100%)";
@@ -95,7 +82,7 @@ export function setupInterface(){
         }
     });
 
-    currentRow = 6;
+    currentRow = 4;
 
     let errdiv = createGridCell( contentArea, currentRow,1, 1,3);
     errdiv.style.height="100%";
@@ -108,8 +95,8 @@ export function setupInterface(){
         ErrorReporter.get().resize();     
     };
 
-    createHorizontalSizers( contentArea, [3,5],  1, 3, sizeCallback );
-    createVerticalSizers(contentArea, [2], 4, 1, sizeCallback );
+    createHorizontalSizers( contentArea, [3],  1, 3, sizeCallback );
+    createVerticalSizers(contentArea, [2], 2, 1, sizeCallback );
 
 
     // let sizer2 = createSizer(contentArea,currentRow,1, 1,3, SplitDirection.HORIZONTAL,
