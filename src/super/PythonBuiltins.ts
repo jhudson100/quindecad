@@ -8,7 +8,7 @@ export let numPreambleLines: number = 0;
 export function initialize(): Promise<boolean> {
 
     let p = new Promise<boolean>( (res,rej) => {
-        fetch("super/pyshims.py").catch( 
+        fetch("super/pyshims.txt").catch( 
             (reason: any) => { 
                 rej(reason); 
             } 

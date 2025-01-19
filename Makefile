@@ -18,4 +18,5 @@ clean:
 	-/bin/rm -r dist
 
 zip: all
+	-/bin/rm dist.zip
 	(cd dist && zip -r ../dist.zip .)

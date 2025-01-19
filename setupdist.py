@@ -13,7 +13,11 @@ os.makedirs("dist/super",exist_ok=True)
 shutil.copyfile("src/index.html","dist/index.html")
 shutil.copyfile("src/about.txt","dist/about.txt")
 shutil.copyfile("src/help.html","dist/help.html")
-shutil.copyfile("src/super/pyshims.py","dist/super/pyshims.py")
+
+#some web hosts treat *anything* with a .py in the name as
+#if it is a cgi script, even if we don't ask to execute it.
+#So we rename this to .txt in the dist folder
+shutil.copyfile("src/super/pyshims.py","dist/super/pyshims.txt")
 
 for fname in [
     "src/ext/ace/ace-builds/src-min/ace.js",
