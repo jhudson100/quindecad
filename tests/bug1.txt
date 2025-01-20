@@ -1,0 +1,22 @@
+
+
+U = union([
+    cylinder(x=0,y=0,z=0,radius=1,height=1,zcenter=False),
+    frustum(x=0,y=0,z=0,radius1=1, radius2=1,height=1,  zcenter=False),
+])
+
+
+S1 = translate(U, tx=0,ty=0,tz=0 )
+S2 = translate(U, tx=0,ty=0,tz=0 )
+
+B = box( (0,0,0), (1,1,1) )
+
+B = difference( [
+    B,
+    S1,S2
+]
+)
+
+bb = boundingbox(B)
+
+draw(U)
