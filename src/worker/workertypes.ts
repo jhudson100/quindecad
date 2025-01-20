@@ -33,7 +33,7 @@ export class MeshHandle{
 export let manifoldMeshes: ManifoldMeshWrapper[] = [];
 
 //indices of the meshes in manifoldMeshes which we want to draw
-export let toDraw: MeshHandle[] = [];
+// export let toDraw: MeshHandle[] = [];
 
 export function handleToWrapper( h: MeshHandle ){
     return manifoldMeshes[h.index];

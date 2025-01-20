@@ -717,6 +717,26 @@ preambleFunctions = new Map<string,FuncSpec>([
         }
     ],
     [
+        "genus" ,   //key for Map<>
+        {
+            "name": "genus",
+            "doc": "Compute the genus (number of holes) of the given object.",
+            "args": [
+                {
+                    "argname": "obj",
+                    "argtypes": [
+                        "Drawable"
+                    ],
+                    "argtypesVerbose": [
+                        "a drawable object"
+                    ],
+                    "doc": "The object for the computation",
+                    "defaultValue": null
+                }
+            ]
+        }
+    ],
+    [
         "hull" ,   //key for Map<>
         {
             "name": "hull",

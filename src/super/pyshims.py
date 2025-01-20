@@ -161,8 +161,9 @@ def draw ( objs ):
                 drawHelper(x,parameterNumber)
         else:
             if not assertIsMeshHandle(obj):
-                raise Exception(f"draw(): Parameter {parameterNumber+1} is not a drawable object or contains something that is not a drawable object ({type(obj)})")
-            browser.self.impl_draw(obj)
+                raise Exception(f"draw(): List element {parameterNumber} is not a drawable object or contains something that is not a drawable object ({type(obj)})")
+            if not browser.self.impl_draw(obj):
+                raise Exception(f"Internal error when drawing list element {parameterNumber}")
 
     if type(objs) != tuple and type(objs) != list:
         objs = [objs]
@@ -234,6 +235,12 @@ def frustum ( radius1,radius2,height,x=0.0,y=0.0,z=0.0,zcenter=True,color=None,r
     if resolution is None: resolution = javascript.UNDEFINED
     if name is None: name = javascript.UNDEFINED
     return browser.self.impl_frustum(radius1 , radius2 , height , x , y , z , zcenter , color , resolution , name)
+
+def genus ( obj ):
+    if not assertIsMeshHandle(obj) :
+        raise Exception(f'Parameter "obj" has wrong type (expected drawable object); got {type(obj)}')
+    if obj is None: obj = javascript.UNDEFINED
+    return browser.self.impl_genus(obj)
 
 def hull ( objects,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
