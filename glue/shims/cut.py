@@ -28,7 +28,6 @@ TS="""
         let result: MeshHandle[] = [];
         for(let i=0;i<L.length;++i){
             let mw = handleToWrapper(L[i]);
-            console.log("mw=",mw);
             let tmp = mw.mesh.splitByPlane( planeNormal, planeD);
             tmp[1-ki].delete();
             result.push( new MeshHandle( new ManifoldMeshWrapper( tmp[ki], color ?? mw.color, name ) ) );
