@@ -1,14 +1,14 @@
 //FIXME: Find some way to run python and manifold code interleaved
 //so we can use results like bbox size in python code
 
+//FIXME: Manifold3d has a bug where it will sometimes refuse to let you take a mesh
+//after you have performed some other operations on an object. Workaround:
+//call genus() to prevent mesh computation deferral.
+
 import {SuperToWorkerMessage,IAmReadyMessage,MessageType, RunPythonCodeMessage, PythonCodeResultMessage} from "../common/Message.js";
-import {Color, Mesh} from "../common/Mesh.js";
-// import {DrawCommand, DrawCommandType, Cube, Sphere, Cylinder, Difference, Union, Intersection, Translate, Scale, Rotate, Frustum, Hull, BoundingBox, Cut, Extrude, Revolve} from "../common/DrawCommand.js";
-
-import Module, {Manifold, ManifoldToplevel, Mat4, Vec3} from "../ext/manifold/manifold.js";
-import { ManifoldMeshWrapper, MeshHandle, manifoldMeshes, toDraw } from "./workertypes.js";
-
-//do the import to force items to be set in 'self'
+import {Mesh} from "../common/Mesh.js";
+import Module, {ManifoldToplevel} from "../ext/manifold/manifold.js";
+import { ManifoldMeshWrapper, MeshHandle, handleToWrapper, manifoldMeshes } from "./workertypes.js";
 import {setManifold as tsshimsSetManifold} from "./tsshims.js";
 
 // @ts-ignore
@@ -18,9 +18,10 @@ var __BRYTHON__: any;
 let manifold: ManifoldToplevel;
 
 
-
 let verbose=false;
 
+//meshes to pass back to supervisor
+let meshes: Mesh[] = [];
 
 //list of things that were printed by python code;
 //we pass back to supervisor for output
@@ -114,7 +115,17 @@ declare global {
     interface WorkerGlobalScope { impl_draw : ImplDrawType }
 };
 self.impl_draw = (drawable: MeshHandle ) => {
-    toDraw.push(drawable);
+    try{
+        let mw = handleToWrapper(drawable);
+        let m = mw.mesh.getMesh();
+        let me = new Mesh(m.vertProperties,m.triVerts,mw.color,mw.name);
+        meshes.push(me);
+        return true;
+    } catch(e){
+        console.error(e);
+        return false;
+    }
+
 }
 
 //FIXME: If you specify the same keyword argument twice to a Python function,
@@ -165,16 +176,6 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
         }
 
 
-        //convert from manifold mesh wrapper to mesh
-        let meshes: Mesh[] = [];
-        toDraw.forEach( (mh: MeshHandle) => {
-            let mw: ManifoldMeshWrapper = manifoldMeshes[ mh.index ];
-            let m = mw.mesh.getMesh();
-            let me = new Mesh(m.vertProperties,m.triVerts,mw.color,mw.name);
-            meshes.push(me);
-            //defer mw.mesh.delete() to the finally block
-        });
-
         let resp = new PythonCodeResultMessage(
             pmsg.unique, 
             meshes,
@@ -196,6 +197,7 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
         })
         manifoldMeshes.splice(0,manifoldMeshes.length);
         printed.splice(0,printed.length);
-        toDraw.splice(0,toDraw.length);
+        //toDraw.splice(0,toDraw.length);
+        meshes.splice(0,meshes.length);
     }
 }

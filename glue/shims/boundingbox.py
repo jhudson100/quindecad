@@ -14,14 +14,16 @@ TS="""
     if(!objects.hasOwnProperty("length") ){
         let mw = handleToWrapper( objects as MeshHandle );
         let bb = mw.mesh.boundingBox();
-        return [ bb.min, bb.max ];
+        let mn: Vec3 = [bb.min[0], bb.min[1], bb.min[2] ];
+        let mx: Vec3 = [bb.max[0], bb.max[1], bb.max[2] ];
+        return [ mn, mx ];
     } else {
         let L = objects as MeshHandle[];
         let objs: MeshHandle[] = [];
         let mw = handleToWrapper( L[0] );
         let tmp = mw.mesh.boundingBox();
-        let minimum = tmp.min;
-        let maximum = tmp.max;
+        let minimum: Vec3 = [tmp.min[0],tmp.min[1],tmp.min[2]];
+        let maximum: Vec3 = [tmp.max[0],tmp.max[1],tmp.max[2]];
         for(let i=1;i<objs.length;++i){
             mw = handleToWrapper( L[i] );
             let box = mw.mesh.boundingBox();
