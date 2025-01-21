@@ -1,5 +1,6 @@
 import { Mesh } from "Mesh";
 import { View } from "View";
+import { ArgSpec, FuncSpec } from "pyshimdoc";
 
 export function saveSTL(){
     let meshes = View.get().getMeshes();
@@ -83,4 +84,94 @@ export function saveSTL(){
     setTimeout( ()=>{
         URL.revokeObjectURL(u);
     }, 180 * 1000 );
+}
+
+export function getFunctionSignatureDocumentation(fs:FuncSpec, includeTypes: boolean, includeDefaultValues: boolean){
+    let toplevel = document.createElement("span");   
+    toplevel.className = "functionsignature";
+    
+    let funcname = document.createElement("span");
+    toplevel.appendChild(funcname);
+    funcname.className="functionname";
+    funcname.appendChild(document.createTextNode(fs.name));
+    
+    toplevel.appendChild(document.createTextNode("("));
+
+    fs.args.forEach( (a: ArgSpec, idx: number ) => {
+        let sp = document.createElement("span");
+
+        let argname = document.createElement("span");
+        sp.appendChild(argname);
+        argname.className="argname";
+        argname.appendChild( document.createTextNode(a.argname) );
+
+        if( includeTypes ){
+            if( a.argtypes ){
+                let argtype = document.createElement("span");
+                sp.appendChild(argtype);
+                argtype.className="argtype";
+                argtype.appendChild( document.createTextNode(": ") );
+                let tmp = a.argtypes.join("|");
+                argtype.appendChild( document.createTextNode(tmp));
+            }
+        }
+        if(includeDefaultValues && a.defaultValue){
+            let defval = document.createElement("span");
+            sp.appendChild(defval);
+            defval.className = "defaultvalue";
+            defval.appendChild( document.createTextNode( "=" + a.defaultValue ) );
+        }
+         
+        if( idx !== 0 ){
+            toplevel.appendChild( document.createTextNode(", ") );
+        }
+        toplevel.appendChild(sp);
+    });
+    toplevel.appendChild(document.createTextNode(")"));
+    return toplevel;
+}
+
+
+export function getDetailedFunctionDocumentation(fs: FuncSpec, includeFunctionDoc: boolean)
+{
+    let elem = document.createElement("div");
+
+    if( includeFunctionDoc ){
+        let fdocdiv = document.createElement("div");
+        elem.appendChild(fdocdiv);
+        fdocdiv.className = "functiondocstring";
+        fdocdiv.appendChild( document.createTextNode( fs.doc ) );
+    }
+    
+    let ul = document.createElement("ul");
+    elem.appendChild(ul);
+
+    fs.args.forEach( (a: ArgSpec ) => {
+        let explanations = a.argtypesVerbose;
+        
+        let li = document.createElement("li");
+        ul.appendChild(li);
+
+        let span = document.createElement("span");
+        li.appendChild(span);
+        span.className="argname";
+        span.appendChild(document.createTextNode(a.argname));
+        
+        li.appendChild(document.createTextNode(" is "));
+
+        span = document.createElement("span");
+        li.appendChild(span);
+        span.className = "argtype";
+        span.appendChild( document.createTextNode( explanations.join(" or ") ) );
+
+        if( a.doc){
+            let ul2 = document.createElement("ul");
+            li.appendChild(ul2);
+            let li2 = document.createElement("li");
+            ul2.appendChild(li2);
+            li2.appendChild(document.createTextNode(a.doc));
+        }
+    });
+
+    return elem;
 }

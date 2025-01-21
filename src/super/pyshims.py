@@ -158,7 +158,7 @@ def draw ( objs ):
     def drawHelper(obj, parameterNumber):
         if assertIsList(obj):
             for x in obj:
-                drawHelper(x,parameterNumber)
+                drawHelper(x,parameterNumber)   #retain old list index for error reporting
         else:
             if not assertIsMeshHandle(obj):
                 raise Exception(f"draw(): List element {parameterNumber} is not a drawable object or contains something that is not a drawable object ({type(obj)})")

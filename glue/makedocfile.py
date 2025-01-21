@@ -99,7 +99,7 @@ def getDoc(name,fp,func):
         if defval == inspect.Parameter.empty:
             defval = None
         else:
-            defval = f'"{defval}"'
+            defval = str(defval)
 
         if anno == inspect.Parameter.empty:
             atypes = []

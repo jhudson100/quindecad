@@ -7,6 +7,7 @@ import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
 import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
+import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation } from "utils";
 
 
 // @ts-ignore
@@ -39,11 +40,14 @@ export function setupInterface(){
 
     */
 
-
     let sizeCallback = () => {
         View.get().resize();
         Editor.get().resize();
-        ErrorReporter.get().resize();     
+        ErrorReporter.get().resize();   
+
+        let rect = helpdiv.parentElement.getBoundingClientRect();
+        // helpdiv.style.width = rect.width+"px";
+        helpgrid.style.height = rect.height+"px";
     };
 
     //Split.js can't work with em's here; px work though
@@ -101,8 +105,9 @@ export function setupInterface(){
     errdiv.style.height="100%";
     ErrorReporter.get().initialize(errdiv);
     createVerticalSizer(grid2,2,1,1,sizeCallback);
-    let helpdiv = createGridCell(grid2,1,3,1,1);
-    createHelpDiv(helpdiv);
+    let helpgrid = createGridCell(grid2,1,3,1,1);
+    helpgrid.style.overflow="auto";
+    let helpdiv = createHelpDiv(helpgrid);
 
 
 
@@ -197,32 +202,52 @@ function createGridCell( parent:HTMLElement, row: number, column: number, rowspa
 }
 
 function createHelpDiv(parent: HTMLDivElement){
-    let div = document.createElement("div");
+    let helpdiv = document.createElement("div");
     let sel = document.createElement("select");
-    div.appendChild(sel);
-    parent.appendChild(div);
+    helpdiv.appendChild(sel);
+    parent.appendChild(helpdiv);
     let contentdiv = document.createElement("div");
     contentdiv.style.overflow="auto";
     parent.appendChild(contentdiv);
 
-    let selectionDivs: HTMLDivElement[] = [];
+    let op = document.createElement("option");
+    op.appendChild( document.createTextNode( "Get documentation...") );
+    sel.appendChild(op);
+
+    let docs: HTMLElement[] = [];
     getPreambleFunctionInfo().forEach( (fspec: FuncSpec) => {
         let op = document.createElement("option");
-        op.appendChild(document.createTextNode(fspec.name));
         sel.appendChild(op);
-        let tmp: string[] = [];
-        fspec.args.forEach( (argspec: ArgSpec) => {
-            tmp.push(argspec.argname);
-        });
-        let docdiv = document.createElement("div");
-        docdiv.appendChild( document.createTextNode(
-            `${fspec.name}(${tmp.join(", ")})`));
-        selectionDivs.push(docdiv);
+        op.appendChild(document.createTextNode( fspec.name ) );
+        
+        let d = getFunctionSignatureDocumentation(fspec,false,true) 
+        d.style.fontFamily = "monospace";
+
+        let div = document.createElement("div");
+        div.appendChild(d);
+
+        let dd = getDetailedFunctionDocumentation(fspec,false);
+        div.appendChild(dd);
+
+        docs.push( div );
     });
+
+    let firstTime=true;
     sel.addEventListener("change", () => {
+        let idx = sel.selectedIndex;
+        if( firstTime ){
+            if( sel.selectedIndex === 0 )
+                return;
+            firstTime=false;
+            sel.removeChild(sel.firstChild);
+            idx--;
+            sel.selectedIndex = idx;
+        }
         while( contentdiv.childNodes.length > 0 ){
             contentdiv.removeChild(contentdiv.firstChild);
         } 
-        contentdiv.appendChild( selectionDivs[ sel.selectedIndex ] );
-    })
+        contentdiv.appendChild( docs[ idx ] );
+    });
+
+    return helpdiv;
 }

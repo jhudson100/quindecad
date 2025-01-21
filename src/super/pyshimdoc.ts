@@ -85,7 +85,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object, or None for default color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -96,7 +96,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -171,7 +171,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "X coordinate of the cuboid",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "y",
@@ -182,7 +182,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Y coordinate of the cuboid",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "z",
@@ -193,7 +193,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Z coordinate of the cuboid",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "centered",
@@ -204,7 +204,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a boolean value (True or False)"
                     ],
                     "doc": "True if the cuboid should be centered around (x,y,z); false if the minimum coordinate is at (x,y,z).",
-                    "defaultValue": "\"False\""
+                    "defaultValue": "False"
                 },
                 {
                     "argname": "color",
@@ -215,7 +215,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object, or None for default color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -226,7 +226,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -292,7 +292,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -303,7 +303,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -378,7 +378,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a boolean value (True or False)"
                     ],
                     "doc": "If True, (x,y,z) is the coordinate of the cylinder's center. If false, (x,y,z) is the center of the bottom of the cylinder.",
-                    "defaultValue": "\"True\""
+                    "defaultValue": "True"
                 },
                 {
                     "argname": "color",
@@ -389,7 +389,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object, or None for default color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "resolution",
@@ -400,7 +400,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a positive integer"
                     ],
                     "doc": "Number of edges around the cylinder's circumference",
-                    "defaultValue": "\"36\""
+                    "defaultValue": "36"
                 },
                 {
                     "argname": "name",
@@ -411,7 +411,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -442,7 +442,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -453,7 +453,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -517,7 +517,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a positive integer"
                     ],
                     "doc": "= Number of divisions in the extrusion",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "twist",
@@ -528,7 +528,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Amount of twist (rotation) of the top relative to the bottom in degrees",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "scale",
@@ -539,7 +539,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a list or tuple of two numbers"
                     ],
                     "doc": "Amount to scale the top coordinates; (0,0) gives a cone; (1,1) gives the same size as the bottom.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "zcenter",
@@ -550,7 +550,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a boolean value (True or False)"
                     ],
                     "doc": "If true, the extruded shape will be centered around the z axis. If false, the extruded shape will have z=0 as its minimum z value.",
-                    "defaultValue": "\"False\""
+                    "defaultValue": "False"
                 },
                 {
                     "argname": "color",
@@ -561,7 +561,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use default color",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -572,7 +572,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -645,7 +645,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Frustum center x",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "y",
@@ -656,7 +656,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Frustum center y",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "z",
@@ -667,7 +667,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Frustum z. See the zcenter argument.",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "zcenter",
@@ -678,7 +678,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a boolean value (True or False)"
                     ],
                     "doc": "If True, (x,y,z) is the coordinate of the frustum's center. If false, (x,y,z) is the center of the bottom of the frustum.",
-                    "defaultValue": "\"True\""
+                    "defaultValue": "True"
                 },
                 {
                     "argname": "color",
@@ -689,7 +689,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object, or None for default color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "resolution",
@@ -700,7 +700,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a positive integer"
                     ],
                     "doc": "Number of edges around the cylinder's circumference",
-                    "defaultValue": "\"36\""
+                    "defaultValue": "36"
                 },
                 {
                     "argname": "name",
@@ -711,7 +711,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -764,7 +764,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -775,7 +775,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -806,7 +806,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -817,7 +817,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -864,7 +864,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Angle of revolution in degrees. If None, use 360 degrees",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "color",
@@ -875,7 +875,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use default color",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "resolution",
@@ -886,7 +886,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a positive integer"
                     ],
                     "doc": "The number of steps for the revolution",
-                    "defaultValue": "\"36\""
+                    "defaultValue": "36"
                 },
                 {
                     "argname": "name",
@@ -897,7 +897,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -952,7 +952,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a list or tuple of three numbers"
                     ],
                     "doc": "The point around which to rotate; if None, each object is rotated around its own centeroid",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "color",
@@ -963,7 +963,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the resulting objects; if None, use each individual object's color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -974,7 +974,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -1040,7 +1040,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a list or tuple of three numbers"
                     ],
                     "doc": "Point to scale the objects around; if None, scale each object around its own centroid",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "color",
@@ -1051,7 +1051,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the resulting objects; if None, use each individual object's color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -1062,7 +1062,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -1093,7 +1093,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Sphere center x",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "y",
@@ -1104,7 +1104,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Sphere center y",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "z",
@@ -1115,7 +1115,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a number"
                     ],
                     "doc": "Sphere center z",
-                    "defaultValue": "\"0.0\""
+                    "defaultValue": "0.0"
                 },
                 {
                     "argname": "color",
@@ -1126,7 +1126,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object, or None for default color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "resolution",
@@ -1137,7 +1137,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a positive integer"
                     ],
                     "doc": "How finely tessellated the sphere should be",
-                    "defaultValue": "\"48\""
+                    "defaultValue": "48"
                 },
                 {
                     "argname": "name",
@@ -1148,7 +1148,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -1214,7 +1214,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the resulting objects; if None, use each individual object's color.",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -1225,7 +1225,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }
@@ -1256,7 +1256,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 },
                 {
                     "argname": "name",
@@ -1267,7 +1267,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "a string"
                     ],
                     "doc": "Name for the object",
-                    "defaultValue": "\"None\""
+                    "defaultValue": "None"
                 }
             ]
         }

@@ -5,7 +5,7 @@ import { Dialog } from "Dialog";
 import { WorkerManager } from "WorkerManager";
 import { Spinner } from "Spinner";
 import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
-import { saveSTL } from "utils";
+import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation, saveSTL } from "utils";
 
 type ButtonCallback = ()=>void;
 
@@ -127,43 +127,18 @@ export class ButtonBar{
             if(resp.ok){
                 resp.text().then( (txt: string) => {
 
-                    let L: string[] = [];
-
-                    L.push("<ul>");
+                    let ul = document.createElement("ul");
 
                     let M: Map<string,FuncSpec> = getPreambleFunctionInfo();
                     M.forEach( (fs: FuncSpec) => {
-                        let funcname = fs.name;
-                        let eacharg: string[] = [];
-                        let args : ArgSpec[] = fs.args;
-                        args.forEach( (a: ArgSpec ) => {
-                            let tmp = `<span class="argname">${a.argname}</span>`;
-                            if(a.defaultValue){
-                                tmp += ` <span class="defaultvalue">= ${a.defaultValue}</span>`;
-                            }
-                            eacharg.push(tmp);
-                        });
-                        let tmp = `<div class='functionsignature'><li><span class='functionname'>${funcname}</span>(${eacharg.join(" , ")})</div>`;
-                        L.push(tmp);
-
-                        L.push("<div class='functiondocstring'>");
-                        L.push( fs.doc );
-                        L.push("</div>");
-                        
-                        L.push("<ul>");
-                        args.forEach( (a: ArgSpec ) => {
-                            let explanations = a.argtypesVerbose;
-                            L.push(`<li><span class="argname">${a.argname}</span> is <span class="argtype">${explanations.join(" or ")}</span></li>`)
-                            if( a.doc){
-                                L.push(`<ul><li>${a.doc}</li></ul>`);
-                            }
-                        });
-                        L.push("</ul>");
+                        let li = document.createElement("li");
+                        li.className = "functiondoc";
+                        ul.appendChild(li);
+                        li.appendChild(getFunctionSignatureDocumentation(fs,false,true));
+                        li.appendChild(getDetailedFunctionDocumentation(fs,true));
                     });
 
-                    L.push("</ul>");
-
-                    txt = txt.replace("<!--FUNCTIONS-->",L.join("\n"));
+                    txt = txt.replace("<!--FUNCTIONS-->",ul.innerHTML);
 
                     let d = new Dialog( [
                         { "name": "OK" }
