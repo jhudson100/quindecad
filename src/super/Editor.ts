@@ -222,15 +222,15 @@ export class Editor{
 
 
         //we can get the editor's current keybindings like so
-        console.log(this.ed.keyBinding);
+        // console.log(this.ed.keyBinding);
         let commands = this.ed.keyBinding.$defaultHandler.commands;
         let platform = this.ed.keyBinding.$defaultHandler.platform;
         Object.getOwnPropertyNames(commands).forEach( (name: string) => {
             let bk = commands[name].bindKey;
             if( bk ){
-                console.log(name, bk[platform] ?? commands[name].bindKey);
+                // console.log(name, bk[platform] ?? commands[name].bindKey);
             } else {
-                console.log(name,"<no key>");
+                // console.log(name,"<no key>");
             }
         });
 

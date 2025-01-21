@@ -5,6 +5,11 @@
         <title>
             Quindecad
         </title>
+
+        <link rel="stylesheet" href="ext/jqueryui/jquery-ui.min.css" />
+        <link rel="stylesheet" href="ext/jqueryui/jquery-ui.structure.min.css" />
+        <link rel="stylesheet" href="ext/jqueryui/jquery-ui.theme.min.css" />
+        
         <style>
             body{
                 overflow: hidden;
@@ -31,18 +36,17 @@
                     "pyshimdoc" : "./super/pyshimdoc.js",
                     "Split":  "./ext/split/split-grid.mjs",
                     "utils" : "./super/utils.js"
-
-
                 }
             }
         </script>
     </head>
     <body>
+        <script src="ext/jquery/jquery-3.7.1.min.js"></script>
+        <script src="ext/jqueryui/jquery-ui.min.js"></script>
         <script src="ext/ace/ace.js"></script>
         <script src="ext/ace/ext-language_tools.js"></script>
         <brython-options debug="1" cache="false"></brython-options>
         <script type="module" src="super/super.js"></script>
-        <!-- <script src="ext/split/split-grid.js"></script> -->
         
     </body>
 </html>
