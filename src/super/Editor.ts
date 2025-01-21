@@ -213,15 +213,37 @@ export class Editor{
     initialize(parent: HTMLElement){
         this.parent=parent;
         parent.style.fontSize = "12pt";
+        
         //ref: https://stackoverflow.com/questions/13545433/autocompletion-in-ace-editor
         let languageTools = ace.require("ace/ext/language_tools");
+
+
         this.ed = ace.edit(parent);
+
+
+        //we can get the editor's current keybindings like so
+        console.log(this.ed.keyBinding);
+        let commands = this.ed.keyBinding.$defaultHandler.commands;
+        let platform = this.ed.keyBinding.$defaultHandler.platform;
+        Object.getOwnPropertyNames(commands).forEach( (name: string) => {
+            let bk = commands[name].bindKey;
+            if( bk ){
+                console.log(name, bk[platform] ?? commands[name].bindKey);
+            } else {
+                console.log(name,"<no key>");
+            }
+        });
+
+        //force one of the commands to run
+        // this.ed.execCommand("showSettingsMenu");
 
         //to have a more extensive list:
         //set enableBasicAutocompletion, enableSnippets,
         //and enableLiveAutocompletion to true
         //Then call languageTools.addCompleter(mycompleter);
         this.ed.setOptions({
+            fixedWidthGutter: true,
+            useSoftTabs: true,
             enableBasicAutocompletion: [mycompleter],
             //~ enableSnippets: true,
             //~ enableLiveAutocompletion: true
