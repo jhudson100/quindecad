@@ -6,6 +6,7 @@ import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
+import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 
 
 // @ts-ignore
@@ -31,12 +32,19 @@ export function setupInterface(){
         ├───────────┼───┼──────────────┤
         │           sizer2             │    row 3
         ├───────────┼───┼──────────────┤
-        │           errdiv             │    row 4
+        │           infodiv            │    row 4
         └───────────┴───┴──────────────┘
 
         
 
     */
+
+
+    let sizeCallback = () => {
+        View.get().resize();
+        Editor.get().resize();
+        ErrorReporter.get().resize();     
+    };
 
     //Split.js can't work with em's here; px work though
     let contentArea = createGrid(  document.body, 
@@ -54,11 +62,7 @@ export function setupInterface(){
 
     currentRow=2;
 
-    // let helpdiv = createGridCell( contentArea, currentRow,1, 1,3 );
-    // helpdiv.style.background="red";
-    // helpdiv.innerHTML="FOO";
-
-    // currentRow=4;
+    createVerticalSizer(contentArea, 2, currentRow, 1, sizeCallback );
 
     let viewdiv = createGridCell( contentArea, currentRow,1, 1,1 );
     viewdiv.style.width="calc(100%)";
@@ -82,21 +86,25 @@ export function setupInterface(){
         }
     });
 
-    currentRow = 4;
+    currentRow++;
 
-    let errdiv = createGridCell( contentArea, currentRow,1, 1,3);
+    createHorizontalSizer( contentArea, currentRow,  1, 3, sizeCallback );
+
+    currentRow++;
+
+    let infodiv = createGridCell( contentArea, currentRow,1, 1,3);
+    infodiv.style.height="100%";
+    
+    let grid2 = createGrid(infodiv, "1fr" , "3fr 10px 1fr");
+    grid2.style.height="100%";
+    let errdiv = createGridCell(grid2,1,1,1,1);
     errdiv.style.height="100%";
     ErrorReporter.get().initialize(errdiv);
+    createVerticalSizer(grid2,2,1,1,sizeCallback);
+    let helpdiv = createGridCell(grid2,1,3,1,1);
+    createHelpDiv(helpdiv);
 
 
-    let sizeCallback = () => {
-        View.get().resize();
-        Editor.get().resize();
-        ErrorReporter.get().resize();     
-    };
-
-    createHorizontalSizers( contentArea, [3],  1, 3, sizeCallback );
-    createVerticalSizers(contentArea, [2], 2, 1, sizeCallback );
 
 
     // let sizer2 = createSizer(contentArea,currentRow,1, 1,3, SplitDirection.HORIZONTAL,
@@ -123,18 +131,15 @@ function styleSizer(g: HTMLDivElement, splitDirection: SplitDirection){
     g.style.cursor = (splitDirection == SplitDirection.VERTICAL) ? "col-resize" : "row-resize";
 }
 
-function createHorizontalSizers(parent: HTMLElement, 
-    rows: number[], firstColumn: number, colspan: number,
+function createHorizontalSizer(parent: HTMLElement, 
+    row: number, firstColumn: number, colspan: number,
         dragEndCallback?: () => void )
 {
     let gutters: any[] = [];
 
-    for(let i=0;i<rows.length;++i){
-        let row = rows[i];
-        let g = createGridCell(parent,row,firstColumn,1,colspan);
-        styleSizer(g,SplitDirection.HORIZONTAL);
-        gutters.push({ track: row-1, element: g } );
-    }
+    let g = createGridCell(parent,row,firstColumn,1,colspan);
+    styleSizer(g,SplitDirection.HORIZONTAL);
+    gutters.push({ track: row-1, element: g } );
 
     Split( {
         // minSize: 10,
@@ -148,18 +153,15 @@ function createHorizontalSizers(parent: HTMLElement,
 }
 
 
-function createVerticalSizers(parent: HTMLElement, 
-    columns: number[], firstRow: number, rowSpan: number,
+function createVerticalSizer(parent: HTMLElement, 
+    column: number, firstRow: number, rowSpan: number,
         dragEndCallback?: () => void )
 {
     let gutters: any[] = [];
 
-    for(let i=0;i<columns.length;++i){
-        let col = columns[i];
-        let g = createGridCell(parent,firstRow,col,rowSpan,1);
-        styleSizer(g,SplitDirection.VERTICAL);
-        gutters.push({ track: col-1, element: g } );
-    }
+    let g = createGridCell(parent,firstRow,column,rowSpan,1);
+    styleSizer(g,SplitDirection.VERTICAL);
+    gutters.push({ track: column-1, element: g } );
 
     Split( {
         // minSize: 10,
@@ -192,4 +194,35 @@ function createGridCell( parent:HTMLElement, row: number, column: number, rowspa
     div.style.overflow="hidden";
     parent.appendChild(div);
     return div;
+}
+
+function createHelpDiv(parent: HTMLDivElement){
+    let div = document.createElement("div");
+    let sel = document.createElement("select");
+    div.appendChild(sel);
+    parent.appendChild(div);
+    let contentdiv = document.createElement("div");
+    contentdiv.style.overflow="auto";
+    parent.appendChild(contentdiv);
+
+    let selectionDivs: HTMLDivElement[] = [];
+    getPreambleFunctionInfo().forEach( (fspec: FuncSpec) => {
+        let op = document.createElement("option");
+        op.appendChild(document.createTextNode(fspec.name));
+        sel.appendChild(op);
+        let tmp: string[] = [];
+        fspec.args.forEach( (argspec: ArgSpec) => {
+            tmp.push(argspec.argname);
+        });
+        let docdiv = document.createElement("div");
+        docdiv.appendChild( document.createTextNode(
+            `${fspec.name}(${tmp.join(", ")})`));
+        selectionDivs.push(docdiv);
+    });
+    sel.addEventListener("change", () => {
+        while( contentdiv.childNodes.length > 0 ){
+            contentdiv.removeChild(contentdiv.firstChild);
+        } 
+        contentdiv.appendChild( selectionDivs[ sel.selectedIndex ] );
+    })
 }
