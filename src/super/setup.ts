@@ -8,6 +8,7 @@ import { WorkerManager } from "WorkerManager";
 import Split from 'Split';
 import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation } from "utils";
+import { Menubar } from "Menubar";
 
 
 // @ts-ignore
@@ -62,7 +63,20 @@ export function setupInterface(){
 
     let bbardiv =createGridCell( contentArea, currentRow,1, 1,3 );
     bbardiv.style.width="calc(100%)";
-    let bbar = ButtonBar.get().initialize(bbardiv);
+
+
+    bbardiv.style.overflow="visible";
+    let mbar = new Menubar(bbardiv);
+    let filemenu = mbar.addMenu("File");
+    filemenu.addItem("Save STL...", ()=>{} );
+    let editmenu = mbar.addMenu("Edit");
+    editmenu.addItem("Undo",()=>{},"Ctrl+Z");
+    editmenu.addItem("Cut",()=>{},"Ctrl+X");
+    editmenu.addItem("Copy",()=>{},"Ctrl+C");
+    editmenu.addItem("Paste",()=>{},"Ctrl+V");
+    
+
+    //let bbar = ButtonBar.get().initialize(bbardiv);
 
     currentRow=2;
 
