@@ -1,7 +1,6 @@
 
 .menubar{
     user-select: none;
-    z-index: 100;
     border: 0.05em solid black;
     padding-left: 1em;
     border-radius: 0.3em;
@@ -24,6 +23,9 @@
 .menubar .menuItemContainer {
     background: white;
     border: 1px solid black;
+    border-top-right-radius: 0.25em;
+    border-bottom-left-radius: 0.25em;
+    border-bottom-right-radius: 0.25em;
     box-shadow: 0.2em 0.2em 0.1em rgba(0,0,0,0.5);
     left: 0em;        /*should match padding on menuTitle*/
     top: 1.1em;
@@ -40,4 +42,11 @@
 
 .menubar .menuItemText {
     padding-right: 2em;
+}
+
+.menubar .menuSeparator {
+    border-top: 1px solid lightgray;
+    height: 0.01em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
 }

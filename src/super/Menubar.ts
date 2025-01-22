@@ -7,6 +7,8 @@ class MenuItem{
     item: HTMLElement;
     constructor(parent: HTMLElement, label: string, callback: MenuCallback, accelerator?: string)
     {
+        this.callback=callback;
+        
         let item = document.createElement("div");
         this.item=item;
         item.className = "menuItem";
@@ -38,6 +40,11 @@ class MenuItem{
         this.item.classList.add("menuSelected");
     }
     
+    invoke(){
+        console.log("INV");
+        if(this.callback)
+            this.callback();
+    }
 }
 
 export class Menu{
@@ -155,6 +162,7 @@ export class Menu{
 
             //if there is an item, remove the selection highlight
             if(selectedItem !== -1 ){
+                this.items[selectedItem].invoke();
                 this.items[selectedItem].unselect();
                 // this.items[selectedItem].classList.remove("menuSelected");
                 selectedItem=-1;
@@ -164,8 +172,15 @@ export class Menu{
         });
     }
 
+    addSeparator(){
+        let item = document.createElement("div");
+        item.className = "menuSeparator";
+        this.itemContainer.appendChild(item);
+        item.appendChild( document.createTextNode("\u00a0") );
+    }
+
     addItem(label: string, callback: MenuCallback, accelerator?: string ){
-        let mitem = new MenuItem(this.itemContainer, label,callback, accelerator);
+        let mitem = new MenuItem(this.itemContainer, label, callback, accelerator);
         this.items.push(mitem);
 
         // let item = document.createElement("div");

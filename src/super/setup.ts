@@ -7,7 +7,7 @@ import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
 import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
-import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation } from "utils";
+import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation, showAboutDialog, showHelp } from "utils";
 import { Menubar } from "Menubar";
 
 
@@ -71,10 +71,14 @@ export function setupInterface(){
     filemenu.addItem("Save STL...", ()=>{} );
     let editmenu = mbar.addMenu("Edit");
     editmenu.addItem("Undo",()=>{},"Ctrl+Z");
+    editmenu.addSeparator();
     editmenu.addItem("Cut",()=>{},"Ctrl+X");
     editmenu.addItem("Copy",()=>{},"Ctrl+C");
     editmenu.addItem("Paste",()=>{},"Ctrl+V");
-    
+    let helpmenu = mbar.addMenu("Help");
+    helpmenu.addItem("Help...",()=>{ showHelp();});
+    helpmenu.addItem("About...",()=>{ showAboutDialog();});
+
 
     //let bbar = ButtonBar.get().initialize(bbardiv);
 
