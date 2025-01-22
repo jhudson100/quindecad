@@ -1,6 +1,5 @@
-//FIXME: Find some way to run python and manifold code interleaved
-//so we can use results like bbox size in python code
-
+//FIXME: Add axis parameter to cylinder and frustum
+//FIXME: Maybe make cone primitive (essentially an alias to frustum)
 //FIXME: Manifold3d has a bug where it will sometimes refuse to let you take a mesh
 //after you have performed some other operations on an object. Workaround:
 //call genus() to prevent mesh computation deferral.
