@@ -5,14 +5,21 @@ export type MenuCallback = () => void;
 class MenuItem{
     callback: MenuCallback;
     item: HTMLElement;
+    enabled = true;
+
+    rect: DOMRect;
+
     constructor(parent: HTMLElement, label: string, callback: MenuCallback, accelerator?: string)
     {
         this.callback=callback;
-        
+
         let item = document.createElement("div");
         this.item=item;
         item.className = "menuItem";
         parent.appendChild(item);
+         /* ref: https://stackoverflow.com/a/29579688 */
+        item.style.display="flex";
+        item.style.justifyContent = "space-between";
     
         let sp = document.createElement("span");
         sp.className="menuItemText"
@@ -28,8 +35,14 @@ class MenuItem{
         item.appendChild(sp);
     }
 
-    getBoundingClientRect(){
-        return this.item.getBoundingClientRect();
+    setDisabled(){
+        this.enabled=false;
+        this.item.classList.add("disabled");
+    }
+
+    setEnabled(){
+        this.enabled=true;
+        this.item.classList.remove("disabled");
     }
 
     unselect(){
@@ -37,14 +50,26 @@ class MenuItem{
     }
     
     select(){
-        this.item.classList.add("menuSelected");
+        if( this.enabled ){
+            this.item.classList.add("menuSelected");
+        }
     }
     
     invoke(){
-        console.log("INV");
         if(this.callback)
             this.callback();
     }
+
+    getRectangle(){
+        if( this.rect === undefined )
+            this.rect = this.item.getBoundingClientRect();
+        return this.rect;
+    }
+
+    clearStoredRectangle(){
+        this.rect=undefined;
+    }
+
 }
 
 export class Menu{
@@ -59,6 +84,8 @@ export class Menu{
 
     //the items themselves
     items: MenuItem[] = [];
+
+    rect: DOMRect;
 
     constructor(titleString: string){
         this.overallContainer = document.createElement("div");
@@ -99,76 +126,30 @@ export class Menu{
         // this.itemContainer.style.border="1px solid black";
         // this.itemContainer.style.boxShadow = "0.2em 0.2em 0.1em rgba(0,0,0,0.5)";
 
+    }
 
-        let selectedItem: number=-1;
-        let mouseDown=false;
-        let itemRectangles: DOMRect[] = [];
+    pullDown(){
+        //we're pulling down this menu, so 
+        //show the items and highlight the menu title
+        this.itemContainer.style.visibility="visible";
+        this.title.classList.add("menuSelected");
+    }
 
-        this.title.addEventListener("pointerdown", (ev: PointerEvent)=>{
-            console.log("Capture");
-            selectedItem=-1;
-            this.title.setPointerCapture(ev.pointerId);
-            this.itemContainer.style.visibility="visible";
+    pullUp(){
+        this.itemContainer.style.visibility="hidden";
+        this.title.classList.remove("menuSelected");
+    }
 
-            //if user has zoomed the window, the item rectangles might have changed, so we recompute them here
-            this.items.forEach( (item: MenuItem, idx: number) => { // (item: HTMLDivElement, idx: number) => {
-                itemRectangles[idx] = item.getBoundingClientRect();
-            });
+    getTitleRectangle(){
+        if( this.rect === undefined )
+            this.rect = this.title.getBoundingClientRect();
+        return this.rect;
+    }
 
-            mouseDown=true;
-            this.title.classList.add("menuSelected");
-            ev.preventDefault();
-        });
-
-        this.title.addEventListener("pointermove", (ev: PointerEvent) => {
-            if(!mouseDown)
-                return;
-            let foundIt=false;
-            for(let i=0;i<itemRectangles.length;++i){
-                let r = itemRectangles[i];
-                if( ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom ){
-
-                    //remove highlight from the item that we're no longer over
-                    if( selectedItem !== -1 && selectedItem !== i ){
-                        this.items[selectedItem].unselect();
-                        // this.items[selectedItem].classList.remove("menuSelected");
-                    }
-                    selectedItem = i;
-
-                    //add highlight to the item we are over
-                    this.items[selectedItem].select();
-                    // this.items[selectedItem].classList.add("menuSelected");
-                    foundIt=true;
-                    break;
-                }
-            }
-            if(!foundIt){
-                //if cursor is not over any item, remove highlight from the previous item,
-                //if there is one
-                if(selectedItem !== -1 ){
-                    this.items[selectedItem].unselect();
-                    // this.items[selectedItem].classList.remove("menuSelected");
-                    selectedItem=-1;
-                }
-            }
-        });
-
-        this.title.addEventListener("pointerup", (ev: PointerEvent) => {
-            console.log("Release"); 
-            mouseDown=false;
-            this.title.releasePointerCapture(ev.pointerId);
-            this.itemContainer.style.visibility="hidden";
-            console.log("Selected",selectedItem);
-
-            //if there is an item, remove the selection highlight
-            if(selectedItem !== -1 ){
-                this.items[selectedItem].invoke();
-                this.items[selectedItem].unselect();
-                // this.items[selectedItem].classList.remove("menuSelected");
-                selectedItem=-1;
-            }
-            this.title.classList.remove("menuSelected");
-            ev.preventDefault();
+    clearStoredRectangles(){
+        this.rect = undefined;
+        this.items.forEach( (item: MenuItem) => {
+            item.clearStoredRectangle();
         });
     }
 
@@ -182,27 +163,8 @@ export class Menu{
     addItem(label: string, callback: MenuCallback, accelerator?: string ){
         let mitem = new MenuItem(this.itemContainer, label, callback, accelerator);
         this.items.push(mitem);
-
-        // let item = document.createElement("div");
-        // item.className = "menuItem";
-        // this.itemContainer.appendChild(item);
-        
-        // let sp = document.createElement("span");
-        // sp.appendChild( document.createTextNode(label) );
-        // sp.style.paddingRight="2em";
-        // item.appendChild(sp);
-
-        // sp = document.createElement("span");
-        // if( accelerator ){
-        //     sp.appendChild( document.createTextNode(accelerator) );
-        // } else {
-        //     sp.appendChild( document.createTextNode(" ") );
-        // }
-        // item.appendChild(sp);
-
-        // this.items.push(item);
+        return mitem;
     }
-
 
 }
 
@@ -219,6 +181,7 @@ export class Menubar{
         this.mbar = document.createElement("div");
         this.mbar.className="menubar";
         this.parent.appendChild(this.mbar);
+        this.setupMouseHandlers();
     }
 
     addMenu(title: string){
@@ -228,4 +191,142 @@ export class Menubar{
         return m;
     }
 
-}
+    setupMouseHandlers(){
+
+        let selectedMenu: Menu = undefined;
+        let selectedItem: MenuItem = undefined;
+
+        let mouseDown=false;
+
+
+        this.mbar.addEventListener("pointerdown", (ev: PointerEvent)=>{
+
+            //clear out all cached rectangles
+            //if the user has zoomed the window, the locations and sizes
+            //of the bounding rectangles might have changed, so we
+            //recompute them all
+            this.menus.forEach( (m: Menu) => {
+                m.clearStoredRectangles();
+            });
+
+            selectedMenu=undefined;
+            selectedItem=undefined;
+
+            this.mbar.setPointerCapture(ev.pointerId);
+
+            //see if we're over a menu title.
+            //if we aren't then we will ignore any future events where
+            //the mouse does move over a menu title (at least until the
+            //mouse gets released)
+            for(let i=0;i<this.menus.length;++i){
+                let r = this.menus[i].getTitleRectangle();
+                if( r.left <= ev.clientX && ev.clientX <= r.right && r.top <= ev.clientY && ev.clientY <= r.bottom ){
+                    //we've found a menu
+                    selectedMenu = this.menus[i];
+                    selectedMenu.pullDown();
+                    break;
+                }
+            }
+
+            //if we aren't over a menu, we don't set this to true;
+            //that means pointermove events will do nothing.
+            if(selectedMenu !== undefined )
+                mouseDown=true;
+
+            //always call this even if we're not over a menu title
+            ev.preventDefault();
+        });
+
+        this.mbar.addEventListener("pointermove", (ev: PointerEvent) => {
+
+            if(!mouseDown)
+                return;
+
+            //selectedMenu should never be undefined here
+            if( selectedMenu === undefined)
+                return;
+
+            //start by seeing if the user is over any item of the currently pulled down menu
+
+            let foundIt=false;
+            for(let i=0;i<selectedMenu.items.length;++i){
+
+                let menuItem = selectedMenu.items[i];
+
+                //disabled menu items are not eligible for selection
+                if( !menuItem.enabled )
+                    continue;
+
+                let r = menuItem.getRectangle();
+                if( ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom ){
+                    //we are over this menu item
+                    //remove selection from previous item
+                    if( selectedItem !== undefined && selectedItem !== menuItem ){
+                        selectedItem.unselect();
+                    }
+
+                    //indicate we now have this one selected
+                    selectedItem = menuItem;
+
+                    //add highlight to the item we are over
+                    selectedItem.select();
+                    
+                    foundIt=true;
+
+                    //no need to look further
+                    break;
+                }
+            }
+
+            if(!foundIt){
+                //if cursor is not over any item, remove highlight from the 
+                //item that was previously selected, if there is one
+                if(selectedItem){
+                    selectedItem.unselect();
+                    selectedItem=undefined;
+                }
+
+                //see if we're over any other menu title
+                for(let i=0;i<this.menus.length;++i){
+                    let r = this.menus[i].getTitleRectangle();
+                    if( r.left <= ev.clientX && ev.clientX <= r.right && r.top <= ev.clientY && ev.clientY <= r.bottom ){
+                        //we are over this menu
+                        //if it's the same as the current menu, there's nothing to do
+                        if( this.menus[i] === selectedMenu){
+                        } else {
+                            //otherwise, pull that menu down
+                            selectedMenu.pullUp();
+                            selectedMenu = this.menus[i];
+                            selectedMenu.pullDown();
+                        }
+                    }
+                }
+            }
+        });
+
+        this.mbar.addEventListener("pointerup", (ev: PointerEvent) => {
+
+            mouseDown=false;
+            this.mbar.releasePointerCapture(ev.pointerId);
+            
+            if( selectedMenu ){
+                selectedMenu.pullUp();
+            }
+
+            //if there is an item, remove the selection highlight
+            if(selectedItem ){
+                //run the callback
+                selectedItem.invoke();  
+                
+                //remove highlight
+                selectedItem.unselect();
+
+                //item is no longer selected
+                selectedItem = undefined;
+            }
+            
+
+            ev.preventDefault();
+        });
+    } //end function setupMouseHandlers
+} //end class Menubar

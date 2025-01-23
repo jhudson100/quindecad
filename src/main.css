@@ -3,7 +3,13 @@
     user-select: none;
     border: 0.05em solid black;
     padding-left: 1em;
-    border-radius: 0.3em;
+    border-top-left-radius: 0.3em;
+    border-top-right-radius: 0.3em;
+    font-family: sans-serif;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    z-index: 100;
 }
 
 /* Used by menubar for selected items and menus*/
@@ -34,10 +40,7 @@
 .menubar .menuItem {
     /* t r b l */
     padding: 0.25em 0.25em 0.25em 0.25em;
-
-    /* ref: https://stackoverflow.com/a/29579688 */
-    display: flex;
-    justify-content: space-between;
+   
 }
 
 .menubar .menuItemText {
@@ -49,4 +52,8 @@
     height: 0.01em;
     margin-top: 0.3em;
     margin-bottom: 0.3em;
+}
+
+.menubar .menuItem.disabled{
+    color: #aaaaaa;
 }

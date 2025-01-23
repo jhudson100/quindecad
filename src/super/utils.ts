@@ -6,8 +6,17 @@ import { Dialog } from "Dialog";
 export function saveSTL(){
     let meshes = View.get().getMeshes();
 
-    if(!meshes || meshes.length == 0)
+    if(!meshes || meshes.length == 0){
+        let d = new Dialog( [ 
+            {
+                name: "OK", 
+                callback: () => { d.hide(); } 
+            }
+        ]);
+        d.contentArea.innerHTML = "There are no meshes to save";
+        d.show();
         return;
+    }
 
     let totalTriangles=0;
     meshes.forEach( (m: Mesh) => {

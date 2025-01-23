@@ -1,3 +1,4 @@
+/*
 import {View} from "View";
 import {PythonManager} from "PythonManager";
 import {Mesh} from "../common/Mesh";
@@ -56,11 +57,11 @@ export class ButtonBar{
         });
 
         this.aboutButton = this.makeButton( div, "About", ()=>{
-            this.showAboutDialog();
+            showAboutDialog();
         });
 
         this.helpButton = this.makeButton( div, "Help", ()=>{
-            this.showHelp();
+            showHelp();
         });
 
         this.stopButton = this.makeButton( div, "Stop", () => {
@@ -88,13 +89,5 @@ export class ButtonBar{
         });
 
     }
-
-    showAboutDialog(){
-        showAboutDialog();  //from utils
-    }
-
-    showHelp(){
-        showHelp();     //from utils
-    }
 }
- 
+ */

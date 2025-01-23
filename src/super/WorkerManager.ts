@@ -11,6 +11,8 @@ const WORKERPATH="./worker/workerbootstrap.js";
 
 let verbose=false;
 
+enum WorkerState{ IDLE, BUSY };
+
 //if undefined is passed in, that indicates the worker was terminated before
 //sending a response.
 type ResponseCallback = (m: WorkerToSuperMessage|undefined) => void;
@@ -62,9 +64,13 @@ export class WorkerManager{
     //undefined as a parameter.
     callbacks: Map<number,ResponseCallback>;
 
-    busyLevel=0;
 
+    workerState = WorkerState.IDLE;
+
+    //these are called when worker goes from idle to busy
     onBusyCallbacks: WorkerStatusCallback[] = [];
+
+    //these are called when worker goes from busy to idle (or busy to terminated)
     onIdleCallbacks: WorkerStatusCallback[] = [];
     
     pendingPromises: any[] = [];
@@ -76,32 +82,57 @@ export class WorkerManager{
         this.worker=undefined;
     }
 
+    //f will be passed the boolean 'true'
     registerWorkerBusyCallback(f: WorkerStatusCallback ){
         this.onBusyCallbacks.push(f);
     }
+
+    //f will be passed the boolean 'false'
     registerWorkerIdleCallback(f: WorkerStatusCallback ){
         this.onIdleCallbacks.push(f);
     }
     
-    private workerIsNowBusy(){
-        this.busyLevel++;
-        if(this.busyLevel === 1 ){
-            this.onBusyCallbacks.forEach( (f: WorkerStatusCallback) => {
-                f(true);
-            });
+    private setWorkerState(ws: WorkerState ){
+        if( ws === this.workerState ){
+            console.warn("setWorkerState: New state == old state");
+            return;
         }
-    }
-    private workerIsNowIdle(){
-        this.busyLevel--;
-        if( this.busyLevel === 0 ){
-            this.onIdleCallbacks.forEach( (f: WorkerStatusCallback) => {
-                f(false);
-            });
+        this.workerState = ws;
+        switch(ws){
+            case WorkerState.IDLE:
+                this.onIdleCallbacks.forEach( (f: WorkerStatusCallback) => {
+                    f(false);
+                });
+                return;
+            case WorkerState.BUSY:
+                this.onBusyCallbacks.forEach( (f: WorkerStatusCallback) => {
+                    f(true);
+                });
+                return;
+            default:
+                console.error("Bad worker state");
         }
     }
 
+    // private workerIsNowBusy(){
+    //     this.busyLevel++;
+    //     if(this.busyLevel === 1 ){
+    //         this.onBusyCallbacks.forEach( (f: WorkerStatusCallback) => {
+    //             f(true);
+    //         });
+    //     }
+    // }
+    // private workerIsNowIdle(){
+    //     this.busyLevel--;
+    //     if( this.busyLevel === 0 ){
+    //         this.onIdleCallbacks.forEach( (f: WorkerStatusCallback) => {
+    //             f(false);
+    //         });
+    //     }
+    // }
+
     isWorkerBusy(){
-        return this.busyLevel > 0;
+        return this.workerState === WorkerState.BUSY;
     }
     
     //This must be called before any other WorkerManager functions
@@ -109,6 +140,7 @@ export class WorkerManager{
         if( this.worker === undefined ){
             return this.createWorker();
         } else {
+            //worker already exists, so nothing to do
             let p = new Promise<boolean>( (resolveFunc, rejectFunc) => {
                 resolveFunc(true);
             });
@@ -116,6 +148,7 @@ export class WorkerManager{
         }
     }
 
+    //forcibly terminate the worker
     async stopWorker() : Promise<boolean> {
         console.log("Stop worker");
         let p = new Promise<boolean>( (res,rej) => {
@@ -127,20 +160,26 @@ export class WorkerManager{
                 this.worker.terminate();
                 this.worker = undefined;
 
+
+                //for any pending callbacks: Send them 'undefined'
+                //to indicate the worker was terminated. Then
+                //remove those callbacks from the list of 
+                //ones that are waiting
+
                 this.callbacks.forEach( (f: ResponseCallback) => {
                     f(undefined);   //tell callback the worker was terminated
                 });
-
-                //remove any pending callbacks waiting for messages from the worker
                 this.callbacks.clear();
 
-                if( this.busyLevel > 0 ){
-                    this.busyLevel = 1;     //simulate worker going idle so we call the callbacks
-                    this.workerIsNowIdle();
-                }
+                //call any callbacks that need to be informed that we've gone from busy
+                //to idle
+                this.setWorkerState(WorkerState.IDLE);
+                
                 //create a new worker for later use
                 return this.createWorker();
             } else {
+                //worker is undefined, so we don't have a worker
+                //to stop!
                 res(true);
             }
         });
@@ -165,6 +204,11 @@ export class WorkerManager{
                 console.log("Worker new");
 
             this.worker = new Worker(WORKERPATH);
+
+            //newly created worker is idle; we don't 
+            //need to do any state transition callbacks, so we don't
+            //call the setWorkerState function
+            this.workerState = WorkerState.IDLE;
 
             //we make this a global function because
             //we have to be able to pass it to removeEventListener() later.
@@ -201,8 +245,7 @@ export class WorkerManager{
     runPythonAndComputeGeometry(code: string): Promise<PythonResult>{
         let p = new Promise<PythonResult>( (res,rej) => {
 
-            //mark worker as busy
-            this.workerIsNowBusy();
+            this.setWorkerState( WorkerState.BUSY );
 
             if(verbose)
                 console.log("Super: Requesting worker to run python");
@@ -224,76 +267,20 @@ export class WorkerManager{
 
     private runPythonAndComputeGeometryPart2( res: any, rej: any, wmsg: WorkerToSuperMessage|undefined) {
         
+        //if wmsg is undefined, that means
+        //that the worker was forcibly terminated
+        //and this callback is being notified of that fact.
+        //We don't reset the worker state here since that will be
+        //handled elsewhere, in the code that did the termination.
         if( wmsg === undefined ){
-            //worker was cancelled
             rej("Worker was cancelled");
             return;
         }
 
         let p = wmsg as PythonCodeResultMessage;
 
-        //construct message asking for geometry to be computed
-        // let msg = new ComputeGeometryMessage(p.commands);
-
-        //when geometry has been computed, the promise can
-        //be resolved.
-        // this.callbacks.set( msg.unique, (wsmsg: WorkerToSuperMessage) => {
-            // this.runPythonAndComputeGeometryPart3( res, rej, p, wsmsg);
-        // });
-        // this.worker.postMessage(msg);
-    // }
-// 
-    // private runPythonAndComputeGeometryPart3( res: any, rej: any, p: PythonCodeResultMessage, wsmsg: WorkerToSuperMessage|undefined) {
-        // if( wsmsg === undefined ){
-            //worker was terminated
-            // rej("Worker was terminated");
-            // return;
-        // }
-
-        // let wmsg = wsmsg as GeometryComputedMessage
-        // if(verbose)
-            // console.log("Super: Got computed geometry",wmsg);
-
-        this.workerIsNowIdle();
+        //the worker has completed the computation, so it's now idle
+        this.setWorkerState(WorkerState.IDLE);
         res(p);
     }
 }
-
- 
-
-
-
-
-
-    //         this.runPythonCode(code).then( (result: PythonResult ) => {
-    //             let mesh: Mesh; 
-    //             if( result.commands ){
-    //                 this.computeGeometry(result.commands).then( (meshes: Mesh[] ) => {
-                       
-    //                 });
-    //             }
-    //         });
-    //     });
-    //     this.addPromise(p);
-    //     return p;
-    // }
-
-
-    // //Ask the worker to compute geometry given a series of draw commands.
-    // async computeGeometry(drawables: DrawCommand[]): Promise<Mesh[]> {
-    //     let p = new Promise<Mesh[]>( (resolveFunc,rejectFunc) => {
-           
-    //     });
-    //     this.addPromise(p);
-    //     return p;
-    // }
-
-    // //dispatch a message to the worker asking it to run the given
-    // //python code. Gets back a message with the results of the computation
-    // //or the exception that was thrown.
-    // async runPythonCode(code: string) : Promise<PythonResult>{
-       
-    // }
-
-
-   

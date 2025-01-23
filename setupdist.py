@@ -28,6 +28,7 @@ for fname in [
     "src/ext/ace/ace-builds/src-min/ext-searchbox.js",
     "src/ext/ace/ace-builds/src-min/ext-settings_menu.js",
     "src/ext/ace/ace-builds/src-min/ext-keybinding_menu.js",
+    "src/ext/ace/ace-builds/src-min/ext-prompt.js",
     "src/ext/brython/Brython-3.13.0/brython.js",
     "src/ext/brython/Brython-3.13.0/brython_stdlib.js",
     "src/ext/manifold/package/manifold.js",
