@@ -1,9 +1,0 @@
-jQueryui version 1.14.1 with these widgets:
-
-Menu
-
-
-ln -s jquery-ui-1.14.1.custom/jquery-ui.min.css .
-ln -s jquery-ui-1.14.1.custom/jquery-ui.min.js .
-ln -s jquery-ui-1.14.1.custom/jquery-ui.structure.min.css .
-ln -s jquery-ui-1.14.1.custom/jquery-ui.theme.min.css .

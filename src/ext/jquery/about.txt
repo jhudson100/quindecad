@@ -1,3 +1,0 @@
-https://jquery.com/
-
-https://github.com/jquery/jquery
