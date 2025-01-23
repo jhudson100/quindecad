@@ -6,6 +6,8 @@
 
 #basic objects. Some parameters are optional; see
 #the detailed help for more information.
+#In particular, the color parameter is not required;
+#a default color is used if it is omitted.
 
 #A cube is probably the most basic object.
 #The 'centered' parameter determines if the cube
@@ -22,7 +24,7 @@ draw( cube( x=-20, y=-20, z=0,
 #by min and max coordinates. Instead of
 #immediately passing the object to draw(), we can
 #put it in a variable so we can work with it later.
-b = box( min=(-15,-22,-5), max=( 5, -18, 5 ),
+bx = box( min=(-15,-22,-5), max=( 5, -18, 5 ),
          color=(255,128,0) )
 
 #a basic cylinder.
@@ -31,7 +33,7 @@ cyl = cylinder( x=-10, y=-20, z=-10, radius=4,
 )
 
 #we now draw two objects at once
-draw(b,cyl)
+draw([bx,cyl])
 
 #to get shapes like hexagons we can specify the resolution
 #of the cylinder
@@ -39,24 +41,117 @@ hexagon = cylinder( x=0, y=-20, z=-10, radius=4, height=4,
     resolution=6, color=(128,255,0) )
 draw(hexagon)
 
-
-# boundingbox() doesn't create anything
-# on the screen; it returns the minimum
-# and maximum extents of the object
-bbmin, bbmax = boundingbox( cone )
+# If we want a cylinder with a different size on the top
+# compared to the bottom, the frustum function can be used.
 draw(
+    frustum(x=10, y=-20, z=-5, height=10, radius1=4, radius2=2,
+        zcenter=True, color=(0,255,0) )
+)
 
+# A cone can be created using frustum() as well.
+draw(
+    frustum(x=20, y=-20, z=0, height=5, radius1=3, radius2=0,
+        zcenter=False, color=(0,255,128) )
+)
+
+# Spheres are a basic building block of many objects
+sph = sphere( x=-20, y=-10, z=0, radius=3, color=(0,255,255) )
+draw(sph)
 
 # CSG operations are very useful. We have three of them...
 # The first is the union() operation which "glues" one or more
 # objects together into a single solid.
-union()
+s1 = sphere(x=-13,y=-10,z=0, radius=2)
+c1 = cube(x=-7,y=-10,z=0, xsize=4, ysize=4, zsize=4)
+cy1 = cylinder(x=-15, y=-10,z=-2, height=4, radius=2)
+draw( union([s1,c1,cy1], color=(0,128,255)) )
 
 # Another CSG operation is intersection, which keeps the points
 # that are inside of all the solids passed in.
+s1 = sphere(x=-3,y=-10,z=0, radius=2)
+c1 = sphere(cube(x=3,y=-10,z=0, xsize=4, ysize=4, zsize=4) )
+draw( intersection([s1,c1], color=(0,128,255)) )
+
+# The final CSG operation is difference. This operation keeps those
+# points that are in the first object and not in any other object.
+s1 = sphere(x=7,y=-10,z=0, radius=2)
+c1 = sphere(cube(x=13,y=-10,z=0, xsize=4, ysize=4, zsize=4) )
+draw( difference([s1,c1], color=(0,128,255)) )
+
+
+# Three common affine transformations are rotation,
+# translation, and scale. All three are available.
+c = cube(xsize=5, ysize=5, zsize=5, centered=True )
+draw( translation(c, tx=20, ty=-10, tz=0 ) )
+
+#we can combine transformations as well
+draw(
+    translation(
+        rotation(
+            c, axis=(1,1,1), angle=45
+        ),
+        tx=-20, ty=0, tz=0,
+        color=(0,0,255)
+     )
+)
+
+c = scale(c, sx=0.5,sy=2,sz=0.25 )
+c = translate( c, tx=-10, ty=0, tz=0, color=(128,0,255) )
+draw(c)
+
+
+# We can extrude a 2D polygon to form a solid. If desired, a twist
+# can be applied to the object as well. The polygon must be
+# specified in counterclockwise order! If you don't want the
+# result to be at the origin, you'll likely want to apply translate()
+# to the extruded object. The top can be scaled to be larger or
+# smaller than the bottom.
+ex = extrude(polygon=[ (1,0),  (0.25,-0.25), ( 0,-1 ), (-0.25,-0.25 ),
+                  (-1,0), (-0.25,0.25), ( 0,1 ), (0.25,0.25) ],
+        height=4,
+        divisions=20, twist=45,
+        scale=(0.5,0.5),
+        zcenter=True,
+        color=(255,0,255)
+)
+draw(ex)
+
+# The hull() function gives the convex hull of an object.
+draw( translate( hull(ex), tx=10, ty=0, tz=0, color=(255,0,128) )
+
+
+#we can cut an object along a plane using the cut function.
+sph = sphere(radius=4)
+sph = cut( sph, planeNormal=(1,1,1), planeD=0.5, keepPositive=False)
+sph = translate( sph, tx=20, ty=0, tz=0, color=(192,192,192) )
+draw(sph)
+
+# A solid of revolution is produced with the revolve function
+# The polygon must be specified in counterclockwise order!
+# Here, we make a donut shape by creating a circle
+# and then revolving it. Many of the standard Python
+# library modules are available, so we take advantage of that here.
+import math
+points = []
+numpoints = 36
+for i in range(numpoints):
+    theta = i/numpoints
+    x = math.cos(theta)
+    y = math.sin(theta)
+    points.append( (x+5, y) )
+donut = revolve( polygon=points, angle=360)
+donut = translate( donut, tx=-20, ty=10, tz=0, color=(192, 64, 32)  ) 
+draw(donut)
+
+
+# boundingbox() doesn't create anything
+# on the screen; it returns the minimum
+# and maximum extents of the object
+bbmin, bbmax = boundingbox( donus )
+draw(box( min=bbmin, max=bbmax, color=(64,192,32) )
+
 
 #centroid() gives us the centroid of an object
-#as an x,y,z triple
-
-#we can cut an object using the cut function.
-
+#as an x,y,z triple. The lookAt function positions the
+#camera so it is looking at the given point.
+lookAt(target=centroid(ex), distance=10)
