@@ -28,7 +28,7 @@ export class Spinner{
                 this.angle -= 360;
             this.elem.style.transform = `rotate(${this.angle}deg)`
             if( this.visible )
-                setTimeout( periodic, 60 );
+                setTimeout( periodic, 40 );
         };
         periodic();
     }

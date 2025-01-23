@@ -1,13 +1,15 @@
 import {ErrorReporter} from "ErrorReporter";
 import {View} from "View";
 import {Editor} from "Editor";
-import {ButtonBar} from "ButtonBar";
+// import {ButtonBar} from "ButtonBar";
 import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
 import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
-import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation } from "utils";
+import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation, saveSTL, showAboutDialog, showHelp } from "utils";
+import { Menu, Menubar } from "Menubar";
+import { Spinner } from "Spinner";
 
 
 // @ts-ignore
@@ -62,7 +64,8 @@ export function setupInterface(){
 
     let bbardiv =createGridCell( contentArea, currentRow,1, 1,3 );
     bbardiv.style.width="calc(100%)";
-    let bbar = ButtonBar.get().initialize(bbardiv);
+
+    //let bbar = ButtonBar.get().initialize(bbardiv);
 
     currentRow=2;
 
@@ -126,6 +129,117 @@ export function setupInterface(){
         Editor.get().resize();
         ErrorReporter.get().resize();
     });
+
+    //must be after editor has been created
+    setupMenubar(bbardiv);
+
+}
+
+function setupMenubar(parent: HTMLElement)
+{
+    let shortcuts = Editor.get().getKeyboardShortcuts();
+
+    // console.log(shortcuts);
+
+    //FIXME: Add key listener to window for keyboard shortcuts
+
+    function item(menu: Menu, label: string, cmd: string, winaccel?: string, macaccel?: string){
+        let accel: string;
+        if(winaccel){
+            let platform : string = Editor.get().getPlatformForShortcuts();
+            if( platform.toLowerCase().indexOf("mac") !== -1 )
+                accel = macaccel;
+            else
+                accel = winaccel;
+        }  else {
+            if( shortcuts.has(cmd) ){
+                accel = shortcuts.get(cmd);
+                let i = accel.indexOf("|");
+                if( i !== -1 ){
+                    accel = accel.substring(0,i);
+                }
+            }
+        }
+        
+        menu.addItem( label, () => { Editor.get().executeCommand(cmd) }, accel );
+    }
+
+    parent.style.overflow="visible";
+    let mbar = new Menubar(parent);
+    
+    let filemenu = mbar.addMenu("File");
+    let saveItem = filemenu.addItem("Save STL...", ()=>{ saveSTL(); } );
+    
+    let editmenu = mbar.addMenu("Edit");
+    item(editmenu,"Undo","undo");
+    item(editmenu,"Redo","redo");
+    editmenu.addSeparator();
+    //FIXME: Need correct shortcuts on Mac
+    item(editmenu,"Cut","cut","Ctrl-X","Command-X");
+    item(editmenu,"Copy","copy","Ctrl-C","Command-C");
+    item(editmenu,"Paste","paste","Ctrl-V","Command-V");
+    editmenu.addSeparator();
+    item(editmenu,"Delete line","removeline");
+    item(editmenu,"Clear to end", "removetolineend");
+    editmenu.addSeparator();
+    item( editmenu, "Select all", "selectall" );
+    item( editmenu, "Duplicate selection", "duplicateSelection");
+    item( editmenu, "Duplicate line", "copylinesdown");
+    item( editmenu, "Move lines down", "movelinesdown");
+    item( editmenu, "Move lines up", "movelinesup");
+    
+    let searchmenu = mbar.addMenu("Search");
+    item( searchmenu, "Go to line...", "gotoline");
+    item( searchmenu, "Find...", "find");
+    item( searchmenu, "Replace...", "replace");
+    item( searchmenu, "Find previous", "findprevious");
+    item( searchmenu, "Find next", "findnext");
+    item( searchmenu, "Jump to matching", "jumptomatching");
+    
+    let formatmenu = mbar.addMenu("Format");
+    item( formatmenu, "Toggle comment", "togglecomment");
+    item( formatmenu, "Indent", "blockindent");
+    item( formatmenu, "Outdent", "blockoutdent");
+    item( formatmenu, "Uppercase", "touppercase");
+    item( formatmenu, "Lowercase", "tolowercase");
+    item( formatmenu, "Sort lines", "sortlines");
+    item( formatmenu, "Transpose", "transposeletters");
+
+    let viewmenu = mbar.addMenu("View");
+    viewmenu.addItem("Toggle grid", ()=> { View.get().toggleGrid() } );
+    viewmenu.addItem("Toggle axes", ()=> { View.get().toggleAxes() } );
+    
+    let runmenu = mbar.addMenu("Run");
+    let runItem = runmenu.addItem("Run", () => { PythonManager.get().runCodeFromEditor(); }, "Shift+Enter");
+    let stopItem = runmenu.addItem("Stop", () => { WorkerManager.get().stopWorker(); });
+    stopItem.setDisabled();
+    let helpmenu = mbar.addMenu("Help");
+    helpmenu.addItem("Help...",()=>{ showHelp();});
+    helpmenu.addItem("About...",()=>{ showAboutDialog();});
+
+    WorkerManager.get().registerWorkerBusyCallback( () => {
+        saveItem.setDisabled();
+        runItem.setDisabled();
+        stopItem.setEnabled();
+    });
+    WorkerManager.get().registerWorkerIdleCallback( () => {
+        saveItem.setEnabled();
+        runItem.setEnabled();
+        stopItem.setDisabled();
+    });
+    
+
+    let spinnerdiv = document.createElement("div");
+    spinnerdiv.style.display="inline-block";
+    let spinner = new Spinner(spinnerdiv);
+    mbar.mbar.appendChild(spinnerdiv);
+    WorkerManager.get().registerWorkerBusyCallback( () => {
+        spinner.show();
+    });
+    WorkerManager.get().registerWorkerIdleCallback( () => {
+        spinner.hide();
+    });
+
 
 }
 

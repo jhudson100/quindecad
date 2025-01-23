@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
-<svg width="0.89083105in" height="0.89083844in" viewBox="0 0 22.627109 22.627297" version="1.1" id="svg8" inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)" sodipodi:docname="spinner.svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+<svg width="0.89690244in" height="0.91444844in" viewBox="0 0 22.781322 23.226991" version="1.1" id="svg8" inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)" sodipodi:docname="spinner.svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs id="defs2">
     <linearGradient id="linearGradient35" inkscape:collect="always">
       <stop style="stop-color:#77ebff;stop-opacity:0.08235294;" offset="0" id="stop35" />
@@ -65,7 +65,7 @@
     <linearGradient inkscape:collect="always" xlink:href="#linearGradient35" id="linearGradient36" x1="82.893425" y1="112.03929" x2="83.821075" y2="114.61829" gradientUnits="userSpaceOnUse" />
   </defs>
   <sodipodi:namedview id="base" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:zoom="0.49497475" inkscape:cx="380.74511" inkscape:cy="508.3253" inkscape:document-units="px" inkscape:current-layer="layer1" showgrid="true" units="in" inkscape:window-width="1366" inkscape:window-height="707" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:pagecheckerboard="0" inkscape:snap-global="false" inkscape:showpageshadow="0" inkscape:deskcolor="#d1d1d1">
-    <inkscape:grid type="xygrid" id="grid1420" units="px" spacingx="2.6458334" spacingy="2.6458334" empspacing="5" originx="-81.290416" originy="-81.066482" visible="true" />
+    <inkscape:grid type="xygrid" id="grid1420" units="px" spacingx="2.6458334" spacingy="2.6458334" empspacing="5" originx="-81.21351" originy="-80.990675" visible="true" />
   </sodipodi:namedview>
   <metadata id="metadata5">
     <rdf:RDF>
@@ -75,7 +75,7 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1" transform="translate(-81.290419,-98.666475)">
+  <g inkscape:label="Layer 1" inkscape:groupmode="layer" id="layer1" transform="translate(-81.213518,-98.590667)">
     <path style="fill:none;fill-opacity:0.987167;stroke:url(#linearGradient14);stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:round" d="M 100.76318,104.12214 C 101.29401,104.85541 101.72963,105.66727 102.05022,106.54191" id="path13" />
     <path style="fill:none;fill-opacity:0.987167;stroke:url(#linearGradient16);stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:round" d="M 98.904835,102.17393 C 99.606294,102.73419 100.23234,103.38887 100.76318,104.12214" id="path12" />
     <path style="fill:none;fill-opacity:0.987167;stroke:url(#linearGradient18);stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:round" d="M 96.594036,100.7922 C 97.426506,101.14782 98.203375,101.61367 98.904835,102.17393" id="path11" />
@@ -88,5 +88,6 @@
     <path style="fill:none;fill-opacity:0.987167;stroke:url(#linearGradient32);stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:round" d="M 82.698877,109.35394 C 82.755153,108.45796 82.932024,107.56956 83.227901,106.71404" id="path4" />
     <path style="fill:none;fill-opacity:0.987167;stroke:url(#linearGradient34);stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:round" d="M 82.893424,112.03929 C 82.706921,111.15347 82.642601,110.24992 82.698877,109.35394" id="path3" />
     <path style="fill:none;fill-opacity:0.987167;stroke:url(#linearGradient36);stroke-width:2.64583;stroke-linecap:butt;stroke-linejoin:round" d="M 83.821075,114.61829 C 83.388614,113.79322 83.079927,112.92512 82.893424,112.03929" id="path1" />
+    <ellipse style="fill:none;fill-opacity:0.987523;stroke:#5a9a4b;stroke-width:0.264583;stroke-linejoin:round;stroke-opacity:0" id="path2" cx="92.604179" cy="110.20416" rx="11.258369" ry="11.481204" />
   </g>
 </svg>

@@ -1,0 +1,59 @@
+
+.menubar{
+    user-select: none;
+    border: 0.05em solid black;
+    padding-left: 1em;
+    border-top-left-radius: 0.3em;
+    border-top-right-radius: 0.3em;
+    font-family: sans-serif;
+    position: relative;
+    left: 0px;
+    top: 0px;
+    z-index: 100;
+}
+
+/* Used by menubar for selected items and menus*/
+.menubar .menuSelected {
+    background: #5070e0;
+    color: white;
+}
+
+
+.menubar .menuTitle {
+    padding-left: 0em;
+    padding-right: 0.5em;
+    border-top-left-radius: 0.15em;
+    border-top-right-radius: 0.15em;
+}
+
+.menubar .menuItemContainer {
+    background: white;
+    border: 1px solid black;
+    border-top-right-radius: 0.25em;
+    border-bottom-left-radius: 0.25em;
+    border-bottom-right-radius: 0.25em;
+    box-shadow: 0.2em 0.2em 0.1em rgba(0,0,0,0.5);
+    left: 0em;        /*should match padding on menuTitle*/
+    top: 1.1em;
+}
+
+.menubar .menuItem {
+    /* t r b l */
+    padding: 0.25em 0.25em 0.25em 0.25em;
+   
+}
+
+.menubar .menuItemText {
+    padding-right: 2em;
+}
+
+.menubar .menuSeparator {
+    border-top: 1px solid lightgray;
+    height: 0.01em;
+    margin-top: 0.3em;
+    margin-bottom: 0.3em;
+}
+
+.menubar .menuItem.disabled{
+    color: #aaaaaa;
+}

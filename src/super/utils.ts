@@ -1,12 +1,22 @@
 import { Mesh } from "Mesh";
 import { View } from "View";
-import { ArgSpec, FuncSpec } from "pyshimdoc";
+import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
+import { Dialog } from "Dialog";
 
 export function saveSTL(){
     let meshes = View.get().getMeshes();
 
-    if(!meshes || meshes.length == 0)
+    if(!meshes || meshes.length == 0){
+        let d = new Dialog( [ 
+            {
+                name: "OK", 
+                callback: () => { d.hide(); } 
+            }
+        ]);
+        d.contentArea.innerHTML = "There are no meshes to save";
+        d.show();
         return;
+    }
 
     let totalTriangles=0;
     meshes.forEach( (m: Mesh) => {
@@ -174,4 +184,61 @@ export function getDetailedFunctionDocumentation(fs: FuncSpec, includeFunctionDo
     });
 
     return elem;
+}
+
+
+export function 
+showHelp(){
+    fetch("help.html").then( (resp: Response) => {
+        if(resp.ok){
+            resp.text().then( (txt: string) => {
+
+                let ul = document.createElement("ul");
+
+                let M: Map<string,FuncSpec> = getPreambleFunctionInfo();
+                M.forEach( (fs: FuncSpec) => {
+                    let li = document.createElement("li");
+                    li.className = "functiondoc";
+                    ul.appendChild(li);
+                    li.appendChild(getFunctionSignatureDocumentation(fs,false,true));
+                    li.appendChild(getDetailedFunctionDocumentation(fs,true));
+                });
+
+                txt = txt.replace("<!--FUNCTIONS-->",ul.innerHTML);
+
+                let d = new Dialog( [
+                    { "name": "OK" }
+                ]);
+                let div = document.createElement("div");
+                div.style.overflow="scroll";
+                div.style.height="50vh";
+                div.style.textAlign="left";
+                // div.style.whiteSpace="pre-wrap";
+                div.innerHTML=txt;
+                // div.appendChild(document.createTextNode(txt));
+                d.contentArea.appendChild(div);
+                d.show();
+            });
+        }
+    });
+}
+
+export function showAboutDialog(){
+    fetch("about.txt").then( (resp: Response) => {
+        if(resp.ok){
+            resp.text().then( (txt: string) => {
+                let d = new Dialog( [
+                    { "name": "OK" }
+                ]);
+                let div = document.createElement("div");
+                div.style.overflow="scroll";
+                div.style.height="50vh";
+                div.style.textAlign="left";
+                div.style.whiteSpace="pre";
+                div.appendChild(document.createTextNode(txt));
+                d.contentArea.appendChild(div);
+                d.show();
+            });
+        }
+    });
 }

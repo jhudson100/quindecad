@@ -221,22 +221,6 @@ export class Editor{
         this.ed = ace.edit(parent);
 
 
-        //we can get the editor's current keybindings like so
-        console.log(this.ed.keyBinding);
-        let commands = this.ed.keyBinding.$defaultHandler.commands;
-        let platform = this.ed.keyBinding.$defaultHandler.platform;
-        Object.getOwnPropertyNames(commands).forEach( (name: string) => {
-            let bk = commands[name].bindKey;
-            if( bk ){
-                console.log(name, bk[platform] ?? commands[name].bindKey);
-            } else {
-                console.log(name,"<no key>");
-            }
-        });
-
-        //force one of the commands to run
-        // this.ed.execCommand("showSettingsMenu");
-
         //to have a more extensive list:
         //set enableBasicAutocompletion, enableSnippets,
         //and enableLiveAutocompletion to true
@@ -342,4 +326,37 @@ export class Editor{
     setValue(s: string){
         this.ed.setValue(s,-1); //-1=put cursor at start
     }
+
+    getPlatformForShortcuts(){
+        let platform = this.ed.keyBinding.$defaultHandler.platform;
+        return platform;
+    }
+
+    getKeyboardShortcuts(){
+
+        //we can get the editor's current keybindings like so
+        // console.log(this.ed.keyBinding);
+        let commands = this.ed.keyBinding.$defaultHandler.commands;
+        let platform = this.ed.keyBinding.$defaultHandler.platform;
+        
+        let shortcuts = new Map<string,string>();
+
+        Object.getOwnPropertyNames(commands).forEach( (name: string) => {
+            let bk = commands[name].bindKey;
+            if( bk && bk[platform] ){
+                shortcuts.set(name,bk[platform]);
+                // console.log(name, bk[platform] ?? bk);
+            // } else {
+                // console.log(name,"<no key>");
+            }
+        });
+        return shortcuts;
+    }
+    
+    executeCommand(cmd: string){
+        this.ed.execCommand(cmd);
+        //force one of the commands to run
+        // this.ed.execCommand("showSettingsMenu");
+    }
+
 }

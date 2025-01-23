@@ -2,6 +2,7 @@
 //FIXME: Allow user to click edge and then show statistics (length, endpoints) of that edge
 //FIXME: Add wireframe display option: solid, solid+wireframe, wireframe only
 //FIXME: Use +,- to change rotateSpeed and panSpeed on orbitcontrols. Or put slider on screen
+//FIXME: Allow a user-specified clipping plane for viewing interior of objects: https://stackoverflow.com/questions/43916002/three-js-how-to-cut-a-3d-object-with-y-plane
 
 import {Mesh} from "Mesh";
 

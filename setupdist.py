@@ -13,6 +13,7 @@ os.makedirs("dist/super",exist_ok=True)
 shutil.copyfile("src/index.html","dist/index.html")
 shutil.copyfile("src/about.txt","dist/about.txt")
 shutil.copyfile("src/help.html","dist/help.html")
+shutil.copyfile("src/main.css","dist/main.css")
 
 #some web hosts treat *anything* with a .py in the name as
 #if it is a cgi script, even if we don't ask to execute it.
@@ -27,6 +28,7 @@ for fname in [
     "src/ext/ace/ace-builds/src-min/ext-searchbox.js",
     "src/ext/ace/ace-builds/src-min/ext-settings_menu.js",
     "src/ext/ace/ace-builds/src-min/ext-keybinding_menu.js",
+    "src/ext/ace/ace-builds/src-min/ext-prompt.js",
     "src/ext/brython/Brython-3.13.0/brython.js",
     "src/ext/brython/Brython-3.13.0/brython_stdlib.js",
     "src/ext/manifold/package/manifold.js",
@@ -34,7 +36,12 @@ for fname in [
     "src/ext/three/package/build/three.core.min.js",
     "src/ext/three/package/build/three.module.min.js",
     "src/ext/three/package/examples/jsm/controls/OrbitControls.js",
-    "src/ext/split/package/dist/split-grid.mjs"
+    "src/ext/split/package/dist/split-grid.mjs",
+    "src/ext/jquery/jquery-3.7.1.min.js",
+    "src/ext/jqueryui/jquery-ui.min.css",
+    "src/ext/jqueryui/jquery-ui.min.js",
+    "src/ext/jqueryui/jquery-ui.structure.min.css",
+    "src/ext/jqueryui/jquery-ui.theme.min.css",
 ]:
     tmp = fname.split("/")
     libname = tmp[2]
