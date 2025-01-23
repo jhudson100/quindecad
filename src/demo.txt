@@ -1,0 +1,62 @@
+# This is an example of various features
+# you can use for working with objects
+
+# To run this, use the "Run" menu or press
+# shift+enter.
+
+#basic objects. Some parameters are optional; see
+#the detailed help for more information.
+
+#A cube is probably the most basic object.
+#The 'centered' parameter determines if the cube
+#will be centered around the xyz coordinates given
+#or if xyz will be the minimum coordinates of the cube.
+#Since the x, y, and z sizes can be different, this
+#is technically a cuboid and not a cube.
+draw( cube( x=-20, y=-20, z=0,
+            xsize=15, ysize=10, zsize=5,
+            centered=True
+            color=(255,0,0) ) )
+
+#a box is like a cube, but its location is given
+#by min and max coordinates. Instead of
+#immediately passing the object to draw(), we can
+#put it in a variable so we can work with it later.
+b = box( min=(-15,-22,-5), max=( 5, -18, 5 ),
+         color=(255,128,0) )
+
+#a basic cylinder.
+cyl = cylinder( x=-10, y=-20, z=-10, radius=4,
+        height=20, zcenter=True, color=(255,255,0)
+)
+
+#we now draw two objects at once
+draw(b,cyl)
+
+#to get shapes like hexagons we can specify the resolution
+#of the cylinder
+hexagon = cylinder( x=0, y=-20, z=-10, radius=4, height=4,
+    resolution=6, color=(128,255,0) )
+draw(hexagon)
+
+
+# boundingbox() doesn't create anything
+# on the screen; it returns the minimum
+# and maximum extents of the object
+bbmin, bbmax = boundingbox( cone )
+draw(
+
+
+# CSG operations are very useful. We have three of them...
+# The first is the union() operation which "glues" one or more
+# objects together into a single solid.
+union()
+
+# Another CSG operation is intersection, which keeps the points
+# that are inside of all the solids passed in.
+
+#centroid() gives us the centroid of an object
+#as an x,y,z triple
+
+#we can cut an object using the cut function.
+

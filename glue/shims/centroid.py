@@ -3,7 +3,7 @@ from shims.gluetypes import *
 def centroid(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE) -> VEC3:
     """
     Returns the centroid of the object or group of objects; the return value is a list (x,y,z).
-    @param objects A drawable object or a list of drawable objects.
+    @param objects A solid object or a list of solid objects.
     """
     pass
 

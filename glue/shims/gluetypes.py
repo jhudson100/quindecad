@@ -10,7 +10,7 @@ class COLOR:
     name="color"
 class MESH_HANDLE:
     checker="assertIsMeshHandle"
-    name="drawable object"
+    name="solid object"
 class POLYGON2D:
     checker="assertIsPolygon2D"
     name="2D polygon"
@@ -34,7 +34,7 @@ class BOOLEAN:
     name="boolean"
 class LIST_OF_MESH_HANDLE:
     checker="assertIsListOfMeshHandle"
-    name="list of drawable objects"
+    name="list of solid objects"
 class LIST_OF_VEC3:
     checker="assertIsListOfVec3"
     name="list of tuples, each of which is [x,y,z]"

@@ -20,10 +20,10 @@ export class MeshHandle{
     //since we use the existence of that name to distinguish
     //between lists and individual handle's.
     index: number;
-    _is_drawable_: boolean
+    _is_solid_object_: boolean
     constructor(mw: ManifoldMeshWrapper){
         this.index=manifoldMeshes.length;
-        this._is_drawable_ = true;
+        this._is_solid_object_ = true;
         manifoldMeshes.push(mw);
     }
 }

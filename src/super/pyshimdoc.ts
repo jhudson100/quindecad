@@ -35,12 +35,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "The objects for the computation.",
                     "defaultValue": null
@@ -110,14 +110,14 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
-                    "doc": "A drawable object or a list of drawable objects.",
+                    "doc": "A solid object or a list of solid objects.",
                     "defaultValue": null
                 }
             ]
@@ -240,12 +240,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "Either a single object or a list of objects.",
                     "defaultValue": null
@@ -425,10 +425,10 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "list[Drawable]"
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a list of drawable objects"
+                        "a list of solid objects"
                     ],
                     "doc": "A list of the objects for the computation.",
                     "defaultValue": null
@@ -467,12 +467,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objs",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "An object or a list. Lists will be recursively examined for objects to draw.",
                     "defaultValue": null
@@ -586,10 +586,10 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "obj",
                     "argtypes": [
-                        "Drawable"
+                        "SolidObject"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object"
+                        "a solid object"
                     ],
                     "doc": "The object to free.",
                     "defaultValue": null
@@ -725,10 +725,10 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "obj",
                     "argtypes": [
-                        "Drawable"
+                        "SolidObject"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object"
+                        "a solid object"
                     ],
                     "doc": "The object for the computation",
                     "defaultValue": null
@@ -745,12 +745,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "The objects for the hull computation.",
                     "defaultValue": null
@@ -789,10 +789,10 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "list[Drawable]"
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a list of drawable objects"
+                        "a list of solid objects"
                     ],
                     "doc": "A list of the objects to intersect.",
                     "defaultValue": null
@@ -911,12 +911,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "The objects to translate",
                     "defaultValue": null
@@ -988,12 +988,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "The objects to translate. If a single object is passed in, this returns a single object. If a list is passed in, it returns a list.",
                     "defaultValue": null
@@ -1162,12 +1162,12 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "Drawable",
-                        "list[Drawable]"
+                        "SolidObject",
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a drawable object",
-                        "a list of drawable objects"
+                        "a solid object",
+                        "a list of solid objects"
                     ],
                     "doc": "The objects to translate",
                     "defaultValue": null
@@ -1239,10 +1239,10 @@ preambleFunctions = new Map<string,FuncSpec>([
                 {
                     "argname": "objects",
                     "argtypes": [
-                        "list[Drawable]"
+                        "list[SolidObject]"
                     ],
                     "argtypesVerbose": [
-                        "a list of drawable objects"
+                        "a list of solid objects"
                     ],
                     "doc": "A list of the objects to join together.",
                     "defaultValue": null

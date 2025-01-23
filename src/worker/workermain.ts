@@ -109,13 +109,13 @@ export async function main(__BRYTHON__1: any){
 }
  
 
-type ImplDrawType = (drawable: MeshHandle) => void ;
+type ImplDrawType = (handle: MeshHandle) => void ;
 declare global {
     interface WorkerGlobalScope { impl_draw : ImplDrawType }
 };
-self.impl_draw = (drawable: MeshHandle ) => {
+self.impl_draw = (handle: MeshHandle ) => {
     try{
-        let mw = handleToWrapper(drawable);
+        let mw = handleToWrapper(handle);
         let m = mw.mesh.getMesh();
         let me = new Mesh(m.vertProperties,m.triVerts,mw.color,mw.name);
         meshes.push(me);

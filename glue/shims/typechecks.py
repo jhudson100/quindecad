@@ -35,7 +35,7 @@ def assertIsMeshHandle(obj):
     """ """
     try:
         tmp = obj.to_dict()
-        if tmp.get("_is_drawable_") != True:
+        if tmp.get("_is_solid_object_") != True:
             return False
         return True
     except Exception as e:

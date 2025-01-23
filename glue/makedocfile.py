@@ -119,8 +119,8 @@ def getDoc(name,fp,func):
 typeNameMap = {
     "BOOLEAN": ("bool", "a boolean value (True or False)"),
     "COLOR": ("color", "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"),
-    "LIST_OF_MESH_HANDLE": ("list[Drawable]", "a list of drawable objects"),
-    "MESH_HANDLE": ("Drawable", "a drawable object"),
+    "LIST_OF_MESH_HANDLE": ("list[SolidObject]", "a list of solid objects"),
+    "MESH_HANDLE": ("SolidObject", "a solid object"),
     "NONNEGATIVE_INTEGER": ("nonnegative integer", "an integer greater than or equal to zero"),
     "NONZERO_VEC3": ("vec3", "a list of three numbers where at least one number is not zero"),
     "NUMBER": ("number","a number"),

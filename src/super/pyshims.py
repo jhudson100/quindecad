@@ -34,7 +34,7 @@ def radians(degrees):
 
 def boundingbox ( objects ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if objects is None: objects = javascript.UNDEFINED
     return browser.self.impl_boundingbox(objects)
 
@@ -55,7 +55,7 @@ def box ( min,max,color=None,name=None ):
 
 def centroid ( objects ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if objects is None: objects = javascript.UNDEFINED
     return browser.self.impl_centroid(objects)
 
@@ -91,7 +91,7 @@ def cube ( xsize,ysize,zsize,x=0.0,y=0.0,z=0.0,centered=False,color=None,name=No
 
 def cut ( objects,planeNormal,planeD,keepPositive,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if not assertIsNonzeroVec3(planeNormal) :
         raise Exception(f'Parameter "planeNormal" has wrong type (expected tuple of three numbers with x**2 + y**2 + z**2 > 0); got {type(planeNormal)}')
     if not assertIsNumber(planeD) :
@@ -142,7 +142,7 @@ def cylinder ( x,y,z,radius,height,zcenter=True,color=None,resolution=36,name=No
 
 def difference ( objects,color=None,name=None ):
     if not assertIsListOfMeshHandle(objects) :
-        raise Exception(f'Parameter "objects" has wrong type (expected list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected list of solid objects); got {type(objects)}')
     if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
     if not assertIsString(name)  and not( type(name) == type(None) and name == None):
@@ -154,14 +154,14 @@ def difference ( objects,color=None,name=None ):
 
 def draw ( objs ):
     if not any([assertIsMeshHandle(objs),assertIsListOfMeshHandle(objs)]):
-        raise Exception(f'Parameter "objs" has wrong type (expected drawable object, or list of drawable objects); got {type(objs)}')
+        raise Exception(f'Parameter "objs" has wrong type (expected solid object, or list of solid objects); got {type(objs)}')
     def drawHelper(obj, parameterNumber):
         if assertIsList(obj):
             for x in obj:
                 drawHelper(x,parameterNumber)   #retain old list index for error reporting
         else:
             if not assertIsMeshHandle(obj):
-                raise Exception(f"draw(): List element {parameterNumber} is not a drawable object or contains something that is not a drawable object ({type(obj)})")
+                raise Exception(f"draw(): List element {parameterNumber} is not a solid object or contains something that is not a solid object ({type(obj)})")
             if not browser.self.impl_draw(obj):
                 raise Exception(f"Internal error when drawing list element {parameterNumber}")
 
@@ -199,7 +199,7 @@ def extrude ( polygon,height,divisions=None,twist=None,scale=None,zcenter=False,
 
 def free ( obj ):
     if not assertIsMeshHandle(obj) :
-        raise Exception(f'Parameter "obj" has wrong type (expected drawable object); got {type(obj)}')
+        raise Exception(f'Parameter "obj" has wrong type (expected solid object); got {type(obj)}')
     if obj is None: obj = javascript.UNDEFINED
     return browser.self.impl_free(obj)
 
@@ -238,13 +238,13 @@ def frustum ( radius1,radius2,height,x=0.0,y=0.0,z=0.0,zcenter=True,color=None,r
 
 def genus ( obj ):
     if not assertIsMeshHandle(obj) :
-        raise Exception(f'Parameter "obj" has wrong type (expected drawable object); got {type(obj)}')
+        raise Exception(f'Parameter "obj" has wrong type (expected solid object); got {type(obj)}')
     if obj is None: obj = javascript.UNDEFINED
     return browser.self.impl_genus(obj)
 
 def hull ( objects,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
     if not assertIsString(name)  and not( type(name) == type(None) and name == None):
@@ -256,7 +256,7 @@ def hull ( objects,color=None,name=None ):
 
 def intersection ( objects,color=None,name=None ):
     if not assertIsListOfMeshHandle(objects) :
-        raise Exception(f'Parameter "objects" has wrong type (expected list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected list of solid objects); got {type(objects)}')
     if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
     if not assertIsString(name)  and not( type(name) == type(None) and name == None):
@@ -299,7 +299,7 @@ def assertIsListOfVec3 ( obj ):
 def assertIsMeshHandle ( obj ):
     try:
         tmp = obj.to_dict()
-        if tmp.get("_is_drawable_") != True:
+        if tmp.get("_is_solid_object_") != True:
             return False
         return True
     except Exception as e:
@@ -384,7 +384,7 @@ def revolve ( polygon,angle=None,color=None,resolution=36,name=None ):
 
 def rotate ( objects,axis,angle,centroid=None,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if not assertIsNonzeroVec3(axis) :
         raise Exception(f'Parameter "axis" has wrong type (expected tuple of three numbers with x**2 + y**2 + z**2 > 0); got {type(axis)}')
     if not assertIsNumber(angle) :
@@ -405,7 +405,7 @@ def rotate ( objects,axis,angle,centroid=None,color=None,name=None ):
 
 def scale ( objects,sx,sy,sz,centroid=None,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if not assertIsNumber(sx) :
         raise Exception(f'Parameter "sx" has wrong type (expected number); got {type(sx)}')
     if not assertIsNumber(sy) :
@@ -453,7 +453,7 @@ def sphere ( radius,x=0.0,y=0.0,z=0.0,color=None,resolution=48,name=None ):
 
 def translate ( objects,tx,ty,tz,color=None,name=None ):
     if not any([assertIsMeshHandle(objects),assertIsListOfMeshHandle(objects)]):
-        raise Exception(f'Parameter "objects" has wrong type (expected drawable object, or list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected solid object, or list of solid objects); got {type(objects)}')
     if not assertIsNumber(tx) :
         raise Exception(f'Parameter "tx" has wrong type (expected number); got {type(tx)}')
     if not assertIsNumber(ty) :
@@ -505,7 +505,7 @@ def assertIsListOfVec3 ( obj ):
 def assertIsMeshHandle ( obj ):
     try:
         tmp = obj.to_dict()
-        if tmp.get("_is_drawable_") != True:
+        if tmp.get("_is_solid_object_") != True:
             return False
         return True
     except Exception as e:
@@ -563,7 +563,7 @@ def assertIsVec3 ( obj ):
 
 def union ( objects,color=None,name=None ):
     if not assertIsListOfMeshHandle(objects) :
-        raise Exception(f'Parameter "objects" has wrong type (expected list of drawable objects); got {type(objects)}')
+        raise Exception(f'Parameter "objects" has wrong type (expected list of solid objects); got {type(objects)}')
     if not assertIsColor(color)  and not( type(color) == type(None) and color == None):
         raise Exception(f'Parameter "color" has wrong type (expected color); got {type(color)}')
     if not assertIsString(name)  and not( type(name) == type(None) and name == None):
