@@ -37,11 +37,11 @@ for fname in [
     "src/ext/three/package/build/three.module.min.js",
     "src/ext/three/package/examples/jsm/controls/OrbitControls.js",
     "src/ext/split/package/dist/split-grid.mjs",
-    "src/ext/jquery/jquery-3.7.1.min.js",
-    "src/ext/jqueryui/jquery-ui.min.css",
-    "src/ext/jqueryui/jquery-ui.min.js",
-    "src/ext/jqueryui/jquery-ui.structure.min.css",
-    "src/ext/jqueryui/jquery-ui.theme.min.css",
+    # "src/ext/jquery/jquery-3.7.1.min.js",
+    # "src/ext/jqueryui/jquery-ui.min.css",
+    # "src/ext/jqueryui/jquery-ui.min.js",
+    # "src/ext/jqueryui/jquery-ui.structure.min.css",
+    # "src/ext/jqueryui/jquery-ui.theme.min.css",
 ]:
     tmp = fname.split("/")
     libname = tmp[2]

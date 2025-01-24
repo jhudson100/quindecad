@@ -9,8 +9,8 @@ export enum MessageType{
     I_AM_READY="I_AM_READY", 
     RUN_PYTHON_CODE="RUN_PYTHON_CODE", 
     PYTHON_CODE_RESULT="PYTHON_CODE_RESULT",
-    COMPUTE_GEOMETRY="COMPUTE_GEOMETRY",
-    GEOMETRY_COMPUTED="GEOMETRY_COMPUTED"
+    // COMPUTE_GEOMETRY="COMPUTE_GEOMETRY",
+    // GEOMETRY_COMPUTED="GEOMETRY_COMPUTED"
 };
 
 export abstract class Message{
@@ -61,8 +61,9 @@ export class RunPythonCodeMessage extends SuperToWorkerMessage{
 
 
 export class PythonCodeResultMessage extends WorkerToSuperMessage{
-    meshes: Mesh[]; //: DrawCommand[];
-    printables: string[];
+    meshes: Mesh[]; 
+    thingsToPrint: string[];
+    cameraPosition?: number[];  //eye x,y,z coi x,y,z; might be undefined if none
     errorLineNumbers: number[];
     errorPositions: number[][];
     errorMessages: string[];
@@ -75,28 +76,10 @@ export class PythonCodeResultMessage extends WorkerToSuperMessage{
         super(MessageType.PYTHON_CODE_RESULT,inResponseTo);
         // this.commands=result;
         this.meshes = meshes;
-        this.printables = printables;
+        this.thingsToPrint = printables;
         this.errorLineNumbers = errorLineNumbers;
         this.errorPositions = errorPositions;
         this.errorMessages = errorMessages;
     }
 }
-
-
-// export class ComputeGeometryMessage extends SuperToWorkerMessage{
-//     commands: DrawCommand[];
-//     constructor(commands: DrawCommand[]){
-//         super(MessageType.COMPUTE_GEOMETRY);
-//         this.commands=commands;
-//     }
-// }
-
-// export class GeometryComputedMessage extends WorkerToSuperMessage{
-//     meshes: Mesh[];
-//     error:string|undefined;
-//     constructor(inResponseTo: number, meshes: Mesh[], error: string|undefined){
-//         super(MessageType.GEOMETRY_COMPUTED, inResponseTo);
-//         this.meshes=meshes;
-//         this.error=error;
-//     }
-// }
+ 

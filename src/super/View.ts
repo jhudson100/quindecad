@@ -77,11 +77,8 @@ export class View{
             0.1,        //hither
             1000        //yon
         );
-        this.perspectiveCamera.position.x=5;
-        this.perspectiveCamera.position.y=-5;
-        this.perspectiveCamera.position.z=5;
-        this.perspectiveCamera.lookAt(0,0,0);
-        this.perspectiveCamera.up = new THREE.Vector3(0,0,1);
+
+        this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
 
         // this.orthoCamera = new THREE.OrthographicCamera(
         //     -1,1, 1,-1, 0.1, 1000
@@ -318,6 +315,14 @@ export class View{
 
     } // constructor
 
+    lookAt( eyex:number, eyey:number, eyez:number, coix:number, coiy:number, coiz:number, upx:number, upy:number, upz:number) {
+        this.perspectiveCamera.position.x=eyex;
+        this.perspectiveCamera.position.y=-eyey;
+        this.perspectiveCamera.position.z=eyez;
+        this.perspectiveCamera.lookAt(coix,coiy,coiz);
+        this.perspectiveCamera.up = new THREE.Vector3(upx,upy,upz);
+    }
+    
     toggleGrid(){
         this.grid.visible = !this.grid.visible;
         this.draw();

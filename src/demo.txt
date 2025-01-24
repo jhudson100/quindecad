@@ -154,4 +154,4 @@ draw(box( min=bbmin, max=bbmax, color=(64,192,32) )
 #centroid() gives us the centroid of an object
 #as an x,y,z triple. The lookAt function positions the
 #camera so it is looking at the given point.
-lookAt(target=centroid(ex), distance=10)
+lookAt(eye=(0,5,0), target=centroid(donut) )
