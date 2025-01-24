@@ -18,6 +18,7 @@ let ace = window.ace;
 const exampleCode=`# example code
 # Press shift+enter to run or click
 # the "Run" button above.
+# Use the Help menu to get a more full-featured demo.
  
 c = cube(xsize=3,ysize=2,zsize=1,centered=True,color=(255,255,0))
 s = sphere(x=0, y=0, z=0, radius=1.5)
@@ -277,7 +278,7 @@ export class Editor{
     moveCursorTo(line: number, col: number){
         //line = 1-based; col=0-based
         //but ace uses 0-based line numbers
-        this.ed.selection.moveCursorTo( line-1, col );
+        this.ed.moveCursorToPosition( {row:line-1, column: col } );
     }
 
     scrollTo(line:number){

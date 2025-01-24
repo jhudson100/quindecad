@@ -1,8 +1,11 @@
 //FIXME: Add axis parameter to cylinder and frustum
 //FIXME: Maybe make cone primitive (essentially an alias to frustum)
-//FIXME: Manifold3d has a bug where it will sometimes refuse to let you take a mesh
+//FIXME: Manifold3d seems to have a bug where it will sometimes refuse to let you take a mesh
 //after you have performed some other operations on an object. Workaround:
 //call genus() to prevent mesh computation deferral.
+//FIXME: If you specify the same keyword argument twice to a Python function,
+//python side throws an exception with an unhelpful message and
+//no line numbers.
 
 import {SuperToWorkerMessage,IAmReadyMessage,MessageType, RunPythonCodeMessage, PythonCodeResultMessage} from "../common/Message.js";
 import {Mesh} from "../common/Mesh.js";
@@ -26,6 +29,10 @@ let meshes: Mesh[] = [];
 //we pass back to supervisor for output
 let printed: string[] = [];
 
+//requested camera position set by the code
+//if empty, no position was requested
+//values: eye x,y,z and coi x,y,z
+let cameraParameters: number[] = [];
 
 
 declare global {
@@ -35,7 +42,30 @@ self.impl_print = ( s: string ) => {
     printed.push(s);
 };
 
+declare global {
+    interface WorkerGlobalScope { impl_lookAt : (eye: number[], coi: number[]) => void }
+};
+self.impl_lookAt = (eye: number[], coi: number[]) => {
+    cameraParameters = [eye[0],eye[1],eye[2], coi[0],coi[1],coi[2]];
+};
 
+type ImplDrawType = (handle: MeshHandle) => void ;
+declare global {
+    interface WorkerGlobalScope { impl_draw : ImplDrawType }
+};
+self.impl_draw = (handle: MeshHandle ) => {
+    try{
+        let mw = handleToWrapper(handle);
+        let m = mw.mesh.getMesh();
+        let me = new Mesh(m.vertProperties,m.triVerts,mw.color,mw.name);
+        meshes.push(me);
+        return true;
+    } catch(e){
+        console.error(e);
+        return false;
+    }
+
+}
 
 async function loadBrython(): Promise<boolean> {
     let p = new Promise<boolean>( (resolveFunc, rejectFunc) => {
@@ -109,27 +139,6 @@ export async function main(__BRYTHON__1: any){
 }
  
 
-type ImplDrawType = (handle: MeshHandle) => void ;
-declare global {
-    interface WorkerGlobalScope { impl_draw : ImplDrawType }
-};
-self.impl_draw = (handle: MeshHandle ) => {
-    try{
-        let mw = handleToWrapper(handle);
-        let m = mw.mesh.getMesh();
-        let me = new Mesh(m.vertProperties,m.triVerts,mw.color,mw.name);
-        meshes.push(me);
-        return true;
-    } catch(e){
-        console.error(e);
-        return false;
-    }
-
-}
-
-//FIXME: If you specify the same keyword argument twice to a Python function,
-//Brython throws an exception with an unhelpful message and
-//no line numbers.
 function runPythonCode( pmsg: RunPythonCodeMessage )
 {
 
@@ -174,10 +183,10 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
             }
         }
 
-
         let resp = new PythonCodeResultMessage(
             pmsg.unique, 
             meshes,
+            cameraParameters,
             printed,
             errorLines, 
             errorPositions, 
@@ -196,7 +205,8 @@ function runPythonCode( pmsg: RunPythonCodeMessage )
         })
         manifoldMeshes.splice(0,manifoldMeshes.length);
         printed.splice(0,printed.length);
-        //toDraw.splice(0,toDraw.length);
         meshes.splice(0,meshes.length);
+        cameraParameters.splice(0,cameraParameters.length);
+
     }
 }

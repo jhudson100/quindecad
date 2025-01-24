@@ -13,6 +13,7 @@ os.makedirs("dist/super",exist_ok=True)
 shutil.copyfile("src/index.html","dist/index.html")
 shutil.copyfile("src/about.txt","dist/about.txt")
 shutil.copyfile("src/help.html","dist/help.html")
+shutil.copyfile("src/demo.txt","dist/demo.txt")
 shutil.copyfile("src/main.css","dist/main.css")
 
 #some web hosts treat *anything* with a .py in the name as

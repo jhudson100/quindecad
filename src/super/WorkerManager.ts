@@ -19,20 +19,20 @@ type ResponseCallback = (m: WorkerToSuperMessage|undefined) => void;
 
 type WorkerStatusCallback = (isBusy: boolean) => void;
 
-export interface PythonResult {
-    //things to draw
-    //commands: DrawCommand[];    
-    meshes: Mesh[];
-    //messages the worker wrote with print()
-    printables: string[];       
-    //line numbers where errors occurred (a traceback); most recent
-    //function call is last
-    errorLineNumbers: number[]; 
-    //column numbers where the error occurred. start, start, end.
-    errorPositions: number[][];
-    //messages describing the error
-    errorMessages: string[];
-}
+// export interface PythonResult {
+//     //things to draw
+//     //commands: DrawCommand[];    
+//     meshes: Mesh[];
+//     //messages the worker wrote with print()
+//     printables: string[];       
+//     //line numbers where errors occurred (a traceback); most recent
+//     //function call is last
+//     errorLineNumbers: number[]; 
+//     //column numbers where the error occurred. start, start, end.
+//     errorPositions: number[][];
+//     //messages describing the error
+//     errorMessages: string[];
+// }
 
 
 function receivedMessageFromWorker(ev: MessageEvent){
@@ -113,24 +113,7 @@ export class WorkerManager{
                 console.error("Bad worker state");
         }
     }
-
-    // private workerIsNowBusy(){
-    //     this.busyLevel++;
-    //     if(this.busyLevel === 1 ){
-    //         this.onBusyCallbacks.forEach( (f: WorkerStatusCallback) => {
-    //             f(true);
-    //         });
-    //     }
-    // }
-    // private workerIsNowIdle(){
-    //     this.busyLevel--;
-    //     if( this.busyLevel === 0 ){
-    //         this.onIdleCallbacks.forEach( (f: WorkerStatusCallback) => {
-    //             f(false);
-    //         });
-    //     }
-    // }
-
+ 
     isWorkerBusy(){
         return this.workerState === WorkerState.BUSY;
     }
@@ -242,8 +225,8 @@ export class WorkerManager{
         return WorkerManager.instance;
     }
 
-    runPythonAndComputeGeometry(code: string): Promise<PythonResult>{
-        let p = new Promise<PythonResult>( (res,rej) => {
+    runPythonAndComputeGeometry(code: string): Promise<PythonCodeResultMessage>{
+        let p = new Promise<PythonCodeResultMessage>( (res,rej) => {
 
             this.setWorkerState( WorkerState.BUSY );
 

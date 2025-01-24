@@ -4,6 +4,8 @@
 # To run this, use the "Run" menu or press
 # shift+enter.
 
+###################################################
+
 #basic objects. Some parameters are optional; see
 #the detailed help for more information.
 #In particular, the color parameter is not required;
@@ -16,20 +18,20 @@
 #Since the x, y, and z sizes can be different, this
 #is technically a cuboid and not a cube.
 draw( cube( x=-20, y=-20, z=0,
-            xsize=15, ysize=10, zsize=5,
-            centered=True
+            xsize=5, ysize=3, zsize=2,
+            centered=True,
             color=(255,0,0) ) )
 
 #a box is like a cube, but its location is given
 #by min and max coordinates. Instead of
 #immediately passing the object to draw(), we can
 #put it in a variable so we can work with it later.
-bx = box( min=(-15,-22,-5), max=( 5, -18, 5 ),
+bx = box( min=(-12,-22,-5), max=( -8, -18, 5 ),
          color=(255,128,0) )
 
 #a basic cylinder.
-cyl = cylinder( x=-10, y=-20, z=-10, radius=4,
-        height=20, zcenter=True, color=(255,255,0)
+cyl = cylinder( x=0, y=-20, z=0, radius=4,
+        height=5, zcenter=True, color=(255,255,0)
 )
 
 #we now draw two objects at once
@@ -37,66 +39,65 @@ draw([bx,cyl])
 
 #to get shapes like hexagons we can specify the resolution
 #of the cylinder
-hexagon = cylinder( x=0, y=-20, z=-10, radius=4, height=4,
+hexagon = cylinder( x=10, y=-20, z=-2, radius=4, height=4,
     resolution=6, color=(128,255,0) )
 draw(hexagon)
 
 # If we want a cylinder with a different size on the top
 # compared to the bottom, the frustum function can be used.
 draw(
-    frustum(x=10, y=-20, z=-5, height=10, radius1=4, radius2=2,
+    frustum(x=20, y=-20, z=0, height=4, radius1=2, radius2=1,
         zcenter=True, color=(0,255,0) )
 )
 
 # A cone can be created using frustum() as well.
 draw(
-    frustum(x=20, y=-20, z=0, height=5, radius1=3, radius2=0,
+    frustum(x=-20, y=-10, z=0, height=5, radius1=2, radius2=0,
         zcenter=False, color=(0,255,128) )
 )
 
 # Spheres are a basic building block of many objects
-sph = sphere( x=-20, y=-10, z=0, radius=3, color=(0,255,255) )
+sph = sphere( x=-10, y=-10, z=0, radius=3, color=(0,255,255) )
 draw(sph)
 
 # CSG operations are very useful. We have three of them...
 # The first is the union() operation which "glues" one or more
 # objects together into a single solid.
-s1 = sphere(x=-13,y=-10,z=0, radius=2)
-c1 = cube(x=-7,y=-10,z=0, xsize=4, ysize=4, zsize=4)
-cy1 = cylinder(x=-15, y=-10,z=-2, height=4, radius=2)
+s1 = sphere(x=0,y=-10,z=0, radius=2)
+c1 = cube(x=0,y=-10,z=0, xsize=3, ysize=3, zsize=3, centered=True)
+cy1 = cylinder(x=0, y=-10,z=0, height=7, radius=0.5, zcenter=True)
 draw( union([s1,c1,cy1], color=(0,128,255)) )
 
 # Another CSG operation is intersection, which keeps the points
 # that are inside of all the solids passed in.
-s1 = sphere(x=-3,y=-10,z=0, radius=2)
-c1 = sphere(cube(x=3,y=-10,z=0, xsize=4, ysize=4, zsize=4) )
-draw( intersection([s1,c1], color=(0,128,255)) )
+s1 = sphere(x=10,y=-10,z=0, radius=2)
+c1 = cube(x=10,y=-10,z=0, xsize=3, ysize=3, zsize=3, centered=True)
+draw( intersection([s1,c1], color=(64,64,255)) )
 
 # The final CSG operation is difference. This operation keeps those
 # points that are in the first object and not in any other object.
-s1 = sphere(x=7,y=-10,z=0, radius=2)
-c1 = sphere(cube(x=13,y=-10,z=0, xsize=4, ysize=4, zsize=4) )
-draw( difference([s1,c1], color=(0,128,255)) )
+s1 = sphere(x=20,y=-10,z=0, radius=2)
+c1 = cube(x=20,y=-10,z=0, xsize=3.5, ysize=3.5, zsize=3, centered=True)
+draw( difference([s1,c1], color=(128,64,255)) )
 
 
-# Three common affine transformations are rotation,
-# translation, and scale. All three are available.
+# Three common affine transformations are rotate,
+# translaten, and scale. All three are available.
 c = cube(xsize=5, ysize=5, zsize=5, centered=True )
-draw( translation(c, tx=20, ty=-10, tz=0 ) )
+draw( translate(c, tx=-20, ty=0, tz=0 ) )
 
 #we can combine transformations as well
 draw(
-    translation(
-        rotation(
+    translate(
+        rotate(
             c, axis=(1,1,1), angle=45
         ),
-        tx=-20, ty=0, tz=0,
-        color=(0,0,255)
+        tx=-10, ty=0, tz=0,
+        color=(255,128,128)
      )
 )
 
-c = scale(c, sx=0.5,sy=2,sz=0.25 )
-c = translate( c, tx=-10, ty=0, tz=0, color=(128,0,255) )
+c = scale(c, sx=0.5,sy=2,sz=0.25, color=(128,255,128) )
 draw(c)
 
 
@@ -106,24 +107,29 @@ draw(c)
 # result to be at the origin, you'll likely want to apply translate()
 # to the extruded object. The top can be scaled to be larger or
 # smaller than the bottom.
-ex = extrude(polygon=[ (1,0),  (0.25,-0.25), ( 0,-1 ), (-0.25,-0.25 ),
-                  (-1,0), (-0.25,0.25), ( 0,1 ), (0.25,0.25) ],
+ex = extrude(polygon=[ (3,0),  (0.5,0.5), ( 0,3 ), (-0.5,0.5 ),
+                  (-3,0), (-0.5,-0.5), ( 0,-3 ), (0.5,-0.5) ],
         height=4,
         divisions=20, twist=45,
         scale=(0.5,0.5),
         zcenter=True,
         color=(255,0,255)
 )
-draw(ex)
+draw(translate( ex, tx=10, ty=0, tz=0))
 
 # The hull() function gives the convex hull of an object.
-draw( translate( hull(ex), tx=10, ty=0, tz=0, color=(255,0,128) )
+draw(
+    translate(
+        hull(ex),
+        tx=20, ty=0, tz=0, color=(255,0,128)
+    )
+)
 
 
 #we can cut an object along a plane using the cut function.
 sph = sphere(radius=4)
 sph = cut( sph, planeNormal=(1,1,1), planeD=0.5, keepPositive=False)
-sph = translate( sph, tx=20, ty=0, tz=0, color=(192,192,192) )
+sph = translate( sph, tx=-20, ty=10, tz=0, color=(192,192,192) )
 draw(sph)
 
 # A solid of revolution is produced with the revolve function
@@ -135,23 +141,31 @@ import math
 points = []
 numpoints = 36
 for i in range(numpoints):
-    theta = i/numpoints
+    theta = 2*math.pi*i/numpoints
     x = math.cos(theta)
     y = math.sin(theta)
     points.append( (x+5, y) )
 donut = revolve( polygon=points, angle=360)
-donut = translate( donut, tx=-20, ty=10, tz=0, color=(192, 64, 32)  ) 
+donut = translate( donut, tx=-10, ty=10, tz=0, color=(192, 64, 32)  )
 draw(donut)
 
 
 # boundingbox() doesn't create anything
 # on the screen; it returns the minimum
-# and maximum extents of the object
-bbmin, bbmax = boundingbox( donus )
-draw(box( min=bbmin, max=bbmax, color=(64,192,32) )
+# and maximum extents of the object.
+# This also shows the use of transparency in
+# the color specification.
+bbmin, bbmax = boundingbox( donut )
+draw(box( min=bbmin, max=bbmax, color=(64,192,32,128) ) )
 
 
 #centroid() gives us the centroid of an object
-#as an x,y,z triple. The lookAt function positions the
-#camera so it is looking at the given point.
-lookAt(eye=(0,5,0), target=centroid(donut) )
+#as an x,y,z triple.
+sph = sphere(x=10, y=10, z=0, radius=3 )
+cen = centroid(sph)
+cub = cube( x=cen[0], y=cen[1], z=cen[2], xsize=1, ysize=1, zsize=50, centered=True )
+draw( difference( [sph,cub], color=(255,255,172,128) ) )
+
+
+#lookAt is used to set the camera to a specified position
+lookAt( eye=(0, -60,50), target=(0,0,0) )

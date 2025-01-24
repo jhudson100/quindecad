@@ -1,5 +1,5 @@
 import {ErrorReporter} from "ErrorReporter";
-import {View} from "View";
+import {GridPlane, View} from "View";
 import {Editor} from "Editor";
 // import {ButtonBar} from "ButtonBar";
 import {PythonManager} from "PythonManager";
@@ -10,6 +10,7 @@ import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation, saveSTL, showAboutDialog, showHelp } from "utils";
 import { Menu, Menubar } from "Menubar";
 import { Spinner } from "Spinner";
+import { Dialog } from "Dialog";
 
 
 // @ts-ignore
@@ -47,9 +48,9 @@ export function setupInterface(){
         Editor.get().resize();
         ErrorReporter.get().resize();   
 
-        let rect = helpdiv.parentElement.getBoundingClientRect();
+        // let rect = helpdiv.parentElement.getBoundingClientRect();
         // helpdiv.style.width = rect.width+"px";
-        helpgrid.style.height = rect.height+"px";
+        // helpgrid.style.height = rect.height+"px";
     };
 
     //Split.js can't work with em's here; px work though
@@ -102,15 +103,15 @@ export function setupInterface(){
     let infodiv = createGridCell( contentArea, currentRow,1, 1,3);
     infodiv.style.height="100%";
     
-    let grid2 = createGrid(infodiv, "1fr" , "3fr 10px 1fr");
-    grid2.style.height="100%";
-    let errdiv = createGridCell(grid2,1,1,1,1);
-    errdiv.style.height="100%";
-    ErrorReporter.get().initialize(errdiv);
-    createVerticalSizer(grid2,2,1,1,sizeCallback);
-    let helpgrid = createGridCell(grid2,1,3,1,1);
-    helpgrid.style.overflow="auto";
-    let helpdiv = createHelpDiv(helpgrid);
+    // let grid2 = createGrid(infodiv, "1fr" , "3fr 10px 1fr");
+    // grid2.style.height="100%";
+    // let errdiv = createGridCell(grid2,1,1,1,1);
+    // errdiv.style.height="100%";
+    ErrorReporter.get().initialize(infodiv);
+    // createVerticalSizer(grid2,2,1,1,sizeCallback);
+    // let helpgrid = createGridCell(grid2,1,3,1,1);
+    // helpgrid.style.overflow="auto";
+    // let helpdiv = createHelpDiv(helpgrid);
 
 
 
@@ -206,7 +207,7 @@ function setupMenubar(parent: HTMLElement)
     item( formatmenu, "Transpose", "transposeletters");
 
     let viewmenu = mbar.addMenu("View");
-    viewmenu.addItem("Toggle grid", ()=> { View.get().toggleGrid() } );
+    viewmenu.addItem("Grid...", ()=> { conductGridDialog(); } );
     viewmenu.addItem("Toggle axes", ()=> { View.get().toggleAxes() } );
     
     let runmenu = mbar.addMenu("Run");
@@ -215,6 +216,7 @@ function setupMenubar(parent: HTMLElement)
     stopItem.setDisabled();
     let helpmenu = mbar.addMenu("Help");
     helpmenu.addItem("Help...",()=>{ showHelp();});
+    helpmenu.addItem("Demo", () => { showDemo();});
     helpmenu.addItem("About...",()=>{ showAboutDialog();});
 
     WorkerManager.get().registerWorkerBusyCallback( () => {
@@ -364,4 +366,156 @@ function createHelpDiv(parent: HTMLDivElement){
     });
 
     return helpdiv;
+}
+
+function showDemo(){
+    let D = new Dialog( [
+        {
+            name: "Cancel",
+            callback: () => { D.hide(); }
+        },
+        {
+            name: "OK",
+            callback: () => {
+                D.contentArea.innerHTML="Working...Please wait...";
+                fetch("demo.txt").then( (resp: Response) => {
+                    resp.text().then( (txt:string) => {
+                        Editor.get().setValue(txt);
+                        D.hide();
+                    });
+                });
+            }
+        }
+    ]);
+    D.contentArea.innerHTML="This will replace the code you have in the editor. Are you OK with that?";
+    D.show();
+}
+
+function conductGridDialog(){
+
+    function fromhexcolor(s: string){
+        return parseInt(s.substring(1),16);
+    }
+    
+
+    let D = new Dialog( [
+        {
+            name: "Cancel",
+            callback: () => { D.hide(); }
+        },
+        {
+            name: "OK",
+            callback: () => {
+                D.hide();
+
+            View.get().makeGrids(fromhexcolor(majorColor.value), 
+                parseFloat(majorWidth.value), 
+                parseFloat(majorInterval.value),
+                fromhexcolor(minorColor.value), 
+                parseFloat(minorWidth.value), 
+                parseFloat(minorSpacing.value),
+                parseFloat(extents.value), 
+                xy.checked, xz.checked, yz.checked);
+            }
+        }
+    ]);
+    
+    let unique=0;
+    function makecheck(container:HTMLElement, label: string, checked: boolean){
+        let inp : HTMLInputElement = document.createElement("input");
+        inp.type="checkbox";
+        inp.checked = checked;
+        inp.id="checkbox"+(unique++);
+        let lbl: HTMLLabelElement = document.createElement("label");
+        lbl.htmlFor=inp.id;
+        lbl.appendChild(document.createTextNode(label));
+        container.appendChild(inp);
+        container.appendChild(lbl);
+        return inp;
+    }
+
+    function tohexcolor(n: number){
+        let tmp = n.toString(16);
+        while(tmp.length < 6 )
+            tmp = "0"+tmp;
+        return "#"+tmp;
+    }
+
+    let div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    let xy = makecheck(div, "XY", View.get().isGridVisible(GridPlane.XY) );
+    let xz = makecheck(div, "XZ", View.get().isGridVisible(GridPlane.XZ) );
+    let yz = makecheck(div, "YZ", View.get().isGridVisible(GridPlane.YZ) );
+
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Grid extents:"));
+    let extents = document.createElement("input");
+    div.appendChild(extents);
+    extents.type="range";
+    extents.min=""+10;
+    extents.max=""+1000;
+    extents.value = ""+View.get().gridExtent;
+
+    D.contentArea.appendChild(document.createElement("hr"));
+    
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Major line color:"));
+    let majorColor = document.createElement("input");
+    majorColor.type="color";
+    majorColor.value = tohexcolor(View.get().majorColor);
+    div.appendChild(majorColor);
+
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Major line interval:"));
+    let majorInterval = document.createElement("input");
+    majorInterval.size=8;
+    majorInterval.value = ""+View.get().majorInterval;
+    div.appendChild(majorInterval);
+
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Major line width:"));
+    let majorWidth = document.createElement("input");
+    majorWidth.type="range";
+    majorWidth.min=""+0.25;
+    majorWidth.max=""+5.0;
+    majorWidth.step=""+0.25;
+    majorWidth.value = ""+View.get().majorWidth;
+    div.appendChild(majorWidth);
+
+
+    D.contentArea.appendChild(document.createElement("hr"));
+    
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Minor line color:"));
+    let minorColor = document.createElement("input");
+    minorColor.value = tohexcolor(View.get().minorColor);
+    minorColor.type="color";
+    div.appendChild(minorColor);
+
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Minor line spacing:"));
+    let minorSpacing = document.createElement("input");
+    minorSpacing.size=8;
+    minorSpacing.value = ""+View.get().minorSpacing;
+    div.appendChild(minorSpacing);
+
+    div = document.createElement("div");
+    D.contentArea.appendChild(div);
+    div.appendChild(document.createTextNode("Minor line width:"));
+    let minorWidth = document.createElement("input");
+    minorWidth.type="range";
+    minorWidth.min=""+0.25;
+    minorWidth.max=""+5.0;
+    minorWidth.step=""+0.25;
+    minorWidth.value = ""+View.get().minorWidth;
+    div.appendChild(minorWidth);
+
+
+    D.show();
 }

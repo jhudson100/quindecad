@@ -6,9 +6,10 @@
 
 import {Editor} from "Editor";
 import { ErrorReporter } from "ErrorReporter";
-import {PythonResult, WorkerManager} from "WorkerManager";
+import { WorkerManager} from "WorkerManager";
 import {View} from "View";
 import { numPreambleLines, preambleStr } from "./PythonBuiltins.js";
+import { PythonCodeResultMessage } from "Message";
 
 
 //for debugging
@@ -49,7 +50,7 @@ export class PythonManager{
             }
         }
 
-        let result: PythonResult;
+        let result: PythonCodeResultMessage;
         try{
             result = await WorkerManager.get().runPythonAndComputeGeometry(finalCode);
         } catch(c){
@@ -66,8 +67,8 @@ export class PythonManager{
         }
 
         //if we have things to print, output them first
-        if(result.printables){
-            result.printables.forEach( (s:string) => { 
+        if(result.thingsToPrint){
+            result.thingsToPrint.forEach( (s:string) => { 
                 ErrorReporter.get().addMessage(s);
             });
         }
@@ -93,9 +94,10 @@ export class PythonManager{
 
         if(result.meshes){
             View.get().setMeshes(result.meshes);
-            // if(!result.printables ){
-                // ErrorReporter.get().nothingToReport();
-            // }
+            if( result.cameraParameters && result.cameraParameters.length > 0 ){
+                let c = result.cameraParameters;
+                View.get().lookAt(c[0],c[1],c[2],  c[3],c[4],c[5],  0,0,1 );
+            }
         } else {
             ErrorReporter.get().addMessage("An error occurred when setting meshes");
         }

@@ -21,6 +21,10 @@ class UserData {
     }
 }
 
+export enum GridPlane{
+    XZ, YZ, XY
+};
+
 export class View{
 
     //this is a singleton class, so we hold a reference
@@ -53,7 +57,16 @@ export class View{
     axes: any;
 
     //the ground grid (grid along the xy plane)
-    grid: any;
+    gridXY: any;
+    gridYZ: any;
+    gridXZ: any;
+    majorColor: number;
+    majorWidth: number;
+    majorInterval: number;
+    minorColor: number;
+    minorWidth: number;
+    minorSpacing: number;
+    gridExtent: number;
 
     //raycaster for object picking
     raycaster: any;
@@ -78,11 +91,12 @@ export class View{
             1000        //yon
         );
 
-        this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
-
         // this.orthoCamera = new THREE.OrthographicCamera(
         //     -1,1, 1,-1, 0.1, 1000
         // )
+
+        //must set this before we create the Controls object
+        this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
@@ -101,33 +115,12 @@ export class View{
         this.scene.add(amb);
         this.scene.add(this.light);
 
-        //ground grid
-        //TODO: Make these colors configurable
-        let gridmtls = [ 
-            new THREE.LineBasicMaterial({color:0xa0a0a0, linewidth: 0.5}) ,
-            new THREE.LineBasicMaterial({color:0xddddff, linewidth: 0.5})
-        ];
-        //TODO: Make these extents configurable
-        const gridExtent=200;
-        let gridLines: any[][] =[ [],[] ];
-        for(let i=-gridExtent;i<=gridExtent;i++){
-            let idx = (i%10) ? 1:0;
-            gridLines[idx].push( new THREE.Vector3(   i,-gridExtent, 0) );
-            gridLines[idx].push( new THREE.Vector3(   i, gridExtent, 0) );
-            gridLines[idx].push( new THREE.Vector3(-gridExtent,   i, 0) );
-            gridLines[idx].push( new THREE.Vector3( gridExtent,   i, 0));
-        }
-        this.grid = new THREE.Group();
-        this.grid.name="grid";  
-        for(let i=0;i<2;++i){
-            let geo = new THREE.BufferGeometry();
-            geo.setFromPoints(gridLines[i]);
-            let m = new THREE.LineSegments(geo,gridmtls[i]);
-            m.name="gridLine"+i;
-            this.grid.add(m);
-        }
-        this.grid.userData = new UserData(false);
-        this.scene.add(this.grid);
+        this.makeGrids(
+            0xa0a0a0, 0.5, 10,
+            0xddddff, 0.5, 1,
+            200,
+            true,false,false
+        );
 
         //axes
         this.axes = new THREE.Group();
@@ -213,7 +206,7 @@ export class View{
             requestAnimationFrame(periodicFunc);
             if( this.viewIsStale ){ //timestamp >= nextDrawTime ){
                 // nextDrawTime = timestamp + 30;
-                this.controls.update;
+                // this.controls.update;
                 this.draw();    
             }
         };
@@ -225,12 +218,12 @@ export class View{
         document.addEventListener("keydown", (ev: KeyboardEvent) => {
             if( document.activeElement === document.body ){
                 switch(ev.key){
-                    case "g":
-                        this.toggleGrid();
-                        return;
-                    case "a":
-                        this.toggleAxes();
-                        return;
+                    // case "g":
+                    //     this.toggleGrid();
+                    //     return;
+                    // case "a":
+                    //     this.toggleAxes();
+                    //     return;
                     case "p":
                     {
                         let p = new THREE.Vector2(this.lastMouseX,this.lastMouseY);
@@ -315,18 +308,168 @@ export class View{
 
     } // constructor
 
-    lookAt( eyex:number, eyey:number, eyez:number, coix:number, coiy:number, coiz:number, upx:number, upy:number, upz:number) {
-        this.perspectiveCamera.position.x=eyex;
-        this.perspectiveCamera.position.y=-eyey;
-        this.perspectiveCamera.position.z=eyez;
-        this.perspectiveCamera.lookAt(coix,coiy,coiz);
-        this.perspectiveCamera.up = new THREE.Vector3(upx,upy,upz);
+    isGridVisible(which: GridPlane ){
+        switch(which){
+            case GridPlane.XY:
+                return this.gridXY !== undefined;
+            case GridPlane.XZ:
+                return this.gridXZ !== undefined;
+            case GridPlane.YZ:
+                return this.gridYZ !== undefined;
+            default:
+                throw new Error();
+        }
     }
-    
-    toggleGrid(){
-        this.grid.visible = !this.grid.visible;
+
+    makeGrids(majorColor:number, majorWidth:number, majorInterval:number,
+        minorColor:number, minorWidth:number, minorSpacing:number,
+        gridExtent:number, xy: boolean, xz: boolean, yz: boolean){
+
+        this.majorColor=majorColor;
+        this.majorWidth=majorWidth;
+        this.majorInterval=majorInterval;
+        this.minorColor=minorColor;
+        this.minorWidth=minorWidth;
+        this.minorSpacing=minorSpacing;
+        this.gridExtent=gridExtent;
+
+        if(this.gridXY){
+            this.gridXY.removeFromParent();
+            this.gridXY=undefined;
+        }
+        if( xy ){
+            this.gridXY = this.makeGrid(
+                majorColor, majorWidth, majorInterval,
+                minorColor, minorWidth, minorSpacing,
+                gridExtent, GridPlane.XY
+            );
+            this.scene.add(this.gridXY);
+        }
+
+        if(this.gridXZ){
+            this.gridXZ.removeFromParent();
+            this.gridXZ=undefined;
+        }
+        if( xz ){
+            this.gridXZ = this.makeGrid(
+                majorColor, majorWidth, majorInterval,
+                minorColor, minorWidth, minorSpacing,
+                gridExtent, GridPlane.XZ
+            );
+            this.scene.add(this.gridXZ);
+        }
+        
+        if(this.gridYZ){
+            this.gridYZ.removeFromParent();
+            this.gridYZ=undefined;
+        }
+        if( yz ){
+            this.gridYZ = this.makeGrid(
+                majorColor, majorWidth, majorInterval,
+                minorColor, minorWidth, minorSpacing,
+                gridExtent, GridPlane.YZ
+            );
+            this.scene.add(this.gridYZ);
+        }
         this.draw();
     }
+     
+    private makeGrid( majorColor:number, majorWidth:number, majorInterval:number,
+        minorColor:number, minorWidth:number, minorDistance:number,
+        gridExtent:number, gridType:GridPlane) {
+        let majorMtl:any = new THREE.LineBasicMaterial({color:majorColor, linewidth: majorWidth});
+        let minorMtl:any = new THREE.LineBasicMaterial({color:minorColor, linewidth: minorWidth});
+        let majorLines: any[] = [];
+        let minorLines: any[] = [];
+        for(let i=-gridExtent,j=0;i<=gridExtent;i+=minorDistance,j++){
+            let idx: number;
+            let L: any[];
+            if( j === majorInterval ){
+                j=0;
+                L=majorLines;
+            } else {
+                L=minorLines;
+            }
+            switch(gridType){
+                case GridPlane.XY:
+                    L.push( new THREE.Vector3(   i,         -gridExtent, 0) );
+                    L.push( new THREE.Vector3(   i,         gridExtent,  0) );
+                    L.push( new THREE.Vector3(-gridExtent,   i,          0) );
+                    L.push( new THREE.Vector3( gridExtent,   i,          0));
+                    break;
+                case GridPlane.YZ:
+                    L.push( new THREE.Vector3(  0,  i,          -gridExtent) );
+                    L.push( new THREE.Vector3(  0,  i,           gridExtent) );
+                    L.push( new THREE.Vector3(  0,  -gridExtent,  i) );
+                    L.push( new THREE.Vector3(  0,   gridExtent,  i));
+                    break;
+                case GridPlane.XZ:
+                    L.push( new THREE.Vector3(  i,           0, -gridExtent) );
+                    L.push( new THREE.Vector3(  i,           0,  gridExtent) );
+                    L.push( new THREE.Vector3(  -gridExtent, 0,  i) );
+                    L.push( new THREE.Vector3(   gridExtent, 0,  i));
+                    break;
+                default:
+                    throw new Error();
+            }
+        }
+        let grp = new THREE.Group();
+        grp.name = "grid";
+        
+        let geo = new THREE.BufferGeometry();
+        geo.setFromPoints(majorLines);
+        let m = new THREE.LineSegments(geo,majorMtl);
+        m.name="gridLine";
+        grp.add(m);
+
+        geo = new THREE.BufferGeometry();
+        geo.setFromPoints(minorLines);
+        m = new THREE.LineSegments(geo,minorMtl);
+        m.name="gridLine";
+        grp.add(m);
+
+        grp.userData = new UserData(false);
+        return grp;
+    }
+
+    lookAt( eyex:number, eyey:number, eyez:number, 
+            coix:number, coiy:number, coiz:number, 
+            upx:number, upy:number, upz:number) {
+
+        let e = new THREE.Vector3(eyex,eyey,eyez);
+        let c = new THREE.Vector3(coix,coiy,coiz);
+        let u = new THREE.Vector3(upx,upy,upz);
+        let look = new THREE.Vector3();
+        look.subVectors(c,e);
+        look.normalize();
+        u.normalize();
+        let cp = new THREE.Vector3();
+        cp.crossVectors( look,u );
+        if( cp.length() < 0.01 ){
+            console.warn("look and up vectors are nearly (anti)parallel");
+            u = new THREE.Vector3(0,-1,0);
+        }
+        this.perspectiveCamera.position.x=eyex;
+        this.perspectiveCamera.position.y=eyey;
+        this.perspectiveCamera.position.z=eyez;
+        this.perspectiveCamera.lookAt(coix,coiy,coiz);
+        this.perspectiveCamera.up = u;
+        this.perspectiveCamera.updateProjectionMatrix();
+
+        // this.orthoCamera.position.x=eyex;
+        // this.orthoCamera.position.y=-eyey;
+        // this.orthoCamera.position.z=eyez;
+        // this.orthoCamera.lookAt(coix,coiy,coiz);
+        // this.orthoCamera.up = u;
+        // this.orthoCamera.updateProjectionMatrix();
+
+        this.draw();
+    }
+    
+    // toggleGrid(){
+    //     this.gridXY.visible = !this.gridXY.visible;
+    //     this.draw();
+    // }
 
     toggleAxes(){
         this.axes.visible = !this.axes.visible;
@@ -334,9 +477,11 @@ export class View{
     }
 
     draw(){
-        this.controls.update();
+        if(!this.controls || !this.perspectiveCamera)
+            return;
+        this.controls?.update();
         let p = this.perspectiveCamera.position;
-        this.light.position.set(p.x,p.y,p.z);
+        this.light?.position.set(p.x,p.y,p.z);
         this.renderer.render(this.scene, this.perspectiveCamera);
         this.viewIsStale=false;
     }
@@ -346,6 +491,9 @@ export class View{
         this.renderer.setSize( rect.width, rect.height);
         this.perspectiveCamera.aspect = rect.width/rect.height;
         this.perspectiveCamera.updateProjectionMatrix();
+        
+        //FIXME: Adjust orthoCamera parameters
+
         this.draw();
     }
 

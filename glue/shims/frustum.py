@@ -1,8 +1,8 @@
 from shims.gluetypes import *
 
 
-def frustum(radius1:POSITIVE_NUMBER,
-            radius2:POSITIVE_NUMBER,
+def frustum(radius1:NUMBER,
+            radius2:NUMBER,
             height: POSITIVE_NUMBER,
             x:NUMBER=0.0, y:NUMBER=0.0, z:NUMBER=0.0,
             zcenter: BOOLEAN=True,

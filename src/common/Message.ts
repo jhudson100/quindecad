@@ -63,12 +63,13 @@ export class RunPythonCodeMessage extends SuperToWorkerMessage{
 export class PythonCodeResultMessage extends WorkerToSuperMessage{
     meshes: Mesh[]; 
     thingsToPrint: string[];
-    cameraPosition?: number[];  //eye x,y,z coi x,y,z; might be undefined if none
+    cameraParameters: number[];  //eye x,y,z coi x,y,z; will be empty if none
     errorLineNumbers: number[];
     errorPositions: number[][];
     errorMessages: string[];
     constructor(inResponseTo: number, 
-            meshes: Mesh[], //result: any[],
+            meshes: Mesh[], 
+            cameraParameters: number[],
             printables: string[],
             errorLineNumbers: number[], errorPositions: number[][],
             errorMessages: string[]
@@ -76,6 +77,7 @@ export class PythonCodeResultMessage extends WorkerToSuperMessage{
         super(MessageType.PYTHON_CODE_RESULT,inResponseTo);
         // this.commands=result;
         this.meshes = meshes;
+        this.cameraParameters = cameraParameters;
         this.thingsToPrint = printables;
         this.errorLineNumbers = errorLineNumbers;
         this.errorPositions = errorPositions;

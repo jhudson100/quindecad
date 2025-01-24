@@ -204,10 +204,10 @@ def free ( obj ):
     return browser.self.impl_free(obj)
 
 def frustum ( radius1,radius2,height,x=0.0,y=0.0,z=0.0,zcenter=True,color=None,resolution=36,name=None ):
-    if not assertIsPositiveNumber(radius1) :
-        raise Exception(f'Parameter "radius1" has wrong type (expected positive number); got {type(radius1)}')
-    if not assertIsPositiveNumber(radius2) :
-        raise Exception(f'Parameter "radius2" has wrong type (expected positive number); got {type(radius2)}')
+    if not assertIsNumber(radius1) :
+        raise Exception(f'Parameter "radius1" has wrong type (expected number); got {type(radius1)}')
+    if not assertIsNumber(radius2) :
+        raise Exception(f'Parameter "radius2" has wrong type (expected number); got {type(radius2)}')
     if not assertIsPositiveNumber(height) :
         raise Exception(f'Parameter "height" has wrong type (expected positive number); got {type(height)}')
     if not assertIsNumber(x)  and not( type(x) == type(0.0) and x == 0.0):
@@ -265,6 +265,15 @@ def intersection ( objects,color=None,name=None ):
     if color is None: color = javascript.UNDEFINED
     if name is None: name = javascript.UNDEFINED
     return browser.self.impl_intersection(objects , color , name)
+
+def lookAt ( eye,target ):
+    if not assertIsVec3(eye) :
+        raise Exception(f'Parameter "eye" has wrong type (expected tuple of three numbers); got {type(eye)}')
+    if not assertIsVec3(target) :
+        raise Exception(f'Parameter "target" has wrong type (expected tuple of three numbers); got {type(target)}')
+    if eye is None: eye = javascript.UNDEFINED
+    if target is None: target = javascript.UNDEFINED
+    return browser.self.impl_lookAt(eye , target)
 
 def assertIsBoolean ( x ):
     return (x == True or x == False)

@@ -609,7 +609,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "number"
                     ],
                     "argtypesVerbose": [
-                        "a positive number"
+                        "a number"
                     ],
                     "doc": "Radius of the frustum at minimum z",
                     "defaultValue": null
@@ -620,7 +620,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "number"
                     ],
                     "argtypesVerbose": [
-                        "a positive number"
+                        "a number"
                     ],
                     "doc": "Radius of the frustum at maximum z",
                     "defaultValue": null
@@ -818,6 +818,37 @@ preambleFunctions = new Map<string,FuncSpec>([
                     ],
                     "doc": "Name for the object",
                     "defaultValue": "None"
+                }
+            ]
+        }
+    ],
+    [
+        "lookAt" ,   //key for Map<>
+        {
+            "name": "lookAt",
+            "doc": "Set the camera to have the given eye position and the given center of interest (target).",
+            "args": [
+                {
+                    "argname": "eye",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "The eye position",
+                    "defaultValue": null
+                },
+                {
+                    "argname": "target",
+                    "argtypes": [
+                        "vec3"
+                    ],
+                    "argtypesVerbose": [
+                        "a list or tuple of three numbers"
+                    ],
+                    "doc": "The point the camera is looking at",
+                    "defaultValue": null
                 }
             ]
         }
