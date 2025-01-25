@@ -101,13 +101,19 @@ export function setupInterface(){
     currentRow++;
 
     let infodiv = createGridCell( contentArea, currentRow,1, 1,3);
+    //ref: https://blog.jim-nielsen.com/2023/width-and-height-in-css/
+    //width looks up the tree and sets node to be as wide as widest parent
+    //height looks down the tree and sets height to be maximum of children's heights
     infodiv.style.height="100%";
+
+    let tabs = new TabContainer(infodiv);
+    let div = tabs.addTab("Output");
     
     // let grid2 = createGrid(infodiv, "1fr" , "3fr 10px 1fr");
     // grid2.style.height="100%";
     // let errdiv = createGridCell(grid2,1,1,1,1);
     // errdiv.style.height="100%";
-    ErrorReporter.get().initialize(infodiv);
+    ErrorReporter.get().initialize(div);
     // createVerticalSizer(grid2,2,1,1,sizeCallback);
     // let helpgrid = createGridCell(grid2,1,3,1,1);
     // helpgrid.style.overflow="auto";
@@ -128,7 +134,8 @@ export function setupInterface(){
     window.addEventListener("resize", () => {
         View.get().resize();
         Editor.get().resize();
-        ErrorReporter.get().resize();
+        tabs.resize();
+        // ErrorReporter.get().resize();
     });
 
     //must be after editor has been created
