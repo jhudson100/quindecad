@@ -26,6 +26,10 @@ export enum GridPlane{
     XZ, YZ, XY
 };
 
+export enum CameraType {
+    PERSPECTIVE, ORTHOGRAPHIC
+};
+
 export class View{
 
     //this is a singleton class, so we hold a reference
@@ -41,21 +45,25 @@ export class View{
     //list of all the meshes we're drawing
     meshes: Mesh[] = [];
 
-    //cameras for the scene
+    //allows us to switch between camera types
+    activeCameraType: CameraType = CameraType.PERSPECTIVE;
+
+    //camera and control objects
     perspectiveCamera: any;
+    perspectiveControls: any;
+
     orthoCamera: any;
-    camera: any;
+    orthoControls: any;
 
     //light that is located at the eye
     light: any;
 
+    //light will point at this object (this object
+    //is not drawn; it only exists for pointing the light);
+    lightTarget: any;
+
     //the renderer: Draws the scene
     renderer: any;
-
-    //control object that handles mouse interaction
-    perspectiveControls: any;
-    orthoControls: any;
-    controls: any;
 
     //the coordinate axes
     axes: any;
@@ -99,27 +107,36 @@ export class View{
             -1,1, 1,-1, -1000, 1000
         )
 
-        this.camera = this.perspectiveCamera;
-
         //must set this before we create the Controls object
         this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
-        let amb = new THREE.AmbientLight(0x404040);
+        let amb = new THREE.AmbientLight(0x808080);
         amb.name="ambient light";
         amb.userData = new UserData(false);
-        this.light = new THREE.PointLight(
-            0xffffff,   //color
-            4,          //intensity
-            0,          //max distance
-            0           //decay
-        );
-        this.light.userData = new UserData(false);
-        this.light.name="point light";
-
         this.scene.add(amb);
+
+        this.lightTarget = new THREE.Object3D();
+        this.lightTarget.userData = new UserData(false);
+        this.scene.add(this.lightTarget);
+
+        this.light = new THREE.DirectionalLight(
+            0xffffff, //color
+            4.0     //intensity
+        );
         this.scene.add(this.light);
+        this.light.target = this.lightTarget;
+
+        // this.light = new THREE.PointLight(
+        //     0xffffff,   //color
+        //     4,          //intensity
+        //     0,          //max distance
+        //     0           //decay
+        // );
+        this.light.userData = new UserData(false);
+        this.light.name="moving light";
+
 
         this.makeGrids(
             0xa0a0a0, 0.5, 10,
@@ -172,8 +189,6 @@ export class View{
         };
         this.orthoControls.listenToKeyEvents( window );
         
-        this.controls = this.perspectiveControls;
-
         parent.appendChild(this.renderer.domElement);
 
         //ref: https://threejs.org/docs/#api/en/core/Raycaster
@@ -261,7 +276,7 @@ export class View{
                     case "p":
                     {
                         let p = new THREE.Vector2(this.lastMouseX,this.lastMouseY);
-                        this.raycaster.setFromCamera( p, this.camera );
+                        this.raycaster.setFromCamera( p, this.getCamera() );
                         let intersections = this.raycaster.intersectObjects( this.scene.children );
                         //intersections is a list, sorted by distance. Each entry
                         //has these fields:
@@ -483,36 +498,63 @@ export class View{
             console.warn("look and up vectors are nearly (anti)parallel");
             u = new THREE.Vector3(0,-1,0);
         }
-        this.perspectiveCamera.position.x=eyex;
-        this.perspectiveCamera.position.y=eyey;
-        this.perspectiveCamera.position.z=eyez;
-        this.perspectiveCamera.lookAt(coix,coiy,coiz);
-        this.perspectiveCamera.up = u;
-        this.perspectiveCamera.updateProjectionMatrix();
 
-        this.orthoCamera.position.x=eyex;
-        this.orthoCamera.position.y=eyey;
-        this.orthoCamera.position.z=eyez;
-        this.orthoCamera.lookAt(coix,coiy,coiz);
-        this.orthoCamera.up = u;
-        this.orthoCamera.updateProjectionMatrix();
+        [this.perspectiveCamera,this.orthoCamera].forEach( (cam: any) => {
+            cam.position.x=eyex;
+            cam.position.y=eyey;
+            cam.position.z=eyez;
+            cam.lookAt(coix,coiy,coiz);
+            cam.up = u;
+            cam.updateProjectionMatrix();
+        });
 
         this.draw();
     }
     
-    toggleAxes(){
-        this.axes.visible = !this.axes.visible;
+    areAxesVisible(){
+        return this.axes.visible;
+    }
+
+    setAxesVisible(b: boolean){
+        this.axes.visible = b;
         this.draw();
     }
 
+    toggleAxesVisible(){
+        this.setAxesVisible(!this.axes.visible);
+        return this.axes.visible;
+    }
+    
     draw(){
-        if(!this.controls || !this.camera)
+
+        let controls = this.getControls();
+        let camera = this.getCamera();
+
+        if(!controls || !camera)
             return;
-        this.controls?.update();
-        let p = this.camera.position;
-        this.light?.position.set(p.x,p.y,p.z);
-        console.log("Light at:",p,"zoom=",this.orthoCamera.zoom);
-        this.renderer.render(this.scene, this.camera);
+        
+        controls.update();
+
+        let p = camera.position;
+
+        //we take the camera's view direction and go backwards along that
+        //by a large distance to set the light's position
+        //The light's target is then set to the camera's position
+        //so it will shine parallel to the camera's look vector.
+        if( this.light ){
+            let W = camera.matrixWorld;
+            let v = new THREE.Vector4(0,0,-1,0);
+            v.applyMatrix4(W);
+            let v3 = new THREE.Vector3(v.x,v.y,v.z);
+            //pfront is in front of the camera
+            let pfront = new THREE.Vector3(p.x,p.y,p.z);
+            pfront.add( v3 );
+
+            this.light.position.set( p.x, p.y, p.z );
+            this.lightTarget.position.set( pfront.x, pfront.y, pfront.z );
+        }
+
+        this.renderer.render(this.scene, camera );
         this.viewIsStale=false;
     }
 
@@ -588,6 +630,37 @@ export class View{
             this.scene.add(m3);
         });
         
+        this.draw();
+    }
+
+    getCamera(){
+        switch(this.activeCameraType){
+            case CameraType.PERSPECTIVE:
+                return this.perspectiveCamera;
+            case CameraType.ORTHOGRAPHIC:
+                return this.orthoCamera;
+            default:
+                throw new Error("Bad camera type");
+        }
+    }
+
+    getControls(){
+        switch(this.activeCameraType){
+            case CameraType.PERSPECTIVE:
+                return this.perspectiveControls;
+            case CameraType.ORTHOGRAPHIC:
+                return this.orthoControls;
+            default:
+                throw new Error("Bad camera type");
+        }
+    }
+
+    getCameraType(){
+        return this.activeCameraType;
+    }
+
+    setCameraType(ctype: CameraType){
+        this.activeCameraType = ctype;
         this.draw();
     }
 

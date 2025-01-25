@@ -2,13 +2,20 @@
 
 export type MenuCallback = () => void;
 
+
+
 class MenuItem{
     callback: MenuCallback;
     item: HTMLElement;
     enabled = true;
+    labelSpan: HTMLSpanElement;
+    labelText: string;
 
     rect: DOMRect;
 
+    //NOTE: The menuItem does not manage accelerators at all; it is up to the rest of the program
+    //to handle accelerator keys and invoke the required functions at the correct time.
+    //The accelerators here are just for display purposes.
     constructor(parent: HTMLElement, label: string, callback: MenuCallback, accelerator?: string)
     {
         this.callback=callback;
@@ -21,18 +28,29 @@ class MenuItem{
         item.style.display="flex";
         item.style.justifyContent = "space-between";
     
-        let sp = document.createElement("span");
-        sp.className="menuItemText"
-        sp.appendChild( document.createTextNode(label) );
-        item.appendChild(sp);
+        this.labelSpan = document.createElement("span");
+        this.labelSpan.className="menuItemText"
+        item.appendChild(this.labelSpan);
+        this.setLabel(label);
 
-        sp = document.createElement("span");
+        let sp = document.createElement("span");
         if( accelerator ){
             sp.appendChild( document.createTextNode(accelerator) );
         } else {
             sp.appendChild( document.createTextNode(" ") );
         }
         item.appendChild(sp);
+    }
+
+    setLabel(text: string){
+        while( this.labelSpan.firstChild )
+            this.labelSpan.removeChild( this.labelSpan.firstChild);
+        this.labelSpan.appendChild( document.createTextNode(text) );
+        this.labelText = text;
+    }
+
+    getLabel(text: string){
+        return this.labelText;
     }
 
     setDisabled(){
@@ -68,6 +86,50 @@ class MenuItem{
 
     clearStoredRectangle(){
         this.rect=undefined;
+    }
+
+}
+
+//Note: It is the callback's responsibility to update the checked/unchecked status of the menu item
+export class CheckMenuItem extends MenuItem{
+    checked:boolean;
+    checkboxSpan: HTMLSpanElement;
+
+    constructor(parent: HTMLElement, label: string, checked: boolean, callback: MenuCallback, accelerator?: string){
+        super(parent, label, () => {
+            callback();
+        });
+
+        this.checked=checked;
+
+        this.checkboxSpan = document.createElement("span");
+        this.checkboxSpan.appendChild( document.createTextNode( "✓" ) );
+        this.labelSpan.insertBefore(this.checkboxSpan,this.labelSpan.firstChild);
+
+        this.updateLabel();
+    }
+    setChecked(checked: boolean){
+        this.checked=checked;
+        this.updateLabel();
+    }
+    toggleChecked(){
+        this.checked=!this.checked;
+        this.updateLabel();
+    }
+    override setLabel(label: string){
+        super.setLabel(label);
+
+        //superclass constructor calls setLabel, so we
+        //make sure we have this object before we use it
+        if( this.checkboxSpan )
+            this.labelSpan.insertBefore(this.checkboxSpan,this.labelSpan.firstChild);
+    }
+    private updateLabel(){
+        //FIXME: Should be put in main.css file.
+        if( this.checked )
+            this.checkboxSpan.style.opacity="1";
+        else
+            this.checkboxSpan.style.opacity="0.25";
     }
 
 }
@@ -162,6 +224,12 @@ export class Menu{
 
     addItem(label: string, callback: MenuCallback, accelerator?: string ){
         let mitem = new MenuItem(this.itemContainer, label, callback, accelerator);
+        this.items.push(mitem);
+        return mitem;
+    }
+
+    addCheckItem(label: string, checked: boolean, callback: MenuCallback, accelerator?: string ){
+        let mitem = new CheckMenuItem(this.itemContainer, label, checked, callback, accelerator);
         this.items.push(mitem);
         return mitem;
     }

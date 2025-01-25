@@ -11,7 +11,10 @@ let ace = window.ace;
 //Note: Can use ed.textInput.getElement() to get HTML text area element
 // (ed = name of Ace edit object)
 
-const exampleCode=`# example code
+type KeyCallback = () => void;
+type KeyEventCallback = (ev: KeyboardEvent) => void;
+
+export const simpleDemoCode=`# example code
 # Press shift+enter to run or click
 # the "Run" button above.
 # Use the Help menu to get a more full-featured demo.
@@ -23,10 +26,6 @@ draw(d)
 print("Hello, world!")
 
 `
-
-type KeyCallback = () => void;
-type KeyEventCallback = (ev: KeyboardEvent) => void;
-
 
 
 let completions: Map<string,string[]> = new Map();
@@ -239,7 +238,7 @@ export class Editor{
 
 
 
-        let code = exampleCode;
+        let code = simpleDemoCode;
         try{
             this.localStorage = window.localStorage;
             if( this.localStorage ){

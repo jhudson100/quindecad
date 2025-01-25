@@ -1,12 +1,10 @@
 import {ErrorReporter} from "ErrorReporter";
 import {GridPlane, View} from "View";
-import {Editor} from "Editor";
-// import {ButtonBar} from "ButtonBar";
+import {Editor, simpleDemoCode} from "Editor";
 import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
-// import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 import { saveSTL, showAboutDialog, showHelp } from "utils";
 import { Menu, Menubar } from "Menubar";
 import { Spinner } from "Spinner";
@@ -218,7 +216,10 @@ function setupMenubar(parent: HTMLElement)
 
     let viewmenu = mbar.addMenu("View");
     viewmenu.addItem("Grid...", ()=> { conductGridDialog(); } );
-    viewmenu.addItem("Toggle axes", ()=> { View.get().toggleAxes() } );
+    let avisible = viewmenu.addCheckItem("Show axes", View.get().areAxesVisible(), ()=> {
+        let vis = View.get().toggleAxesVisible();
+        avisible.setChecked(vis);
+    });
     
     let runmenu = mbar.addMenu("Run");
     let runItem = runmenu.addItem("Run", () => { PythonManager.get().runCodeFromEditor(); }, "Shift+Enter");
@@ -226,7 +227,8 @@ function setupMenubar(parent: HTMLElement)
     stopItem.setDisabled();
     let helpmenu = mbar.addMenu("Help");
     helpmenu.addItem("Help...",()=>{ showHelp();});
-    helpmenu.addItem("Demo", () => { showDemo();});
+    helpmenu.addItem("Simple demo", () => { showDemo(0); });
+    helpmenu.addItem("Full demo", () => { showDemo(1);});
     helpmenu.addItem("About...",()=>{ showAboutDialog();});
 
     WorkerManager.get().registerWorkerBusyCallback( () => {
@@ -327,7 +329,7 @@ function createGridCell( parent:HTMLElement, row: number, column: number, rowspa
     return div;
 }
 
-function showDemo(){
+function showDemo(which: number){
     let D = new Dialog( [
         {
             name: "Cancel",
@@ -336,13 +338,18 @@ function showDemo(){
         {
             name: "OK",
             callback: () => {
-                D.contentArea.innerHTML="Working...Please wait...";
-                fetch("demo.txt").then( (resp: Response) => {
-                    resp.text().then( (txt:string) => {
-                        Editor.get().setValue(txt);
-                        D.hide();
+                if( which === 0 ){
+                    Editor.get().setValue(simpleDemoCode);
+                    D.hide();
+                } else {
+                    D.contentArea.innerHTML="Working...Please wait...";
+                    fetch("demo.txt").then( (resp: Response) => {
+                        resp.text().then( (txt:string) => {
+                            Editor.get().setValue(txt);
+                            D.hide();
+                        });
                     });
-                });
+                }
             }
         }
     ]);
