@@ -1,3 +1,6 @@
+body {
+    font-family: sans-serif;
+}
 
 .menubar{
     user-select: none;
@@ -10,6 +13,7 @@
     left: 0px;
     top: 0px;
     z-index: 100;
+    background: white;
 }
 
 /* Used by menubar for selected items and menus*/
@@ -56,4 +60,74 @@
 
 .menubar .menuItem.disabled{
     color: #aaaaaa;
+}
+
+
+/* .tabOverallContainer{
+} */
+
+.tabHeaderContainer{
+    position: relative;
+    left: 0px;
+    top: 0px;
+    cursor: default;
+    background: lightgrey;
+}
+
+.tabContentContainer{
+    position: relative;
+    left: 0px;
+    top: 0px;
+}
+
+.tabOverallContainer .tabContent{
+    visibility: hidden;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.tabOverallContainer .tabContent.tabActive {
+    visibility: visible;
+}
+
+.tabOverallContainer .tabHeader {
+    border: 2px outset;
+    background: lightgrey;
+    padding-left: 0.1em;
+    padding-right: 0.1em;
+    margin-left: 0.1em;
+    margin-right: 0.1em;
+    display: inline-block;
+    cursor: pointer;
+    user-select:none;
+}
+
+.tabOverallContainer .tabHeader.tabActive {
+    border: 2px inset;
+    background: #b0b0b0
+
+}
+
+.helpInfo .functionsignature {
+    font-family: monospace;
+}
+
+.helpInfo .functionname {
+    color: blueviolet;
+    font-weight: bold;
+}
+
+.helpInfo .argname {
+    color: teal;
+    font-weight: bold;
+}
+
+.helpInfo .argtype {
+    color: blue;
+}
+
+.helpInfo .defaultvalue {
+    color: grey;
+    font-style: italic;
 }

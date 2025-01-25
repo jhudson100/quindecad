@@ -12,6 +12,7 @@ import * as THREE from "three";
 // @ts-ignore
 import {OrbitControls} from "OrbitControls";
 import { ErrorReporter } from "ErrorReporter";
+import { Editor } from "Editor";
 
 //user data for meshes and other objects
 class UserData {
@@ -187,6 +188,20 @@ export class View{
                 this.viewIsStale=true;
             })
         });
+
+        //if the user clicks on the view, we want to take focus
+        //away from the editor
+        //on Linux, for example, a middle mouse press is 
+        //sent to the text editor as a paste operation if we don't
+        //handle this
+        this.renderer.domElement.addEventListener( "mousedown", (ev: MouseEvent) => {
+            Editor.get().blur();
+            ev.preventDefault();        //prevent editor from getting middle mouse event
+        } );
+        // this.renderer.domElement.addEventListener( "mouseup", (ev: MouseEvent) => {
+        //     console.log("mouseup!")
+        //     // ev.preventDefault();
+        // } );
 
         //for testing
         // let geom = new THREE.BoxGeometry(1,1,1);

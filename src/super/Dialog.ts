@@ -14,7 +14,7 @@ export class Dialog{
     
     constructor( buttons: ButtonSpec[] ){
         this.darkOverlay = document.createElement("div");
-        this.darkOverlay.style.zIndex="10";
+        this.darkOverlay.style.zIndex="200";
         this.darkOverlay.style.overflow="hidden";
         this.darkOverlay.style.position="absolute";
         this.darkOverlay.style.left="0px";

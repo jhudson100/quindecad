@@ -1,10 +1,12 @@
 import {Editor} from "Editor";
+import { TabbedPanel } from "TabbedPanel";
 // import { preambleList } from "PythonBuiltins";
 
 export class ErrorReporter{
     div: HTMLElement;
     parent: HTMLElement;
-    
+    tabs: TabbedPanel;
+
     private static instance : ErrorReporter;
 
     private constructor(){
@@ -34,8 +36,9 @@ export class ErrorReporter{
         this.div.appendChild(msg);
     }
 
-    initialize(parent: HTMLElement){
+    initialize(parent: HTMLElement, tabs: TabbedPanel){
         this.parent=parent;
+        this.tabs=tabs;
         parent.appendChild(this.div);
         this.resize();
     }
@@ -170,6 +173,7 @@ export class ErrorReporter{
         d.appendChild(document.createTextNode(s));
         d.style.color=color;
         this.div.appendChild(d);
+        this.tabs.selectTabByElement(this.parent);
     }
 
     scrollToBottom(){
