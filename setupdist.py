@@ -37,6 +37,7 @@ for fname in [
     "src/ext/three/package/build/three.core.min.js",
     "src/ext/three/package/build/three.module.min.js",
     "src/ext/three/package/examples/jsm/controls/OrbitControls.js",
+    "src/ext/three/package/examples/jsm/controls/TrackballControls.js",
     "src/ext/split/package/dist/split-grid.mjs",
     # "src/ext/jquery/jquery-3.7.1.min.js",
     # "src/ext/jqueryui/jquery-ui.min.css",

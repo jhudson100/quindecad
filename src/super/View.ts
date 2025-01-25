@@ -10,7 +10,10 @@ import {Mesh} from "Mesh";
 import * as THREE from "three";
 
 // @ts-ignore
+import {TrackballControls} from "TrackballControls";
+// @ts-ignore
 import {OrbitControls} from "OrbitControls";
+
 import { ErrorReporter } from "ErrorReporter";
 import { Editor } from "Editor";
 
@@ -171,23 +174,29 @@ export class View{
         }
 
         //TODO: Make these controls configurable
-        this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
-        this.perspectiveControls.enableDamping=false;
+        //this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
+        //this.perspectiveControls.listenToKeyEvents( window );
+        // this.perspectiveControls.enableDamping=false;
+
+        this.perspectiveControls = new TrackballControls(this.perspectiveCamera,this.renderer.domElement);
+        this.perspectiveControls.staticMoving=true;
         this.perspectiveControls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.DOLLY
         };
-        this.perspectiveControls.listenToKeyEvents( window );
+        
+        // this.orthoControls = new OrbitControls(this.orthoCamera,this.renderer.domElement);
+        // this.orthoControls.listenToKeyEvents( window );
+        // this.orthoControls.enableDamping=false;
 
-        this.orthoControls = new OrbitControls(this.orthoCamera,this.renderer.domElement);
-        this.orthoControls.enableDamping=false;
+        this.orthoControls = new TrackballControls(this.orthoCamera,this.renderer.domElement);
+        this.orthoControls.staticMoving=true;
         this.orthoControls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.DOLLY
         };
-        this.orthoControls.listenToKeyEvents( window );
         
         parent.appendChild(this.renderer.domElement);
 
@@ -500,11 +509,9 @@ export class View{
         }
 
         [this.perspectiveCamera,this.orthoCamera].forEach( (cam: any) => {
-            cam.position.x=eyex;
-            cam.position.y=eyey;
-            cam.position.z=eyez;
+            cam.position.set(eyex,eyey,eyez);
+            cam.up.set(u.x,u.y,u.z);
             cam.lookAt(coix,coiy,coiz);
-            cam.up = u;
             cam.updateProjectionMatrix();
         });
 
@@ -524,7 +531,7 @@ export class View{
         this.setAxesVisible(!this.axes.visible);
         return this.axes.visible;
     }
-    
+
     draw(){
 
         let controls = this.getControls();
@@ -559,6 +566,12 @@ export class View{
     }
 
     resize(){
+        console.log("RESIZE");
+        
+        this.perspectiveControls.handleResize();
+        this.orthoControls.handleResize();
+
+
         let rect = this.parent.getBoundingClientRect();
         this.renderer.setSize( rect.width, rect.height);
 
@@ -664,6 +677,29 @@ export class View{
         this.draw();
     }
 
+    lookDownAxis(x: number, y: number, z: number){
+        let p = this.getCamera().position;
+        let dist = p.length();
+        let ux,uy,uz;
+        if( z === 1 || z === -1 ){
+            ux=0;
+            uy=1;
+            uz=0;
+        } else {
+            ux=0;
+            uy=0;
+            uz=1;
+        }
+
+        // this.perspectiveControls.up.set(ux,uy,uz);
+        // this.orthoControls.up.set(ux,uy,uz);
+
+        this.lookAt(dist*x, dist*y, dist*z,
+            0,0,0,
+            ux,uy,uz
+        );
+
+    }
 }
 
 

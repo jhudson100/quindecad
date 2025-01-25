@@ -1,12 +1,12 @@
 import {ErrorReporter} from "ErrorReporter";
-import {GridPlane, View} from "View";
+import {CameraType, GridPlane, View} from "View";
 import {Editor, simpleDemoCode} from "Editor";
 import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
 import { saveSTL, showAboutDialog, showHelp } from "utils";
-import { Menu, Menubar } from "Menubar";
+import { CheckMenuItem, Menu, Menubar } from "Menubar";
 import { Spinner } from "Spinner";
 import { Dialog } from "Dialog";
 import { TabbedPanel } from "TabbedPanel";
@@ -221,6 +221,38 @@ function setupMenubar(parent: HTMLElement)
         avisible.setChecked(vis);
     });
     
+    viewmenu.addSeparator();
+    let persp: CheckMenuItem;
+    let ortho: CheckMenuItem;
+    let viewCallback = (t: CameraType)=>{
+        switch(t){
+            case CameraType.PERSPECTIVE:
+                persp.setChecked(true);
+                ortho.setChecked(false);
+                View.get().setCameraType(CameraType.PERSPECTIVE);
+                return;
+            case CameraType.ORTHOGRAPHIC:
+                persp.setChecked(false);
+                ortho.setChecked(true);
+                View.get().setCameraType(CameraType.ORTHOGRAPHIC);
+                return;
+            default:
+                throw new Error("Bad camera type");
+        }
+    };
+    persp = viewmenu.addCheckItem("Perspective view", View.get().getCameraType() == CameraType.PERSPECTIVE,()=>{viewCallback(CameraType.PERSPECTIVE);});
+    ortho = viewmenu.addCheckItem("Orthographic view", View.get().getCameraType() == CameraType.ORTHOGRAPHIC, ()=>{viewCallback(CameraType.ORTHOGRAPHIC);});
+
+    viewmenu.addSeparator();
+
+    viewmenu.addItem("+X view", ()=>{ View.get().lookDownAxis( 1, 0, 0); } );
+    viewmenu.addItem("-X view", ()=>{ View.get().lookDownAxis(-1, 0, 0); } );
+    viewmenu.addItem("+Y view", ()=>{ View.get().lookDownAxis( 0, 1, 0); } );
+    viewmenu.addItem("-Y view", ()=>{ View.get().lookDownAxis( 0,-1, 0); } );
+    viewmenu.addItem("+Z view", ()=>{ View.get().lookDownAxis( 0, 0, 1); } );
+    viewmenu.addItem("-Z view", ()=>{ View.get().lookDownAxis( 0, 0,-1); } );
+
+
     let runmenu = mbar.addMenu("Run");
     let runItem = runmenu.addItem("Run", () => { PythonManager.get().runCodeFromEditor(); }, "Shift+Enter");
     let stopItem = runmenu.addItem("Stop", () => { WorkerManager.get().stopWorker(); });

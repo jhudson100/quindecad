@@ -129,7 +129,7 @@ export class CheckMenuItem extends MenuItem{
         if( this.checked )
             this.checkboxSpan.style.opacity="1";
         else
-            this.checkboxSpan.style.opacity="0.25";
+            this.checkboxSpan.style.opacity="0.15";
     }
 
 }
@@ -234,6 +234,11 @@ export class Menu{
         return mitem;
     }
 
+    // addSubmenu( label: string ) {
+    //     let m = new SubMenuItem(this.itemContainer, label );
+    //     this.items.push(m);
+    //     return m;
+    // }
 }
 
 export class Menubar{
