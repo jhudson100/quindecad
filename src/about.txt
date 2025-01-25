@@ -1,4 +1,5 @@
-
+The code for this program is available at:
+https://github.com/jhudson100/quindecad
 
 Copyright (c) 2024, 2025 J Hudson
 
