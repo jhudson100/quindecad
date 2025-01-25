@@ -43,7 +43,8 @@ export class View{
 
     //cameras for the scene
     perspectiveCamera: any;
-    // orthoCamera: any;
+    orthoCamera: any;
+    camera: any;
 
     //light that is located at the eye
     light: any;
@@ -52,7 +53,9 @@ export class View{
     renderer: any;
 
     //control object that handles mouse interaction
-    controls: any;     
+    perspectiveControls: any;
+    orthoControls: any;
+    controls: any;
 
     //the coordinate axes
     axes: any;
@@ -92,9 +95,11 @@ export class View{
             1000        //yon
         );
 
-        // this.orthoCamera = new THREE.OrthographicCamera(
-        //     -1,1, 1,-1, 0.1, 1000
-        // )
+        this.orthoCamera = new THREE.OrthographicCamera(
+            -1,1, 1,-1, -1000, 1000
+        )
+
+        this.camera = this.perspectiveCamera;
 
         //must set this before we create the Controls object
         this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
@@ -149,15 +154,25 @@ export class View{
         }
 
         //TODO: Make these controls configurable
-        this.controls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
-        this.controls.enableDamping=false;
-        this.controls.mouseButtons = {
+        this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
+        this.perspectiveControls.enableDamping=false;
+        this.perspectiveControls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.DOLLY
         };
+        this.perspectiveControls.listenToKeyEvents( window );
 
-        this.controls.listenToKeyEvents( window );
+        this.orthoControls = new OrbitControls(this.orthoCamera,this.renderer.domElement);
+        this.orthoControls.enableDamping=false;
+        this.orthoControls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.PAN,
+            RIGHT: THREE.MOUSE.DOLLY
+        };
+        this.orthoControls.listenToKeyEvents( window );
+        
+        this.controls = this.perspectiveControls;
 
         parent.appendChild(this.renderer.domElement);
 
@@ -239,10 +254,14 @@ export class View{
                     // case "a":
                     //     this.toggleAxes();
                     //     return;
+                    // case "o":
+                    //     this.camera = this.orthoCamera;
+                    //     this.controls = this.orthoControls;
+                    //     break;
                     case "p":
                     {
                         let p = new THREE.Vector2(this.lastMouseX,this.lastMouseY);
-                        this.raycaster.setFromCamera( p, this.perspectiveCamera );
+                        this.raycaster.setFromCamera( p, this.camera );
                         let intersections = this.raycaster.intersectObjects( this.scene.children );
                         //intersections is a list, sorted by distance. Each entry
                         //has these fields:
@@ -471,43 +490,43 @@ export class View{
         this.perspectiveCamera.up = u;
         this.perspectiveCamera.updateProjectionMatrix();
 
-        // this.orthoCamera.position.x=eyex;
-        // this.orthoCamera.position.y=-eyey;
-        // this.orthoCamera.position.z=eyez;
-        // this.orthoCamera.lookAt(coix,coiy,coiz);
-        // this.orthoCamera.up = u;
-        // this.orthoCamera.updateProjectionMatrix();
+        this.orthoCamera.position.x=eyex;
+        this.orthoCamera.position.y=eyey;
+        this.orthoCamera.position.z=eyez;
+        this.orthoCamera.lookAt(coix,coiy,coiz);
+        this.orthoCamera.up = u;
+        this.orthoCamera.updateProjectionMatrix();
 
         this.draw();
     }
     
-    // toggleGrid(){
-    //     this.gridXY.visible = !this.gridXY.visible;
-    //     this.draw();
-    // }
-
     toggleAxes(){
         this.axes.visible = !this.axes.visible;
         this.draw();
     }
 
     draw(){
-        if(!this.controls || !this.perspectiveCamera)
+        if(!this.controls || !this.camera)
             return;
         this.controls?.update();
-        let p = this.perspectiveCamera.position;
+        let p = this.camera.position;
         this.light?.position.set(p.x,p.y,p.z);
-        this.renderer.render(this.scene, this.perspectiveCamera);
+        console.log("Light at:",p,"zoom=",this.orthoCamera.zoom);
+        this.renderer.render(this.scene, this.camera);
         this.viewIsStale=false;
     }
 
     resize(){
         let rect = this.parent.getBoundingClientRect();
         this.renderer.setSize( rect.width, rect.height);
+
         this.perspectiveCamera.aspect = rect.width/rect.height;
         this.perspectiveCamera.updateProjectionMatrix();
         
-        //FIXME: Adjust orthoCamera parameters
+        let aspect = rect.height/rect.width;
+        this.orthoCamera.top = aspect;
+        this.orthoCamera.bottom = -aspect;
+        this.orthoCamera.updateProjectionMatrix();
 
         this.draw();
     }
