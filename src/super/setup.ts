@@ -11,6 +11,7 @@ import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation, sa
 import { Menu, Menubar } from "Menubar";
 import { Spinner } from "Spinner";
 import { Dialog } from "Dialog";
+import { TabbedPanel } from "TabbedPanel";
 
 
 // @ts-ignore
@@ -106,19 +107,21 @@ export function setupInterface(){
     //height looks down the tree and sets height to be maximum of children's heights
     infodiv.style.height="100%";
 
-    let tabs = new TabContainer(infodiv);
-    let div = tabs.addTab("Output");
-    
+    let tabs = new TabbedPanel(infodiv);
+    let errdiv = tabs.addTab("Output");
+    let helpdiv = tabs.addTab("Help");
+
     // let grid2 = createGrid(infodiv, "1fr" , "3fr 10px 1fr");
     // grid2.style.height="100%";
     // let errdiv = createGridCell(grid2,1,1,1,1);
     // errdiv.style.height="100%";
-    ErrorReporter.get().initialize(div);
+    ErrorReporter.get().initialize(errdiv);
     // createVerticalSizer(grid2,2,1,1,sizeCallback);
     // let helpgrid = createGridCell(grid2,1,3,1,1);
     // helpgrid.style.overflow="auto";
     // let helpdiv = createHelpDiv(helpgrid);
 
+    createHelpDiv(helpdiv);
 
 
 
@@ -135,7 +138,7 @@ export function setupInterface(){
         View.get().resize();
         Editor.get().resize();
         tabs.resize();
-        // ErrorReporter.get().resize();
+        ErrorReporter.get().resize();
     });
 
     //must be after editor has been created

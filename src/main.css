@@ -57,3 +57,39 @@
 .menubar .menuItem.disabled{
     color: #aaaaaa;
 }
+
+
+.tabOverallContainer{
+    border: 1px solid black;
+}
+
+.tabHeaderContainer{
+    position: relative;
+    left: 0px;
+    top: 0px;
+}
+.tabContentContainer{
+    position: relative;
+    left: 0px;
+    top: 0px;
+}
+
+.tabOverallContainer .tabContent{
+    visibility: hidden;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.tabOverallContainer .tabContent .tabActive {
+    visibility: visible;
+}
+
+.tabOverallContainer .tabHeader {
+    background: yellow;
+    display: inline-block;
+}
+
+.tabOverallContainer .tabHeader .tabActive {
+    background: red;
+}
