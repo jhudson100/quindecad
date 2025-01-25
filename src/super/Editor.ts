@@ -3,10 +3,6 @@ import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
 // @ts-ignore
 let ace = window.ace;
 
-//FIXME: Add toolbar with various options for editor
-//FIXME: Document editor hotkeys in help text file (ctrl+f, etc)
-
-
 // https://ace.c9.io/#nav=howto
 // https://ajaxorg.github.io/ace-api-docs/index.html
 // https://stackoverflow.com/questions/28043954/keydown-event-on-ace-editor
