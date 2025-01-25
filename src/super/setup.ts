@@ -6,12 +6,13 @@ import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
-import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
-import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation, saveSTL, showAboutDialog, showHelp } from "utils";
+// import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
+import { saveSTL, showAboutDialog, showHelp } from "utils";
 import { Menu, Menubar } from "Menubar";
 import { Spinner } from "Spinner";
 import { Dialog } from "Dialog";
 import { TabbedPanel } from "TabbedPanel";
+import { HelpInfo } from "HelpInfo";
 
 
 // @ts-ignore
@@ -47,11 +48,9 @@ export function setupInterface(){
     let sizeCallback = () => {
         View.get().resize();
         Editor.get().resize();
+        tabs.resize();
         ErrorReporter.get().resize();   
-
-        // let rect = helpdiv.parentElement.getBoundingClientRect();
-        // helpdiv.style.width = rect.width+"px";
-        // helpgrid.style.height = rect.height+"px";
+        helpInfo.resize();
     };
 
     //Split.js can't work with em's here; px work though
@@ -115,13 +114,13 @@ export function setupInterface(){
     // grid2.style.height="100%";
     // let errdiv = createGridCell(grid2,1,1,1,1);
     // errdiv.style.height="100%";
-    ErrorReporter.get().initialize(errdiv);
+    ErrorReporter.get().initialize(errdiv,tabs);
     // createVerticalSizer(grid2,2,1,1,sizeCallback);
     // let helpgrid = createGridCell(grid2,1,3,1,1);
     // helpgrid.style.overflow="auto";
     // let helpdiv = createHelpDiv(helpgrid);
 
-    createHelpDiv(helpdiv);
+    let helpInfo = new HelpInfo(helpdiv);
 
 
 
@@ -135,14 +134,15 @@ export function setupInterface(){
 
    
     window.addEventListener("resize", () => {
-        View.get().resize();
-        Editor.get().resize();
-        tabs.resize();
-        ErrorReporter.get().resize();
+        sizeCallback();
     });
+
 
     //must be after editor has been created
     setupMenubar(bbardiv);
+
+    //force size computations
+    sizeCallback();
 
 }
 
@@ -325,57 +325,6 @@ function createGridCell( parent:HTMLElement, row: number, column: number, rowspa
     div.style.overflow="hidden";
     parent.appendChild(div);
     return div;
-}
-
-function createHelpDiv(parent: HTMLDivElement){
-    let helpdiv = document.createElement("div");
-    let sel = document.createElement("select");
-    helpdiv.appendChild(sel);
-    parent.appendChild(helpdiv);
-    let contentdiv = document.createElement("div");
-    contentdiv.style.overflow="auto";
-    parent.appendChild(contentdiv);
-
-    let op = document.createElement("option");
-    op.appendChild( document.createTextNode( "Get documentation...") );
-    sel.appendChild(op);
-
-    let docs: HTMLElement[] = [];
-    getPreambleFunctionInfo().forEach( (fspec: FuncSpec) => {
-        let op = document.createElement("option");
-        sel.appendChild(op);
-        op.appendChild(document.createTextNode( fspec.name ) );
-        
-        let d = getFunctionSignatureDocumentation(fspec,false,true) 
-        d.style.fontFamily = "monospace";
-
-        let div = document.createElement("div");
-        div.appendChild(d);
-
-        let dd = getDetailedFunctionDocumentation(fspec,false);
-        div.appendChild(dd);
-
-        docs.push( div );
-    });
-
-    let firstTime=true;
-    sel.addEventListener("change", () => {
-        let idx = sel.selectedIndex;
-        if( firstTime ){
-            if( sel.selectedIndex === 0 )
-                return;
-            firstTime=false;
-            sel.removeChild(sel.firstChild);
-            idx--;
-            sel.selectedIndex = idx;
-        }
-        while( contentdiv.childNodes.length > 0 ){
-            contentdiv.removeChild(contentdiv.firstChild);
-        } 
-        contentdiv.appendChild( docs[ idx ] );
-    });
-
-    return helpdiv;
 }
 
 function showDemo(){

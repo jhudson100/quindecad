@@ -360,4 +360,8 @@ export class Editor{
         // this.ed.execCommand("showSettingsMenu");
     }
 
+    blur(){
+        this.ed.blur();
+    }
+
 }
