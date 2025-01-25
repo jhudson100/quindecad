@@ -261,7 +261,7 @@ function styleSizer(g: HTMLDivElement, splitDirection: SplitDirection){
     g.style.borderColor="lightgrey";
     g.style.cursor = (splitDirection == SplitDirection.VERTICAL) ? "col-resize" : "row-resize";
 }
-
+ 
 function createHorizontalSizer(parent: HTMLElement, 
     row: number, firstColumn: number, colspan: number,
         dragEndCallback?: () => void )
