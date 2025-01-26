@@ -14,6 +14,12 @@ export interface Box3{
     max: Vector3;
 }
 
+export interface Plane{
+    normal: Vector3;
+    constant: number;
+    distanceToPoint: (p:Vector3) => number;
+}
+
 export interface Matrix4{
 
 }
@@ -22,7 +28,14 @@ export interface Controls{
 
 }
 
-interface TrackballControls extends Controls{
+export interface Material{
+    clippingPlanes: Plane[];
+    side: number;
+    transparent: boolean;
+    opacity: number;
+}
+
+export interface TrackballControls extends Controls{
     staticMoving: boolean;
     keys: any[];
     mouseButtons: any;
@@ -30,6 +43,14 @@ interface TrackballControls extends Controls{
     rotateSpeed: number;
     zoomSpeed: number;
     handleResize: () => void;
+}
+
+export interface THREEOrbitControls extends Controls{
+    listenToKeyEvents: (elem: any) => void;
+    enableDamping: boolean;
+    mouseButtons: any;
+    update: ()=>void;
+
 }
 
 export interface Object3D{
@@ -62,5 +83,6 @@ export interface OrthographicCamera extends Camera{
     right: number;
     top: number;
     bottom: number;
+    zoom: number;
     updateProjectionMatrix: ()=>void;
 }

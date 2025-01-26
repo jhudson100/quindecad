@@ -242,3 +242,19 @@ export function showAboutDialog(){
         }
     });
 }
+
+
+let unique=0;
+export function makeCheckbox(container:HTMLElement, label: string, checked: boolean){
+    let inp : HTMLInputElement = document.createElement("input");
+    inp.type="checkbox";
+    inp.checked = checked;
+    inp.id="checkbox"+(unique++);
+    let lbl: HTMLLabelElement = document.createElement("label");
+    lbl.style.userSelect="none";
+    lbl.htmlFor=inp.id;
+    lbl.appendChild(document.createTextNode(label));
+    container.appendChild(inp);
+    container.appendChild(lbl);
+    return inp;
+}

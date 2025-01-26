@@ -29,12 +29,12 @@ export class ErrorReporter{
         this.div.scrollTop=0;
     }
 
-    nothingToReport(){
-        let msg = document.createElement("div");
-        msg.appendChild(document.createTextNode("Error messages will appear here"));
-        msg.style.color="#cccccc";
-        this.div.appendChild(msg);
-    }
+    // nothingToReport(){
+    //     let msg = document.createElement("div");
+    //     msg.appendChild(document.createTextNode("Error messages will appear here"));
+    //     msg.style.color="#cccccc";
+    //     this.div.appendChild(msg);
+    // }
 
     initialize(parent: HTMLElement, tabs: TabbedPanel){
         this.parent=parent;
@@ -162,6 +162,7 @@ export class ErrorReporter{
             let div = document.createElement("div");
             div.appendChild(s);
             this.div.appendChild(div);
+            this.tabs.tabWantsAttention(this.parent);
         });
         this.div.scrollTop=0;
     }
@@ -173,7 +174,7 @@ export class ErrorReporter{
         d.appendChild(document.createTextNode(s));
         d.style.color=color;
         this.div.appendChild(d);
-        this.tabs.selectTabByElement(this.parent);
+        this.tabs.tabWantsAttention(this.parent);
     }
 
     scrollToBottom(){

@@ -274,6 +274,7 @@ export class Editor{
         //line = 1-based; col=0-based
         //but ace uses 0-based line numbers
         this.ed.moveCursorToPosition( {row:line-1, column: col } );
+        this.ed.selection.setRange( { start: {row: line-1, column: col}, end: {row: line-1, column: col} } );
     }
 
     scrollTo(line:number){

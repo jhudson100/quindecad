@@ -63,6 +63,13 @@ export class TabbedPanel{
         this.selectTab(idx);
     }
 
+    tabWantsAttention(elem: HTMLElement){
+        let idx = this.contents.findIndex( (e: HTMLElement) => { return e === elem } );
+        if( this.selectedTabIndex !== idx ){
+            this.headers[idx].classList.add("tabWantsAttention");
+        }
+    }
+
     selectTab(index:number){
         if( index <  0 || index >= this.headers.length ){
             console.warn("Bad index for selectTab");
@@ -80,6 +87,7 @@ export class TabbedPanel{
         }
         this.headers[index].classList.add("tabActive");
         this.contents[index].classList.add("tabActive");
+        this.headers[index].classList.remove("tabWantsAttention");
     }
 
     resize(){

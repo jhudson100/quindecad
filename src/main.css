@@ -103,6 +103,19 @@ body {
     user-select:none;
 }
 
+/* ref: https://stackoverflow.com/questions/37629510/loop-colour-transition-with-css*/
+@keyframes warningColorCycle{
+    from {
+        background: unset;
+    } 
+    to{
+        background: #ffcc00;
+    }
+}
+.tabOverallContainer .tabHeader.tabWantsAttention {
+    animation: warningColorCycle 1s infinite alternate;
+}
+
 .tabOverallContainer .tabHeader.tabActive {
     border: 2px inset;
     background: #b0b0b0
@@ -131,3 +144,8 @@ body {
     color: grey;
     font-style: italic;
 }
+
+input.invalidValue {
+    background: #ffcccc;
+}
+

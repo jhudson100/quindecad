@@ -1,8 +1,6 @@
-//FIXME: Allow orthographic/perspective view toggle
 //FIXME: Allow user to click edge and then show statistics (length, endpoints) of that edge
 //FIXME: Add wireframe display option: solid, solid+wireframe, wireframe only
 //FIXME: Use +,- to change rotateSpeed and panSpeed on orbitcontrols. Or put slider on screen
-//FIXME: Allow a user-specified clipping plane for viewing interior of objects: https://stackoverflow.com/questions/43916002/three-js-how-to-cut-a-3d-object-with-y-plane
 
 import {Mesh} from "Mesh";
 
@@ -16,7 +14,7 @@ import {OrbitControls} from "OrbitControls";
 
 import { ErrorReporter } from "ErrorReporter";
 import { Editor } from "Editor";
-import { Box3, Group, OrthographicCamera, PerspectiveCamera } from "ThreeTypes";
+import { Box3, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls } from "ThreeTypes";
 
 //user data for meshes and other objects
 class UserData {
@@ -26,8 +24,9 @@ class UserData {
     }
 }
 
+type ParameterlessCallback = ()=>void;
 
-export class Plane{
+export class ClippingPlane{
     A: number;
     B: number;
     C: number;
@@ -55,7 +54,8 @@ export class View{
     private static instance: View;
 
     //bounding box of objects in scene: A THREE.Box3 object
-    bbox: Box3;
+    //@ts-ignore
+    bbox: Box3 = new THREE.Box3( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) );
 
     //parent DOM node
     parent: HTMLElement;
@@ -66,15 +66,27 @@ export class View{
     //list of all the meshes we're drawing
     meshes: Mesh[] = [];
 
+    //functions that get called whenever meshes are added to scene
+    meshChangeListeners: ParameterlessCallback[] = [];
+
+    //list of all the materials of the meshes (but not materials
+    //for view widgets, grids, axes, etc.). This is here
+    //because we want to do clipping but we don't want
+    //to clip the axes and such
+    allMaterials: Material[] = [];
+    
+    //currently active clipping planes
+    clippingPlanes: Plane[] = [];
+
     //allows us to switch between camera types
     activeCameraType: CameraType = CameraType.PERSPECTIVE;
 
     //camera and control objects
     perspectiveCamera: PerspectiveCamera;
-    perspectiveControls: TrackballControls;
+    perspectiveControls: THREEOrbitControls; //TrackballControls;
 
     orthoCamera: OrthographicCamera;
-    orthoControls: TrackballControls;
+    orthoControls: THREEOrbitControls; //TrackballControls;
 
     //light that is located at the eye
     light: any;
@@ -117,6 +129,7 @@ export class View{
 
         this.renderer = new THREE.WebGLRenderer({antialias:true} );
         this.renderer.setSize(16,16);   //dummy
+        this.renderer.localClippingEnabled=true;
 
         this.perspectiveCamera = new THREE.PerspectiveCamera( 
             45, //fov
@@ -128,6 +141,7 @@ export class View{
         this.orthoCamera = new THREE.OrthographicCamera(
             -1,1, 1,-1, -1000, 1000
         )
+        this.orthoCamera.zoom=0.2;
 
         //must set this before we create the Controls object
         this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
@@ -192,25 +206,34 @@ export class View{
             this.axes.add(axis);
         }
 
-        //TODO: Make these controls configurable
-        //this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
-        //this.perspectiveControls.listenToKeyEvents( window );
-        // this.perspectiveControls.enableDamping=false;
+        //FIXME: Make these controls configurable
+        //@ts-ignore
+        this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
+        this.perspectiveControls.listenToKeyEvents( window );
+        this.perspectiveControls.enableDamping=false;
 
-        this.perspectiveControls = new TrackballControls(this.perspectiveCamera,this.renderer.domElement);
-        this.perspectiveControls.staticMoving=true;
+        // this.perspectiveControls = new TrackballControls(this.perspectiveCamera,this.renderer.domElement);
+        // this.perspectiveControls.staticMoving=true;
+
+        //FIXME: Make this configurable
+        //this.perspectiveControls.rotateSpeed=2.0;
         this.perspectiveControls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.DOLLY
         };
         
-        // this.orthoControls = new OrbitControls(this.orthoCamera,this.renderer.domElement);
-        // this.orthoControls.listenToKeyEvents( window );
-        // this.orthoControls.enableDamping=false;
+        //@ts-ignore
+        this.orthoControls = new OrbitControls(this.orthoCamera,this.renderer.domElement);
+        this.orthoControls.listenToKeyEvents( window );
+        this.orthoControls.enableDamping=false;
 
-        this.orthoControls = new TrackballControls(this.orthoCamera,this.renderer.domElement);
-        this.orthoControls.staticMoving=true;
+        //this.orthoControls = new TrackballControls(this.orthoCamera,this.renderer.domElement);
+        //this.orthoControls.staticMoving=true;
+        
+        //FIXME: Make this configurable
+        //this.orthoControls.rotateSpeed=2.0;
+        //this.orthoControls.panSpeed=10.0;
         this.orthoControls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.PAN,
@@ -301,9 +324,13 @@ export class View{
                     //     this.camera = this.orthoCamera;
                     //     this.controls = this.orthoControls;
                     //     break;
+                    // case "c":
+                    //     console.log(this.getCamera());
+                    //     return;
                     case "p":
                     {
                         let p = new THREE.Vector2(this.lastMouseX,this.lastMouseY);
+                        console.log("Testing with p=",p);
                         this.raycaster.setFromCamera( p, this.getCamera() );
                         let intersections = this.raycaster.intersectObjects( this.scene.children );
                         //intersections is a list, sorted by distance. Each entry
@@ -319,10 +346,21 @@ export class View{
                         //instanceId (for instanced meshes)
                         
                         //only consider manifoldmesh objects
+                        //and discard anything that a clipping plane rejects
                         // console.log(intersections);
                         for(let i=0;i<intersections.length;++i){
                             let I = intersections[i];
                             if( I.object && I.object.userData && (I.object.userData as UserData).isMesh ){
+                                let keep=true;
+                                for(let j=0;j<this.clippingPlanes.length;++j){
+                                    if( this.clippingPlanes[j].distanceToPoint(I.point) < 0 ){
+                                        keep=false;
+                                        break;
+                                    }
+                                }
+                                if(!keep)
+                                    continue;
+
                                 let s="";
                                 if( I.object.name && I.object.name.length > 0 )
                                     s += I.object.name+": ";
@@ -332,6 +370,8 @@ export class View{
                                 return;
                             }
                         }
+                        ErrorReporter.get().addMessage( "No visible point under the mouse" );
+                        ErrorReporter.get().scrollToBottom();
                         return;
                     }
                     //FIXME: This doesn't work right; needs work
@@ -519,19 +559,50 @@ export class View{
         let look = new THREE.Vector3();
         look.subVectors(c,e);
         look.normalize();
+
+        //OrbitControls requires special treatment for eye on z axis
+        //If eye is on +z axis: Set upper 3x3 of camera matrix to identity
+        //and 4th column to 0,0,distance,1.
+        //If eye is on -z axis: Set upper 3x3 of camera matrix to -identity
+        //and 4th column to 0,0,-distance,1
+
+        // let epsilon = 1E-4;
+        // let dp = look.dot( new THREE.Vector3(0,0,1), look );
+        // if( dp < -0.999 ){
+        //     console.log("FIX1?");
+        //     //+z, looking down
+        //     eyex += epsilon;
+        //     eyey += epsilon;
+        //     u = new THREE.Vector3(0,epsilon,1-epsilon);
+        // } else if( dp > 0.999 ){
+        //     console.log("FIX2?");
+        //     //-z looking up
+        //     eyex += epsilon;
+        //     eyey += epsilon;
+        //     u = new THREE.Vector3(0,-epsilon,-1+epsilon);
+        // }
+
+
         u.normalize();
-        let cp = new THREE.Vector3();
-        cp.crossVectors( look,u );
-        if( cp.length() < 0.01 ){
-            console.warn("look and up vectors are nearly (anti)parallel");
-            u = new THREE.Vector3(0,-1,0);
-        }
+        // let cp = new THREE.Vector3();
+        // cp.crossVectors( look,u );
+        // if( cp.length() < 0.01 ){
+        //     console.warn("look and up vectors are nearly (anti)parallel",look,);
+        //     u = new THREE.Vector3(0,-1,0);
+        // }
 
         [this.perspectiveCamera,this.orthoCamera].forEach( (cam: any) => {
             cam.position.set(eyex,eyey,eyez);
-            cam.up.set(u.x,u.y,u.z);
-            cam.lookAt(coix,coiy,coiz);
+            cam.up = new THREE.Vector3(u.x,u.y,u.z);
+            cam.lookAt( new THREE.Vector3(coix,coiy,coiz) );
             cam.updateProjectionMatrix();
+        });
+
+        // For trackball controls: need to set target too or else we end up off-center if the 
+        // user has panned before this point
+        [this.perspectiveControls,this.orthoControls].forEach( (cont: any) => {
+            if(cont)
+                cont.target = c;
         });
 
         this.draw();
@@ -585,11 +656,9 @@ export class View{
     }
 
     resize(){
-        console.log("RESIZE");
         
-        this.perspectiveControls.handleResize();
-        this.orthoControls.handleResize();
-
+        // this.perspectiveControls.handleResize();
+        // this.orthoControls.handleResize();
 
         let rect = this.parent.getBoundingClientRect();
         this.renderer.setSize( rect.width, rect.height);
@@ -633,7 +702,7 @@ export class View{
             //c.removeFromParent();
             this.scene.remove(c);
         });
-
+        this.allMaterials=[];
 
         //bounding box for the meshes
         let bbminx=Infinity; 
@@ -652,14 +721,15 @@ export class View{
             //This seems to be an error in the Three.js documentation.
             geo.setAttribute("position",new THREE.BufferAttribute(v, 3) );
             geo.computeVertexNormals();
-            let mtl: any;
             let color = m.color;
             if( color === undefined )
                 color=[0x00, 0xcc, 0xff];
             let c = color[0] << 16 ;
             c |= color[1] << 8;
             c |= color[2] ;
-            mtl = new THREE.MeshLambertMaterial( { color: c } );
+            let mtl: Material = new THREE.MeshLambertMaterial( { color: c } );
+            this.allMaterials.push(mtl);
+            mtl.clippingPlanes = this.clippingPlanes;
             mtl.side = THREE.DoubleSide;
             if( color.length === 4 ){
                 mtl.transparent=true;
@@ -682,12 +752,27 @@ export class View{
                 bbmaxz = Math.max(bbmaxz,v[i]);
                 i++;
             }
-        });
+        }); //end for each meshes
+
+        if( bbminx == -Infinity ){
+            //we didn't have any objects?
+            bbminx = bbminy = bbminz = 0;
+            bbmaxx = bbmaxy = bbmaxz = 0;
+        }
 
         this.bbox = new THREE.Box3(new THREE.Vector3(bbminx,bbminy,bbminz),
                                    new THREE.Vector3(bbmaxx,bbmaxy,bbmaxz));
 
         this.draw();
+
+        this.meshChangeListeners.forEach( (f: ParameterlessCallback) => {
+            f();
+        });
+
+    }
+
+    getBoundingBox(){
+        return this.bbox;
     }
 
     getCamera(){
@@ -735,25 +820,34 @@ export class View{
             uz=1;
         }
 
-        // this.perspectiveControls.up.set(ux,uy,uz);
-        // this.orthoControls.up.set(ux,uy,uz);
-
-        this.lookAt(dist*x, dist*y, dist*z,
+        let ex=dist*x;
+        let ey=dist*y;
+        let ez=dist*z;
+        console.log("eye is at",ex,ey,ez);
+        this.lookAt(ex,ey,ez,
             0,0,0,
             ux,uy,uz
         );
 
     }
 
-    setClippingPlanes( planes: Plane[]){
-        let tmp: any[] = [];
-        planes.forEach( (p: Plane) => {
+    setClippingPlanes( planes: ClippingPlane[]){
+        this.clippingPlanes=[];
+        planes.forEach( (p: ClippingPlane) => {
             let n = new THREE.Vector3(p.A,p.B,p.C);
             n.normalize();
-            tmp.push( new THREE.Plane(n,p.D) );
+            this.clippingPlanes.push( new THREE.Plane(n,p.D) );
         });
-        this.renderer.clippingPlanes=tmp;
+        this.allMaterials.forEach( (m: Material) => {
+            m.clippingPlanes = this.clippingPlanes;
+        });
+        this.draw();
     }
+
+    //f will be called whenever meshes are changed
+    registerMeshChangeListener( f: ParameterlessCallback ) {
+        this.meshChangeListeners.push(f);
+    };
 
 }
 

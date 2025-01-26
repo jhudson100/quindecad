@@ -5,12 +5,13 @@ import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
 // @ts-ignore
 import Split from 'Split';
-import { saveSTL, showAboutDialog, showHelp } from "utils";
+import { makeCheckbox, saveSTL, showAboutDialog, showHelp } from "utils";
 import { CheckMenuItem, Menu, Menubar } from "Menubar";
 import { Spinner } from "Spinner";
 import { Dialog } from "Dialog";
 import { TabbedPanel } from "TabbedPanel";
 import { HelpInfo } from "HelpInfo";
+import { ClipControls } from "ClipControls";
 
 
 // @ts-ignore
@@ -49,6 +50,7 @@ export function setupInterface(){
         tabs.resize();
         ErrorReporter.get().resize();   
         helpInfo.resize();
+        clipper.resize();
     };
 
     //Split.js can't work with em's here; px work though
@@ -63,8 +65,6 @@ export function setupInterface(){
 
     let bbardiv =createGridCell( contentArea, currentRow,1, 1,3 );
     bbardiv.style.width="calc(100%)";
-
-    //let bbar = ButtonBar.get().initialize(bbardiv);
 
     currentRow=2;
 
@@ -104,31 +104,12 @@ export function setupInterface(){
     //height looks down the tree and sets height to be maximum of children's heights
     infodiv.style.height="100%";
 
+
     let tabs = new TabbedPanel(infodiv);
-    let errdiv = tabs.addTab("Output");
-    let helpdiv = tabs.addTab("Help");
 
-    // let grid2 = createGrid(infodiv, "1fr" , "3fr 10px 1fr");
-    // grid2.style.height="100%";
-    // let errdiv = createGridCell(grid2,1,1,1,1);
-    // errdiv.style.height="100%";
-    ErrorReporter.get().initialize(errdiv,tabs);
-    // createVerticalSizer(grid2,2,1,1,sizeCallback);
-    // let helpgrid = createGridCell(grid2,1,3,1,1);
-    // helpgrid.style.overflow="auto";
-    // let helpdiv = createHelpDiv(helpgrid);
-
-    let helpInfo = new HelpInfo(helpdiv);
-
-
-
-    // let sizer2 = createSizer(contentArea,currentRow,1, 1,3, SplitDirection.HORIZONTAL,
-    //     () => {
-    //         View.get().resize();
-    //         Editor.get().resize();
-    //         ErrorReporter.get().resize();
-    //     }
-    // );
+    ErrorReporter.get().initialize(tabs.addTab("Output"),tabs);
+    let helpInfo = new HelpInfo(tabs.addTab("Help"));
+    let clipper = new ClipControls(tabs.addTab("Clipping"));
 
    
     window.addEventListener("resize", () => {
@@ -249,8 +230,10 @@ function setupMenubar(parent: HTMLElement)
     viewmenu.addItem("-X view", ()=>{ View.get().lookDownAxis(-1, 0, 0); } );
     viewmenu.addItem("+Y view", ()=>{ View.get().lookDownAxis( 0, 1, 0); } );
     viewmenu.addItem("-Y view", ()=>{ View.get().lookDownAxis( 0,-1, 0); } );
-    viewmenu.addItem("+Z view", ()=>{ View.get().lookDownAxis( 0, 0, 1); } );
-    viewmenu.addItem("-Z view", ()=>{ View.get().lookDownAxis( 0, 0,-1); } );
+
+    //FIXME: These don't work well with OrbitControls.
+    // viewmenu.addItem("+Z view", ()=>{ View.get().lookDownAxis( 0, 0, 1); } );
+    // viewmenu.addItem("-Z view", ()=>{ View.get().lookDownAxis( 0, 0,-1); } );
 
 
     let runmenu = mbar.addMenu("Run");
@@ -418,20 +401,6 @@ function conductGridDialog(){
         }
     ]);
     
-    let unique=0;
-    function makecheck(container:HTMLElement, label: string, checked: boolean){
-        let inp : HTMLInputElement = document.createElement("input");
-        inp.type="checkbox";
-        inp.checked = checked;
-        inp.id="checkbox"+(unique++);
-        let lbl: HTMLLabelElement = document.createElement("label");
-        lbl.htmlFor=inp.id;
-        lbl.appendChild(document.createTextNode(label));
-        container.appendChild(inp);
-        container.appendChild(lbl);
-        return inp;
-    }
-
     function tohexcolor(n: number){
         let tmp = n.toString(16);
         while(tmp.length < 6 )
@@ -441,9 +410,9 @@ function conductGridDialog(){
 
     let div = document.createElement("div");
     D.contentArea.appendChild(div);
-    let xy = makecheck(div, "XY", View.get().isGridVisible(GridPlane.XY) );
-    let xz = makecheck(div, "XZ", View.get().isGridVisible(GridPlane.XZ) );
-    let yz = makecheck(div, "YZ", View.get().isGridVisible(GridPlane.YZ) );
+    let xy = makeCheckbox(div, "XY", View.get().isGridVisible(GridPlane.XY) );
+    let xz = makeCheckbox(div, "XZ", View.get().isGridVisible(GridPlane.XZ) );
+    let yz = makeCheckbox(div, "YZ", View.get().isGridVisible(GridPlane.YZ) );
 
     div = document.createElement("div");
     D.contentArea.appendChild(div);
