@@ -16,12 +16,27 @@ import {OrbitControls} from "OrbitControls";
 
 import { ErrorReporter } from "ErrorReporter";
 import { Editor } from "Editor";
+import { Box3, Group, OrthographicCamera, PerspectiveCamera } from "ThreeTypes";
 
 //user data for meshes and other objects
 class UserData {
     isMesh: boolean;        //true if it's a Manifold mesh
     constructor(isMesh: boolean){
         this.isMesh=isMesh;
+    }
+}
+
+
+export class Plane{
+    A: number;
+    B: number;
+    C: number;
+    D: number;
+    constructor(A:number,B:number,C:number,D:number){
+        this.A=A;
+        this.B=B;
+        this.C=C;
+        this.D=D;
     }
 }
 
@@ -39,10 +54,13 @@ export class View{
     //to its instance here
     private static instance: View;
 
+    //bounding box of objects in scene: A THREE.Box3 object
+    bbox: Box3;
+
     //parent DOM node
     parent: HTMLElement;
 
-    //the scene to draw. 
+    //the scene to draw: A THREE.Scene object
     scene: any;
 
     //list of all the meshes we're drawing
@@ -52,29 +70,30 @@ export class View{
     activeCameraType: CameraType = CameraType.PERSPECTIVE;
 
     //camera and control objects
-    perspectiveCamera: any;
-    perspectiveControls: any;
+    perspectiveCamera: PerspectiveCamera;
+    perspectiveControls: TrackballControls;
 
-    orthoCamera: any;
-    orthoControls: any;
+    orthoCamera: OrthographicCamera;
+    orthoControls: TrackballControls;
 
     //light that is located at the eye
     light: any;
 
     //light will point at this object (this object
     //is not drawn; it only exists for pointing the light);
+    //this is a THREE.Object3D object.
     lightTarget: any;
 
-    //the renderer: Draws the scene
+    //the renderer: Draws the scene: A THREE.WebGLRenderer
     renderer: any;
 
-    //the coordinate axes
+    //the coordinate axes: A THREE group
     axes: any;
 
     //the ground grid (grid along the xy plane)
-    gridXY: any;
-    gridYZ: any;
-    gridXZ: any;
+    gridXY: Group;
+    gridYZ: Group;        //THREE group
+    gridXZ: Group;        //THREE group
     majorColor: number;
     majorWidth: number;
     majorInterval: number;
@@ -615,6 +634,15 @@ export class View{
             this.scene.remove(c);
         });
 
+
+        //bounding box for the meshes
+        let bbminx=Infinity; 
+        let bbminy=Infinity;
+        let bbminz=Infinity;
+        let bbmaxx=-Infinity; 
+        let bbmaxy=-Infinity;
+        let bbmaxz=-Infinity;
+      
         this.meshes = meshes;
 
         meshes.forEach( (m: Mesh) => {
@@ -625,24 +653,40 @@ export class View{
             geo.setAttribute("position",new THREE.BufferAttribute(v, 3) );
             geo.computeVertexNormals();
             let mtl: any;
-            if( m.color === undefined ){
-                mtl = new THREE.MeshLambertMaterial( { color: 0x00ccff } );
-            } else {
-                let c = m.color[0] << 16 ;
-                c |= m.color[1] << 8;
-                c |= m.color[2] ;
-                mtl = new THREE.MeshLambertMaterial( { color: c } );
-                if( m.color.length === 4 ){
-                    mtl.transparent=true;
-                    mtl.opacity = m.color[3]/255;
-                }
+            let color = m.color;
+            if( color === undefined )
+                color=[0x00, 0xcc, 0xff];
+            let c = color[0] << 16 ;
+            c |= color[1] << 8;
+            c |= color[2] ;
+            mtl = new THREE.MeshLambertMaterial( { color: c } );
+            mtl.side = THREE.DoubleSide;
+            if( color.length === 4 ){
+                mtl.transparent=true;
+                mtl.opacity = color[3]/255;
             }
             let m3 = new THREE.Mesh(geo,mtl);
             m3.name = m.name ?? "";
             m3.userData = new UserData(true);
             this.scene.add(m3);
+
+            //not using geo.computeBoundingBox()...
+            for(let i=0;i<v.length;){
+                bbminx = Math.min(bbminx,v[i]);
+                bbmaxx = Math.max(bbmaxx,v[i]);
+                i++;
+                bbminy = Math.min(bbminy,v[i]);
+                bbmaxy = Math.max(bbmaxy,v[i]);
+                i++;
+                bbminz = Math.min(bbminz,v[i]);
+                bbmaxz = Math.max(bbmaxz,v[i]);
+                i++;
+            }
         });
-        
+
+        this.bbox = new THREE.Box3(new THREE.Vector3(bbminx,bbminy,bbminz),
+                                   new THREE.Vector3(bbmaxx,bbmaxy,bbmaxz));
+
         this.draw();
     }
 
@@ -700,6 +744,17 @@ export class View{
         );
 
     }
+
+    setClippingPlanes( planes: Plane[]){
+        let tmp: any[] = [];
+        planes.forEach( (p: Plane) => {
+            let n = new THREE.Vector3(p.A,p.B,p.C);
+            n.normalize();
+            tmp.push( new THREE.Plane(n,p.D) );
+        });
+        this.renderer.clippingPlanes=tmp;
+    }
+
 }
 
 

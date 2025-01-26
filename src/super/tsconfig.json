@@ -8,7 +8,6 @@
             "Message" : ["../common/Message.ts"],
             "DrawCommand" : ["../common/DrawCommand.ts"],
             "./common/Drawable.js": ["../common/DrawCommand.ts"],
-            // "../ext/split/split-grid": ["./ext/split/split-grid.mjs"]
         }
     },
     "references":[
