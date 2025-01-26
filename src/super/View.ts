@@ -2,19 +2,32 @@
 //FIXME: Add wireframe display option: solid, solid+wireframe, wireframe only
 //FIXME: Use +,- to change rotateSpeed and panSpeed on orbitcontrols. Or put slider on screen
 
+
+
+//for testing
+// let geom = new THREE.BoxGeometry(1,1,1);
+// let mtl = new THREE.MeshLambertMaterial({color: 0x00ff00 } );
+// let cube = new THREE.Mesh(geom,mtl);
+// cube.name="test cube";
+// this.scene.add(cube);
+
 import {Mesh} from "Mesh";
 
 // @ts-ignore
 import * as THREE from "three";
 
 // @ts-ignore
-import {TrackballControls} from "TrackballControls";
+// import {TrackballControls} from "TrackballControls";
+
 // @ts-ignore
 import {OrbitControls} from "OrbitControls";
 
+// @ts-ignore
+import {CSS2DRenderer, CSS2DObject} from "CSS2DRenderer";
+
 import { ErrorReporter } from "ErrorReporter";
 import { Editor } from "Editor";
-import { Box3, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls } from "ThreeTypes";
+import { Box3, Camera, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "ThreeTypes";
 
 //user data for meshes and other objects
 class UserData {
@@ -46,6 +59,68 @@ export enum GridPlane{
 export enum CameraType {
     PERSPECTIVE, ORTHOGRAPHIC
 };
+
+class Label{
+    worldPoint: Vector3;
+    cvs: HTMLCanvasElement;
+    elem: HTMLElement;
+    elemW: number;
+    constructor( parent: HTMLElement, p: Vector3, txt: string){
+        this.worldPoint = p;
+        this.elem = document.createElement("span");
+        parent.appendChild(this.elem);
+        this.elem.appendChild(document.createTextNode(txt));
+        this.elem.style.position="absolute";
+        this.elem.classList.add("label3d");
+
+        //do this after applying css styles
+        let r = this.elem.getBoundingClientRect();
+        this.elemW = r.width;
+
+        this.cvs = document.createElement("canvas");
+        this.cvs.style.position="absolute";
+        this.cvs.width=8;
+        this.cvs.height=8;
+        let ctx = this.cvs.getContext("2d");
+        ctx.clearRect(0,0,this.cvs.width,this.cvs.height);
+        ctx.fillStyle="#8080ff";
+        ctx.strokeStyle="black";
+        ctx.arc(this.cvs.width/2, this.cvs.height/2,this.cvs.width/2,0,2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        parent.appendChild(this.cvs);
+        
+    }
+    removeDOMElements(){
+        this.cvs.parentNode.removeChild(this.cvs);
+        this.elem.parentNode.removeChild(this.elem);
+    }
+
+    updatePosition(camera:Camera, w: number, h: number){
+        let p = new THREE.Vector4(this.worldPoint.x, this.worldPoint.y, this.worldPoint.z,1);
+        
+        p.applyMatrix4(camera.matrixWorldInverse);
+        p.applyMatrix4(camera.projectionMatrix);
+        let x = p.x / p.w;
+        let y = p.y / p.w;
+        y=-y;
+        x = (x+1)/2;
+        y = (y+1)/2;
+        x = x * w;
+        y = y * h ;
+
+        let tmp = x-this.elemW/2;
+        this.elem.style.left=tmp+"px";
+        this.elem.style.top=(y+4)+"px";
+
+        let cx = (x-this.cvs.width/2);
+        let cy = (y-this.cvs.height/2);
+        console.log(cx,cy);
+        this.cvs.style.left=cx+"px";
+        this.cvs.style.top=cy+"px";
+    }
+}
+
 
 export class View{
 
@@ -97,7 +172,11 @@ export class View{
     lightTarget: any;
 
     //the renderer: Draws the scene: A THREE.WebGLRenderer
-    renderer: any;
+    renderer: WebGLRenderer;
+
+    labels: Label[] = [];
+    labeldiv: HTMLDivElement;
+    labelPositionsAreStale: boolean=true;
 
     //the coordinate axes: A THREE group
     axes: any;
@@ -118,8 +197,8 @@ export class View{
     raycaster: any;
 
     //last mouse position in normalized device coordinates for picking
-    lastMouseX: number = 0;
-    lastMouseY: number = 0;
+    // lastMouseX: number = 0;
+    // lastMouseY: number = 0;
 
     //true if the view is stale
     viewIsStale=true;
@@ -128,8 +207,43 @@ export class View{
         this.parent=parent;
 
         this.renderer = new THREE.WebGLRenderer({antialias:true} );
-        this.renderer.setSize(16,16);   //dummy
+        this.renderer.setSize(16,16,false);   //dummy
         this.renderer.localClippingEnabled=true;
+
+
+        //we want to intercept some mouse events before the orbitcontrol has a chance
+        //to see them.
+        this.renderer.domElement.addEventListener("pointerdown", (ev: MouseEvent)=>{
+            if( ev.button === 0 && ev.ctrlKey ){
+                //intercept the event and don't let it get to the controls
+                ev.stopImmediatePropagation();  
+                ev.preventDefault();
+                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+                this.showPointUnderMouse(x,y);
+            }
+        });
+
+        let labeldiv1 = document.createElement("div");
+        labeldiv1.style.position="relative";
+        labeldiv1.style.left="0px";
+        labeldiv1.style.top="0px";
+        parent.insertBefore(labeldiv1,parent.firstChild);
+        this.labeldiv = document.createElement("div");
+        labeldiv1.appendChild(this.labeldiv);
+        this.labeldiv.style.position="absolute";
+        this.labeldiv.style.left="0px";
+        this.labeldiv.style.top="0px";
+        this.labeldiv.style.pointerEvents="none";
+        this.labeldiv.style.width="100%";
+        this.labeldiv.style.height="100vh";
+        //@ts-ignore
+        this.labeldiv.style.zIndex=2;
+
+
+        // this.labelRenderer = new CSS2DRenderer(labeldiv);
+        // this.labelRenderer.setSize(16,16);        //dummy
+        // this.labelRenderer.domElement.style.position="absolute";
 
         this.perspectiveCamera = new THREE.PerspectiveCamera( 
             45, //fov
@@ -137,14 +251,14 @@ export class View{
             0.1,        //hither
             1000        //yon
         );
+        this.perspectiveCamera.up = new THREE.Vector3(0,0,1);   //so controls knows which way is up
 
         this.orthoCamera = new THREE.OrthographicCamera(
             -1,1, 1,-1, -1000, 1000
         )
         this.orthoCamera.zoom=0.2;
+        this.orthoCamera.up = new THREE.Vector3(0,0,1);
 
-        //must set this before we create the Controls object
-        this.lookAt( 5,-5,5, 0,0,0, 0,0,1);
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
@@ -242,33 +356,38 @@ export class View{
         
         parent.appendChild(this.renderer.domElement);
 
-        //ref: https://threejs.org/docs/#api/en/core/Raycaster
-        this.renderer.domElement.addEventListener( "pointermove", 
-            (ev: PointerEvent) => {
-                //domElement is a canvas
-                //map 0...w to range -1...1
-                this.lastMouseX = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
-                this.lastMouseY = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
-            }
-        );
-
-        ["over","enter","down","move","up","cancel","out","leave"].forEach( (evname:string) => {
-            this.renderer.domElement.addEventListener("pointer"+evname, () => {
-                this.viewIsStale=true;
-            })
+        this.perspectiveControls.addEventListener("change",()=>{
+            this.viewIsStale=true;
+            this.labelPositionsAreStale=true;
         });
+
+        // this.renderer.domElement.addEventListener( "pointermove", 
+        //     (ev: PointerEvent) => {
+        //         //domElement is a canvas
+        //         //map 0...w to range -1...1
+        //         this.lastMouseX = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+        //         this.lastMouseY = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+        //     }
+        // );
+
+        // ["over","enter","down","move","up","cancel","out","leave"].forEach( (evname:string) => {
+        //     this.renderer.domElement.addEventListener("pointer"+evname, () => {
+        //         this.viewIsStale=true;
+        //     })
+        // });
         
-        ["wheel","mousewheel"].forEach( (evname: string) => {
-            this.renderer.domElement.addEventListener(evname, () => {
-                this.viewIsStale=true;
-            })
-        });
+        // ["wheel","mousewheel"].forEach( (evname: string) => {
+        //     this.renderer.domElement.addEventListener(evname, () => {
+        //         this.viewIsStale=true;
+        //     })
+        // });
 
-        ["keydown","keyup"].forEach( (evname: string) => {
-            window.addEventListener(evname, () => {
-                this.viewIsStale=true;
-            })
-        });
+        // ["keydown","keyup"].forEach( (evname: string) => {
+        //     window.addEventListener(evname, () => {
+        //         this.viewIsStale=true;
+        //     })
+        // });
+
 
         //if the user clicks on the view, we want to take focus
         //away from the editor
@@ -279,17 +398,8 @@ export class View{
             Editor.get().blur();
             ev.preventDefault();        //prevent editor from getting middle mouse event
         } );
-        // this.renderer.domElement.addEventListener( "mouseup", (ev: MouseEvent) => {
-        //     console.log("mouseup!")
-        //     // ev.preventDefault();
-        // } );
 
-        //for testing
-        // let geom = new THREE.BoxGeometry(1,1,1);
-        // let mtl = new THREE.MeshLambertMaterial({color: 0x00ff00 } );
-        // let cube = new THREE.Mesh(geom,mtl);
-        // cube.name="test cube";
-        // this.scene.add(cube);
+        this.lookAt( 5.5, -5, 5, 0,0,0, 0,0,1);
 
         this.resize();
         this.draw();
@@ -311,120 +421,103 @@ export class View{
 
         this.raycaster = new THREE.Raycaster();
 
-        document.addEventListener("keydown", (ev: KeyboardEvent) => {
-            if( document.activeElement === document.body ){
-                switch(ev.key){
-                    // case "g":
-                    //     this.toggleGrid();
-                    //     return;
-                    // case "a":
-                    //     this.toggleAxes();
-                    //     return;
-                    // case "o":
-                    //     this.camera = this.orthoCamera;
-                    //     this.controls = this.orthoControls;
-                    //     break;
-                    // case "c":
-                    //     console.log(this.getCamera());
-                    //     return;
-                    case "p":
-                    {
-                        let p = new THREE.Vector2(this.lastMouseX,this.lastMouseY);
-                        console.log("Testing with p=",p);
-                        this.raycaster.setFromCamera( p, this.getCamera() );
-                        let intersections = this.raycaster.intersectObjects( this.scene.children );
-                        //intersections is a list, sorted by distance. Each entry
-                        //has these fields:
-                        //distance
-                        //point (in world coordinates): Vector3
-                        //face
-                        //faceIndex
-                        //object (the intersected object)
-                        //uv (uv coordinates)
-                        //uv1 (second uv coords)
-                        //normal
-                        //instanceId (for instanced meshes)
-                        
-                        //only consider manifoldmesh objects
-                        //and discard anything that a clipping plane rejects
-                        // console.log(intersections);
-                        for(let i=0;i<intersections.length;++i){
-                            let I = intersections[i];
-                            if( I.object && I.object.userData && (I.object.userData as UserData).isMesh ){
-                                let keep=true;
-                                for(let j=0;j<this.clippingPlanes.length;++j){
-                                    if( this.clippingPlanes[j].distanceToPoint(I.point) < 0 ){
-                                        keep=false;
-                                        break;
-                                    }
-                                }
-                                if(!keep)
-                                    continue;
-
-                                let s="";
-                                if( I.object.name && I.object.name.length > 0 )
-                                    s += I.object.name+": ";
-                                s += `( ${I.point.x} , ${I.point.y} , ${I.point.z} )`;
-                                ErrorReporter.get().addMessage( s );
-                                ErrorReporter.get().scrollToBottom();
-                                return;
-                            }
-                        }
-                        ErrorReporter.get().addMessage( "No visible point under the mouse" );
-                        ErrorReporter.get().scrollToBottom();
-                        return;
-                    }
-                    //FIXME: This doesn't work right; needs work
-                    // case "1":
-                    // case "3":
-                    // case "7":
-                    //     let p = this.camera.position;
-                    //     let distanceFromOrigin = p.length();
-                    //     if( ev.key === "1" ){
-                    //         //on -y axis
-                    //         this.camera.position.x = 0;
-                    //         this.camera.position.y = -distanceFromOrigin;
-                    //         this.camera.position.z = 0;
-                    //         this.camera.up.x = 0;
-                    //         this.camera.up.y = 0;
-                    //         this.camera.up.z = 1;
-                    //     } else if( ev.key === "3"){
-                    //         //on +x axis
-                    //         this.camera.position.x = distanceFromOrigin;;
-                    //         this.camera.position.y = 0;
-                    //         this.camera.position.z = 0;
-                    //         this.camera.up.x = 0;
-                    //         this.camera.up.y = 0;
-                    //         this.camera.up.z = 1;
-                    //     } else {
-                    //         //on +z axis
-                    //         this.camera.position.x = 0;
-                    //         this.camera.position.y = 0;
-                    //         this.camera.position.z = distanceFromOrigin;
-                    //         this.camera.up.x = 0;
-                    //         this.camera.up.y = 1;
-                    //         this.camera.up.z = 0;
-                    //     }
-
-                    //     //must be after setting 'up'
-                    //     this.camera.lookAt(0,0,0);
-
-                    //     //must do last
-                    //     this.camera.updateProjectionMatrix();
-                    //     this.draw();
-
-                    //     console.log("eye:",this.camera.position);
-                    //     console.log("up:",this.camera.up);
-                    //     return;
-                    //     //end case
-                    default:
-                        break;
-                }
-            }
-        });
+        // document.addEventListener("keydown", (ev: KeyboardEvent) => {
+        //     if( document.activeElement === document.body ){
+        //         switch(ev.key){
+        //             default:
+        //                 break;
+        //         }
+        //     }
+        // });
 
     } // constructor
 
+
+    addLabel(pos: Vector3, txt: string){
+        this.labels.push( new Label(this.labeldiv, pos, txt));
+        this.labelPositionsAreStale=true;
+        this.draw();
+    }
+
+    clearLabels(){
+        this.labels = [];
+        while(this.labeldiv.childNodes.length > 0 ){
+            this.labeldiv.removeChild( this.labeldiv.firstChild);
+        }
+        this.labelPositionsAreStale=true;
+    }
+
+    recomputeLabelPositions(){
+        if( !this.labelPositionsAreStale)
+            return;
+
+        this.labelPositionsAreStale=false;
+        let c = this.getCamera();
+        if(!c){
+            console.warn("No camera?");
+            return;
+        }
+        this.labels.forEach( (L: Label) => {
+            L.updatePosition(c, this.renderer.domElement.width,  this.renderer.domElement.height);
+        });
+    }
+
+    showPointUnderMouse(x:number,y:number){
+        //x,y are in normalized -1...1 coordinates, not pixel coordinates
+
+        this.clearLabels();
+
+        //ref: https://threejs.org/docs/#api/en/core/Raycaster
+        let p = new THREE.Vector2(x,y);
+        console.log("Testing with p=",p);
+        this.raycaster.setFromCamera( p, this.getCamera() );
+        let intersections = this.raycaster.intersectObjects( this.scene.children );
+        //intersections is a list, sorted by distance. Each entry
+        //has these fields:
+        //distance
+        //point (in world coordinates): Vector3
+        //face
+        //faceIndex
+        //object (the intersected object)
+        //uv (uv coordinates)
+        //uv1 (second uv coords)
+        //normal
+        //instanceId (for instanced meshes)
+        
+        //only consider manifoldmesh objects
+        //and discard anything that a clipping plane rejects
+        // console.log(intersections);
+        for(let i=0;i<intersections.length;++i){
+            let I = intersections[i];
+            if( I.object && I.object.userData && (I.object.userData as UserData).isMesh ){
+                let keep=true;
+                for(let j=0;j<this.clippingPlanes.length;++j){
+                    if( this.clippingPlanes[j].distanceToPoint(I.point) < 0 ){
+                        keep=false;
+                        break;
+                    }
+                }
+                if(!keep)
+                    continue;
+
+                let s="";
+                if( I.object.name && I.object.name.length > 0 )
+                    s += I.object.name+": ";
+                s += `( ${I.point.x} , ${I.point.y} , ${I.point.z} )`;
+                ErrorReporter.get().addMessage( s );
+                ErrorReporter.get().scrollToBottom();
+
+                let ptxt = `${I.point.x.toFixed(3)} , ${I.point.y.toFixed(3)} , ${I.point.z.toFixed(3)}`;
+                this.addLabel( I.point, ptxt );
+
+                return;
+            }
+        }
+        ErrorReporter.get().addMessage( "No visible point under the mouse" );
+        ErrorReporter.get().scrollToBottom();
+        return;
+    }
+    
     isGridVisible(which: GridPlane ){
         switch(which){
             case GridPlane.XY:
@@ -552,59 +645,18 @@ export class View{
     lookAt( eyex:number, eyey:number, eyez:number, 
             coix:number, coiy:number, coiz:number, 
             upx:number, upy:number, upz:number) {
-
-        let e = new THREE.Vector3(eyex,eyey,eyez);
         let c = new THREE.Vector3(coix,coiy,coiz);
-        let u = new THREE.Vector3(upx,upy,upz);
-        let look = new THREE.Vector3();
-        look.subVectors(c,e);
-        look.normalize();
-
-        //OrbitControls requires special treatment for eye on z axis
-        //If eye is on +z axis: Set upper 3x3 of camera matrix to identity
-        //and 4th column to 0,0,distance,1.
-        //If eye is on -z axis: Set upper 3x3 of camera matrix to -identity
-        //and 4th column to 0,0,-distance,1
-
-        // let epsilon = 1E-4;
-        // let dp = look.dot( new THREE.Vector3(0,0,1), look );
-        // if( dp < -0.999 ){
-        //     console.log("FIX1?");
-        //     //+z, looking down
-        //     eyex += epsilon;
-        //     eyey += epsilon;
-        //     u = new THREE.Vector3(0,epsilon,1-epsilon);
-        // } else if( dp > 0.999 ){
-        //     console.log("FIX2?");
-        //     //-z looking up
-        //     eyex += epsilon;
-        //     eyey += epsilon;
-        //     u = new THREE.Vector3(0,-epsilon,-1+epsilon);
-        // }
-
-
-        u.normalize();
-        // let cp = new THREE.Vector3();
-        // cp.crossVectors( look,u );
-        // if( cp.length() < 0.01 ){
-        //     console.warn("look and up vectors are nearly (anti)parallel",look,);
-        //     u = new THREE.Vector3(0,-1,0);
-        // }
-
-        [this.perspectiveCamera,this.orthoCamera].forEach( (cam: any) => {
+        [ [this.perspectiveCamera,this.perspectiveControls], [this.orthoCamera,this.orthoControls] ].forEach( (tmp: [Camera,OrbitControls] ) => {
+            let cam = tmp[0];
+            let cont = tmp[1];
+            if(!cam || !cont )
+                return;
+            cam.up.set(upx,upy,upz);
+            cont.reset();
             cam.position.set(eyex,eyey,eyez);
-            cam.up = new THREE.Vector3(u.x,u.y,u.z);
-            cam.lookAt( new THREE.Vector3(coix,coiy,coiz) );
-            cam.updateProjectionMatrix();
+            cont.target.set(coix,coiy,coiz);
+            cont.update();
         });
-
-        // For trackball controls: need to set target too or else we end up off-center if the 
-        // user has panned before this point
-        [this.perspectiveControls,this.orthoControls].forEach( (cont: any) => {
-            if(cont)
-                cont.target = c;
-        });
-
         this.draw();
     }
     
@@ -632,16 +684,14 @@ export class View{
         
         controls.update();
 
-        let p = camera.position;
+        //must do this after updating controls
+        this.recomputeLabelPositions();
 
-        //we take the camera's view direction and go backwards along that
-        //by a large distance to set the light's position
-        //The light's target is then set to the camera's position
-        //so it will shine parallel to the camera's look vector.
         if( this.light ){
+            let p = camera.position;
             let W = camera.matrixWorld;
             let v = new THREE.Vector4(0,0,-1,0);
-            v.applyMatrix4(W);
+            v.applyMatrix4(W);  //get camera's view direction
             let v3 = new THREE.Vector3(v.x,v.y,v.z);
             //pfront is in front of the camera
             let pfront = new THREE.Vector3(p.x,p.y,p.z);
@@ -656,13 +706,12 @@ export class View{
     }
 
     resize(){
-        
-        // this.perspectiveControls.handleResize();
-        // this.orthoControls.handleResize();
 
         let rect = this.parent.getBoundingClientRect();
-        this.renderer.setSize( rect.width, rect.height);
+        this.renderer.setSize( rect.width, rect.height, false);
 
+        this.labelPositionsAreStale=true;
+        
         this.perspectiveCamera.aspect = rect.width/rect.height;
         this.perspectiveCamera.updateProjectionMatrix();
         
@@ -688,6 +737,8 @@ export class View{
     }
     
     setMeshes(meshes: Mesh[]) {
+
+        this.clearLabels();
 
         //can't remove while iterating
         let toRemove: any[] = [];
@@ -803,6 +854,7 @@ export class View{
 
     setCameraType(ctype: CameraType){
         this.activeCameraType = ctype;
+        this.labelPositionsAreStale=true;
         this.draw();
     }
 
@@ -823,7 +875,6 @@ export class View{
         let ex=dist*x;
         let ey=dist*y;
         let ez=dist*z;
-        console.log("eye is at",ex,ey,ez);
         this.lookAt(ex,ey,ez,
             0,0,0,
             ux,uy,uz

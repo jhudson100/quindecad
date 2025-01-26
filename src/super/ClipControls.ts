@@ -49,10 +49,8 @@ export class ClipControls{
 
         View.get().registerMeshChangeListener( ()=>{
             let bbox = View.get().getBoundingBox();
-            console.log(bbox);
             let mins = [bbox.min.x, bbox.min.y, bbox.min.z];
             let maxs = [bbox.max.x, bbox.max.y, bbox.max.z];
-            console.log(mins,maxs);
             for(let i=0;i<3;++i){
                 this.minSliders[i].setRange(mins[i], maxs[i], true );
                 this.maxSliders[i].setRange(mins[i], maxs[i], true );

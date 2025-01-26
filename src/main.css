@@ -149,3 +149,8 @@ input.invalidValue {
     background: #ffcccc;
 }
 
+/* a label in the 3d viewport*/
+.label3d{
+    font-size: 75%;
+    text-wrap: nowrap;
+}

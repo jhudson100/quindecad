@@ -21,4 +21,4 @@ zip: all
 	-/bin/rm dist.zip
 	(cd dist && zip -r ../dist.zip .)
 
-dist: zip
+dist: clean zip

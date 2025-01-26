@@ -2,11 +2,27 @@
 //A few type definitions so we don't have to pull down
 //the Three types from DefinitelyTyped.
 
+
+export interface WebGLRenderer{
+    domElement: HTMLCanvasElement;
+    setSize: (width:number, height: number, updateStyle: boolean) => void;
+    localClippingEnabled: boolean;
+    render: (scene:Object3D, camera: Camera) => void;
+}
+
+export interface THREECSS2DRenderer{
+    setSize: (width: number, height: number) => void;
+    domElement: HTMLElement;
+    render: (scene:Scene, camera: Camera) => void;
+
+}
+
 export interface Vector3{
     x: number;
     y: number;
     z: number;
     length: () => number;
+    set: (x:number, y:number, z:number) => void;
 }
 
 export interface Box3{
@@ -21,10 +37,14 @@ export interface Plane{
 }
 
 export interface Matrix4{
-
+    identity: ()=>void;
 }
 
-export interface Controls{
+export interface EventDispatcher{
+    addEventListener: (type:string, listener: any) => void;
+}
+
+export interface Controls extends EventDispatcher{
 
 }
 
@@ -53,6 +73,10 @@ export interface THREEOrbitControls extends Controls{
 
 }
 
+export interface Euler{
+    set: (x:number,y:number,z:number, order?:string) => Euler;
+}
+
 export interface Object3D{
     children: Object3D[];
     matrixWorld: Matrix4;
@@ -61,8 +85,16 @@ export interface Object3D{
     userData: any;
     visible: boolean;
     position: Vector3;
+    matrix:Matrix4;
+    rotation: Euler;
+    scale: Vector3;
     removeFromParent: ()=>void;
     lookAt: (v: Vector3|number, y?:number, z?:number) => void;
+    updateMatrix: ()=>void;
+}
+
+
+export interface Scene extends Object3D{
 }
 
 export interface Group extends Object3D{
@@ -70,7 +102,9 @@ export interface Group extends Object3D{
 }
 
 export interface Camera extends Object3D{
-
+    matrixWorldInverse: Matrix4;
+    updateProjectionMatrix: ()=>void;   //THREE puts this in the subclasses, but it's common to both
+    projectionMatrix: ()=>Matrix4;
 }
 
 export interface PerspectiveCamera extends Camera{

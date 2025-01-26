@@ -242,8 +242,10 @@ function setupMenubar(parent: HTMLElement)
     stopItem.setDisabled();
     let helpmenu = mbar.addMenu("Help");
     helpmenu.addItem("Help...",()=>{ showHelp();});
+    helpmenu.addSeparator();
     helpmenu.addItem("Simple demo", () => { showDemo(0); });
     helpmenu.addItem("Full demo", () => { showDemo(1);});
+    helpmenu.addSeparator();
     helpmenu.addItem("About...",()=>{ showAboutDialog();});
 
     WorkerManager.get().registerWorkerBusyCallback( () => {
