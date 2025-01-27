@@ -121,7 +121,6 @@ class Label{
 
         let cx = (x-this.cvs.width/2);
         let cy = (y-this.cvs.height/2);
-        console.log(cx,cy);
         this.cvs.style.left=cx+"px";
         this.cvs.style.top=cy+"px";
     }
