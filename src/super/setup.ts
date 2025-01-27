@@ -125,6 +125,7 @@ export function setupInterface(){
 
 }
 
+
 function setupMenubar(parent: HTMLElement)
 {
     let shortcuts = Editor.get().getKeyboardShortcuts();
@@ -133,15 +134,11 @@ function setupMenubar(parent: HTMLElement)
 
     //FIXME: Add key listener to window for keyboard shortcuts
 
-    function item(menu: Menu, label: string, cmd: string, winaccel?: string, macaccel?: string){
-        let accel: string;
-        if(winaccel){
-            let platform : string = Editor.get().getPlatformForShortcuts();
-            if( platform.toLowerCase().indexOf("mac") !== -1 )
-                accel = macaccel;
-            else
-                accel = winaccel;
-        }  else {
+    let platform : string = Editor.get().getPlatformForShortcuts();
+    let isMac = (platform.toLowerCase().indexOf("mac") !== -1 );
+    
+    function item(menu: Menu, label: string, cmd: string, accel?: string){
+        if(!accel){
             if( shortcuts.has(cmd) ){
                 accel = shortcuts.get(cmd);
                 let i = accel.indexOf("|");
@@ -150,8 +147,9 @@ function setupMenubar(parent: HTMLElement)
                 }
             }
         }
-        
-        menu.addItem( label, () => { Editor.get().executeCommand(cmd) }, accel );
+        menu.addItem( label, () => {
+            Editor.get().executeCommand(cmd) 
+        }, accel );
     }
 
     parent.style.overflow="visible";
@@ -164,10 +162,40 @@ function setupMenubar(parent: HTMLElement)
     item(editmenu,"Undo","undo");
     item(editmenu,"Redo","redo");
     editmenu.addSeparator();
-    //FIXME: Need correct shortcuts on Mac
-    item(editmenu,"Cut","cut","Ctrl-X","Command-X");
-    item(editmenu,"Copy","copy","Ctrl-C","Command-C");
-    item(editmenu,"Paste","paste","Ctrl-V","Command-V");
+    
+    //we need to interface with the system clipboard ourselves
+    //ref: https://stackoverflow.com/questions/59998538/cut-and-paste-in-ace-editor
+    editmenu.addItem("Cut", 
+        ()=>{
+            let v = Editor.get().getCopyText();
+            Editor.get().executeCommand("cut");
+            navigator.clipboard.writeText(v);
+        },
+        isMac ? "Command-X":"Ctrl-X"
+    );
+    editmenu.addItem("Copy", 
+        ()=>{
+            let v = Editor.get().getCopyText();
+            Editor.get().executeCommand("copy");
+            navigator.clipboard.writeText(v);
+        },
+        isMac ? "Command-C":"Ctrl-C"
+    );
+    editmenu.addItem("Paste", 
+    ()=>{
+        navigator.clipboard.readText().then(
+            (v:string) => {
+                Editor.get().getAceEditor().execCommand("paste",v);
+            }
+        ).catch(
+            (reason: string) => {
+                console.warn("Cannot paste:",reason);
+            }
+        );
+    },
+    isMac ? "Command-V":"Ctrl-V"
+);
+
     editmenu.addSeparator();
     item(editmenu,"Delete line","removeline");
     item(editmenu,"Clear to end", "removetolineend");

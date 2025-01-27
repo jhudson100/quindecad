@@ -312,6 +312,9 @@ export class Editor{
         );
     }
 
+    getCopyText(): string {
+        return this.ed.getCopyText();
+    }
 
     getValue(saveCopyToLocalStorage: boolean): string {
         if(saveCopyToLocalStorage){
@@ -348,6 +351,10 @@ export class Editor{
             }
         });
         return shortcuts;
+    }
+    
+    getAceEditor(){
+        return this.ed;
     }
     
     executeCommand(cmd: string){
