@@ -23,7 +23,13 @@ import * as THREE from "three";
 import {OrbitControls} from "OrbitControls";
 
 // @ts-ignore
-import {CSS2DRenderer, CSS2DObject} from "CSS2DRenderer";
+import {LineSegments2} from "LineSegments2";
+
+// @ts-ignore
+import {LineSegmentsGeometry} from "LineSegmentsGeometry";
+
+// @ts-ignore
+import {LineMaterial} from "LineMaterial";
 
 import { ErrorReporter } from "ErrorReporter";
 import { Editor } from "Editor";
@@ -303,21 +309,31 @@ export class View{
         let axp = [ [1,0,0], [0,1,0], [0,0,1] ];
         let col = [ 0xff0000, 0x00ff00, 0x0000ff ];
         for(let i=0;i<3;++i){
-            let geo = new THREE.BufferGeometry();
-            geo.setFromPoints( 
-                    [ 
-                    new THREE.Vector3(0,0,0), 
-                    new THREE.Vector3(
-                        axp[i][0]*100,
-                        axp[i][1]*100,
-                        axp[i][2]*100
-                    )
-                ]
-            );
-            let axis = new THREE.Line(geo,new THREE.LineBasicMaterial({
-                color: col[i], linewidth: 3}));
-            axis.name="axis"+i;
+            let geo = new LineSegmentsGeometry();
+            geo.setPositions( [ 0,0,0, axp[i][0]*100, axp[i][1]*100, axp[i][2]*100 ] );
+            let mtl = new LineMaterial({
+                color: col[i], 
+                linewidth: 3
+            });
+            let axis = new LineSegments2(geo,mtl);
             this.axes.add(axis);
+
+            
+            // let geo = new THREE.BufferGeometry();
+            // geo.setFromPoints( 
+            //         [ 
+            //         new THREE.Vector3(0,0,0), 
+            //         new THREE.Vector3(
+            //             axp[i][0]*100,
+            //             axp[i][1]*100,
+            //             axp[i][2]*100
+            //         )
+            //     ]
+            // );
+            // let axis = new THREE.Line(geo,new THREE.LineBasicMaterial({
+            //     color: col[i], linewidth: 3}));
+            // axis.name="axis"+i;
+            // this.axes.add(axis);
         }
 
         //FIXME: Make these controls configurable
@@ -587,10 +603,13 @@ export class View{
     private makeGrid( majorColor:number, majorWidth:number, majorInterval:number,
         minorColor:number, minorWidth:number, minorDistance:number,
         gridExtent:number, gridType:GridPlane) {
-        let majorMtl:any = new THREE.LineBasicMaterial({color:majorColor, linewidth: majorWidth});
-        let minorMtl:any = new THREE.LineBasicMaterial({color:minorColor, linewidth: minorWidth});
-        let majorLines: any[] = [];
-        let minorLines: any[] = [];
+
+
+
+        let majorMtl:any = new LineMaterial({color:majorColor, linewidth: majorWidth});
+        let minorMtl:any = new LineMaterial({color:minorColor, linewidth: minorWidth});
+        let majorLines: number[] = [];
+        let minorLines: number[] = [];
         for(let i=-gridExtent,j=0;i<=gridExtent;i+=minorDistance,j++){
             let idx: number;
             let L: any[];
@@ -600,24 +619,37 @@ export class View{
             } else {
                 L=minorLines;
             }
+
             switch(gridType){
                 case GridPlane.XY:
-                    L.push( new THREE.Vector3(   i,         -gridExtent, 0) );
-                    L.push( new THREE.Vector3(   i,         gridExtent,  0) );
-                    L.push( new THREE.Vector3(-gridExtent,   i,          0) );
-                    L.push( new THREE.Vector3( gridExtent,   i,          0));
+                    L.push(i);              L.push(-gridExtent); L.push(0);
+                    L.push(i);              L.push( gridExtent); L.push(0);
+                    L.push(-gridExtent);    L.push(i);           L.push(0);
+                    L.push( gridExtent);    L.push(i);           L.push(0);
+                    // L.push( new THREE.Vector3(   i,         -gridExtent, 0) );
+                    // L.push( new THREE.Vector3(   i,         gridExtent,  0) );
+                    // L.push( new THREE.Vector3(-gridExtent,   i,          0) );
+                    // L.push( new THREE.Vector3( gridExtent,   i,          0));
                     break;
                 case GridPlane.YZ:
-                    L.push( new THREE.Vector3(  0,  i,          -gridExtent) );
-                    L.push( new THREE.Vector3(  0,  i,           gridExtent) );
-                    L.push( new THREE.Vector3(  0,  -gridExtent,  i) );
-                    L.push( new THREE.Vector3(  0,   gridExtent,  i));
+                    L.push(0);    L.push(i);            L.push(-gridExtent);
+                    L.push(0);    L.push(i);            L.push(gridExtent);
+                    L.push(0);    L.push(-gridExtent);  L.push(i);
+                    L.push(0);    L.push(gridExtent);   L.push(i);
+                    // L.push( new THREE.Vector3(  0,  i,          -gridExtent) );
+                    // L.push( new THREE.Vector3(  0,  i,           gridExtent) );
+                    // L.push( new THREE.Vector3(  0,  -gridExtent,  i) );
+                    // L.push( new THREE.Vector3(  0,   gridExtent,  i));
                     break;
                 case GridPlane.XZ:
-                    L.push( new THREE.Vector3(  i,           0, -gridExtent) );
-                    L.push( new THREE.Vector3(  i,           0,  gridExtent) );
-                    L.push( new THREE.Vector3(  -gridExtent, 0,  i) );
-                    L.push( new THREE.Vector3(   gridExtent, 0,  i));
+                    L.push(i);              L.push(0);  L.push(-gridExtent);
+                    L.push(i);              L.push(0);  L.push(gridExtent);
+                    L.push(-gridExtent);    L.push(0);  L.push(i);
+                    L.push( gridExtent);    L.push(0);  L.push(i);
+                    // L.push( new THREE.Vector3(  i,           0, -gridExtent) );
+                    // L.push( new THREE.Vector3(  i,           0,  gridExtent) );
+                    // L.push( new THREE.Vector3(  -gridExtent, 0,  i) );
+                    // L.push( new THREE.Vector3(   gridExtent, 0,  i));
                     break;
                 default:
                     throw new Error();
@@ -626,17 +658,28 @@ export class View{
         let grp = new THREE.Group();
         grp.name = "grid";
         
-        let geo = new THREE.BufferGeometry();
-        geo.setFromPoints(majorLines);
-        let m = new THREE.LineSegments(geo,majorMtl);
-        m.name="gridLine";
+
+        let geo = new LineSegmentsGeometry();
+        geo.setPositions(majorLines);
+        let m = new LineSegments2(geo,majorMtl);
         grp.add(m);
 
-        geo = new THREE.BufferGeometry();
-        geo.setFromPoints(minorLines);
-        m = new THREE.LineSegments(geo,minorMtl);
-        m.name="gridLine";
+        geo = new LineSegmentsGeometry();
+        geo.setPositions(minorLines);
+        m = new LineSegments2(geo,minorMtl);
         grp.add(m);
+
+        // let geo = new THREE.BufferGeometry();
+        // geo.setFromPoints(majorLines);
+        // let m = new THREE.LineSegments(geo,majorMtl);
+        // m.name="gridLine";
+        // grp.add(m);
+
+        // geo = new THREE.BufferGeometry();
+        // geo.setFromPoints(minorLines);
+        // m = new THREE.LineSegments(geo,minorMtl);
+        // m.name="gridLine";
+        // grp.add(m);
 
         grp.userData = new UserData(false);
         return grp;

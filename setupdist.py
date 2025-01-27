@@ -37,7 +37,25 @@ for fname in [
     "src/ext/three/package/build/three.core.min.js",
     "src/ext/three/package/build/three.module.min.js",
     "src/ext/three/package/examples/jsm/controls/OrbitControls.js",
-    "src/ext/three/package/examples/jsm/renderers/CSS2DRenderer.js",
+    "src/ext/three/package/examples/jsm/lines/LineMaterial.js",
+    "src/ext/three/package/examples/jsm/lines/LineSegmentsGeometry.js",
+    "src/ext/three/package/examples/jsm/lines/LineSegments2.js",
+    "src/ext/three/package/examples/jsm/lines/Line2.js",
+
+    ( "src/ext/three/package/examples/jsm/lines/LineSegments2.js",
+      "dist/ext/lines",
+    ),
+    # ( "src/ext/three/package/examples/jsm/lines/LineGeometry.js",
+    #   "dist/ext/lines",
+    # ),
+    ( "src/ext/three/package/examples/jsm/lines/LineMaterial.js",
+      "dist/ext/lines",
+    ),
+    ( "src/ext/three/package/examples/jsm/lines/LineSegmentsGeometry.js",
+      "dist/ext/lines",
+    ),
+
+    # "src/ext/three/package/examples/jsm/renderers/CSS2DRenderer.js",
     # "src/ext/three/package/examples/jsm/controls/TrackballControls.js",
     "src/ext/split/package/dist/split-grid.mjs",
     # "src/ext/jquery/jquery-3.7.1.min.js",
@@ -46,10 +64,13 @@ for fname in [
     # "src/ext/jqueryui/jquery-ui.structure.min.css",
     # "src/ext/jqueryui/jquery-ui.theme.min.css",
 ]:
-    tmp = fname.split("/")
-    libname = tmp[2]
-    folder=f"dist/ext/{libname}"
+    if type(fname) == str:
+        folder=f"dist/ext/{fname.split('/')[2]}"
+    else:
+        fname,folder = fname
+
+    dest = f"{folder}/{fname.split("/")[-1]}"
     os.makedirs(folder,exist_ok=True)
-    shutil.copyfile(fname,f"{folder}/{tmp[-1]}")
+    shutil.copyfile(fname,dest)
 
 # link("../ext","dist/ext")
