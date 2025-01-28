@@ -1,6 +1,7 @@
 dist/*
 *.zip
 app
+index.html.templ
 
 
 
