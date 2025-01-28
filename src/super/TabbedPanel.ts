@@ -64,7 +64,23 @@ export class TabbedPanel{
     }
 
     tabWantsAttention(elem: HTMLElement){
+        this.tabAttentionHelper(elem,true);
+    }
+    
+    tabNoLongerWantsAttention(elem: HTMLElement){
+        this.tabAttentionHelper(elem,false);
+    }
+    
+    private tabAttentionHelper(elem:HTMLElement, wants: boolean){
         let idx = this.contents.findIndex( (e: HTMLElement) => { return e === elem } );
+        if(idx === -1 ){
+            console.warn("Bad tab attention element");
+            return;
+        }
+        if(!wants){
+            this.headers[idx].classList.remove("tabWantsAttention");
+            return;
+        }
         if( this.selectedTabIndex !== idx ){
             this.headers[idx].classList.add("tabWantsAttention");
         }

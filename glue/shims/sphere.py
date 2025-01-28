@@ -22,7 +22,10 @@ def sphere( radius: POSITIVE_NUMBER,
 
 TS="""
     let s = manifold.Manifold.sphere(radius, resolution);
-    let s2 = s.translate([x, y,z]);
-    s.delete();
+    if(x !== 0.0 || y !== 0.0 || z !== 0.0 ){
+        let s2 = s.translate([x, y, z]);
+        s.delete();
+        s=s2;
+    }
     return new MeshHandle( new ManifoldMeshWrapper(s2,color,name) );
 """
