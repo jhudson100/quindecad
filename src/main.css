@@ -2,6 +2,35 @@ body {
     font-family: sans-serif;
 }
 
+
+
+/**********************************
+ * styles for edit area           * 
+ **********************************/
+ .editArea {
+    font-size: 14pt;
+}
+
+
+
+/**********************************
+ * styles for ErrorReporter       * 
+ **********************************/
+.errorReporter{
+    font-family: monospace;
+    font-size: 12pt;
+}
+
+.errorReporter .linkToCode {
+    color: blue;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/**********************************
+ * styles for menu bars           * 
+ **********************************/
 .menubar{
     user-select: none;
     border: 0.05em solid black;
@@ -51,6 +80,14 @@ body {
     padding-right: 2em;
 }
 
+/* For checkbox menu items */
+.menubar .menuItemText .checkbox.selected {
+    opacity: 1.0;
+}
+.menubar .menuItemText .checkbox.unselected {
+    opacity: 0.15;
+}
+
 .menubar .menuSeparator {
     border-top: 1px solid lightgray;
     height: 0.01em;
@@ -62,6 +99,11 @@ body {
     color: #aaaaaa;
 }
 
+
+
+/**********************************
+ * styles for tabbed container    * 
+ **********************************/
 
 /* .tabOverallContainer{
 } */
@@ -122,6 +164,11 @@ body {
 
 }
 
+
+
+/**********************************
+ * styles for help area           * 
+ **********************************/
 .helpInfo .functionsignature {
     font-family: monospace;
 }
@@ -145,6 +192,9 @@ body {
     font-style: italic;
 }
 
+ 
+
+/* Invalid value in an input box. Ex: Clipping plane sliders*/
 input.invalidValue {
     background: #ffcccc;
 }
@@ -153,4 +203,55 @@ input.invalidValue {
 .label3d{
     font-size: 75%;
     text-wrap: nowrap;
+}
+
+
+
+/**********************************
+ * styles for dialog boxes        * 
+ **********************************/
+.dialogBox.darkOverlay {
+    background: rgba(0,0,0,0.5);
+}
+
+.dialogBox .opaqueArea {
+    background: white;
+    border-width : 0.25em;
+    /*dotted, dashed, solid, double, groove, ridge, inset, outset*/
+    border-style: double;
+    border-color: black;
+    padding: 1em;
+}
+
+.dialogBox .button {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+
+
+/**********************************
+ * styles for sizers              * 
+ **********************************/
+.sizer {
+    background: #aaaaaa;
+    border-style: outset;
+    border-color: lightgrey;
+}
+
+.sizer.horizontalSizer {
+    cursor: row-resize;
+}
+
+.sizer.verticalSizer {
+    cursor: col-resize;
+}
+ 
+
+/**********************************
+ * styles for spinner             * 
+ **********************************/
+.spinner {
+    width: 1em;
+    height: 1em;
 }

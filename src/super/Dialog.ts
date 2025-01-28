@@ -14,6 +14,9 @@ export class Dialog{
     
     constructor( buttons: ButtonSpec[] ){
         this.darkOverlay = document.createElement("div");
+        this.darkOverlay.classList.add("dialogBox");
+        this.darkOverlay.classList.add("darkOverlay");
+        
         this.darkOverlay.style.zIndex="200";
         this.darkOverlay.style.overflow="hidden";
         this.darkOverlay.style.position="absolute";
@@ -21,12 +24,11 @@ export class Dialog{
         this.darkOverlay.style.right="0px";
         this.darkOverlay.style.top="0px";
         this.darkOverlay.style.bottom="0px";
-        this.darkOverlay.style.background="rgba(0,0,0,0.5)";
         this.darkOverlay.style.textAlign="center";
 
         let opaqueArea = document.createElement("div");
         this.darkOverlay.appendChild(opaqueArea);
-        opaqueArea.style.background="white";
+        opaqueArea.classList.add("opaqueArea");
         opaqueArea.style.margin="auto auto";
         opaqueArea.style.display="inline-block";
 
@@ -34,11 +36,6 @@ export class Dialog{
         opaqueArea.style.position="relative";
         opaqueArea.style.top="50%";
         opaqueArea.style.transform="translateY(-50%)";
-        opaqueArea.style.borderWidth="0.25em";
-        //dotted, dashed, solid, double, groove, ridge, inset, outset
-        opaqueArea.style.borderStyle="double";
-        opaqueArea.style.borderColor="black";
-        opaqueArea.style.padding="1em";
 
         this.contentArea = document.createElement("div");
         let buttonBar = document.createElement("div");
@@ -49,9 +46,8 @@ export class Dialog{
 
         buttons.forEach( (spec: ButtonSpec) => {
             let b = document.createElement("button");
-            b.style.marginLeft="0.5em";
-            b.style.marginRight="0.5em";
-            
+            b.classList.add("button");
+          
             b.appendChild(document.createTextNode(spec.name) );
             let callback: ButtonCallback = spec.callback;
             if(!callback)

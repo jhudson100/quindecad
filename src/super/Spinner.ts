@@ -10,9 +10,8 @@ export class Spinner{
 
     constructor(parent: HTMLElement){
         this.elem = document.createElement("img");
+        this.elem.classList.add("spinner");
         this.elem.src = spinner_svg;
-        this.elem.style.width="1em";
-        this.elem.style.height="1em";
         this.elem.style.visibility="hidden";
         this.parent=parent;
         this.parent.appendChild(this.elem);

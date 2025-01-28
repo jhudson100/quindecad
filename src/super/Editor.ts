@@ -197,7 +197,7 @@ export class Editor{
     private static instance: Editor;
     ed: any;    //the Ace instance
     localStorage: Storage|undefined = undefined;
-    parent: HTMLElement;
+    //parent: HTMLElement;
 
     static get(){
         if(!this.instance){
@@ -207,14 +207,26 @@ export class Editor{
     }
 
     initialize(parent: HTMLElement){
-        this.parent=parent;
-        parent.style.fontSize = "12pt";
-        
+
+        //if we decide to have autocompletion, will need to re-add this.
+        //See below.
         //ref: https://stackoverflow.com/questions/13545433/autocompletion-in-ace-editor
-        let languageTools = ace.require("ace/ext/language_tools");
+        //let languageTools = ace.require("ace/ext/language_tools");
 
+        //old way
+        //this.parent=parent;
+        //parent.style.fontSize = "12pt";
+        //this.ed = ace.edit(parent);
 
-        this.ed = ace.edit(parent);
+        //new way
+        let div = document.createElement("div");
+        parent.appendChild(div);
+        div.classList.add("editArea");
+
+        div.style.width="100%";
+        div.style.height="100%";
+        this.ed = ace.edit(div);
+
 
 
         //to have a more extensive list:

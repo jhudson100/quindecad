@@ -13,14 +13,13 @@ export class ErrorReporter{
         //ref: https://www.geeksforgeeks.org/how-to-force-child-div-to-be-100-of-parent-divs-height-without-specifying-parents-height/
         //note: Parent's CSS display must be flex or grid
         this.div = document.createElement("div");
-        this.div.style.height="100%";
+        this.div.classList.add("errorReporter");
 
-        this.div.style.width="500px";
+        this.div.style.height="100%";   //initial value; bogus
+        this.div.style.width="500px";   //initial value; bogus
 
         this.div.style.overflow="scroll";
         this.div.style.whiteSpace="pre";
-        this.div.style.fontFamily="monospace";
-        //FIXME: Font size
         this.clear();
     }
 
@@ -28,13 +27,6 @@ export class ErrorReporter{
         this.div.innerHTML="";
         this.div.scrollTop=0;
     }
-
-    // nothingToReport(){
-    //     let msg = document.createElement("div");
-    //     msg.appendChild(document.createTextNode("Error messages will appear here"));
-    //     msg.style.color="#cccccc";
-    //     this.div.appendChild(msg);
-    // }
 
     initialize(parent: HTMLElement, tabs: TabbedPanel){
         this.parent=parent;
@@ -93,10 +85,7 @@ export class ErrorReporter{
         }
 
         let a = document.createElement("a");
-        a.style.color = "blue";
-        a.style.fontWeight = "bold";
-        a.style.textDecoration = "underline";
-        a.style.cursor="pointer";
+        a.classList.add("linkToCode");
         a.addEventListener("click", (ev: Event) => {
             Editor.get().moveCursorTo( errline, firstcol );
             //FIXME: Should we select entire range?

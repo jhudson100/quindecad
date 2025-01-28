@@ -103,6 +103,7 @@ export class CheckMenuItem extends MenuItem{
         this.checked=checked;
 
         this.checkboxSpan = document.createElement("span");
+        this.checkboxSpan.classList.add("checkbox");
         this.checkboxSpan.appendChild( document.createTextNode( "✓" ) );
         this.labelSpan.insertBefore(this.checkboxSpan,this.labelSpan.firstChild);
 
@@ -126,10 +127,15 @@ export class CheckMenuItem extends MenuItem{
     }
     private updateLabel(){
         //FIXME: Should be put in main.css file.
-        if( this.checked )
-            this.checkboxSpan.style.opacity="1";
-        else
-            this.checkboxSpan.style.opacity="0.15";
+        if( this.checked ){
+            this.checkboxSpan.classList.add("selected");
+            this.checkboxSpan.classList.remove("unselected");
+            // this.checkboxSpan.style.opacity="1";
+        } else {
+            this.checkboxSpan.classList.add("unselected");
+            this.checkboxSpan.classList.remove("selected");
+            // this.checkboxSpan.style.opacity="0.15";
+        }
     }
 
 }
@@ -166,27 +172,11 @@ export class Menu{
         this.title.className="menuTitle";
         this.title.appendChild( document.createTextNode( "\u00a0" + titleString + "\u00a0") );
 
-        // this.titleDiv.style.background="white";
-        //his.titleDiv.style.zIndex = "100";
-        //@ts-ignore
-        // this.titleDiv.style.textWrap="nowrap";
-        // this.titleDiv.style.display="inline-block";
-        // this.titleDiv.style.position="relative";
-        // this.titleDiv.style.left="0px";
-        // this.titleDiv.style.top="0px";
-
         this.itemContainer = document.createElement("div");
         this.itemContainer.className="menuItemContainer";
         this.itemContainer.style.visibility="hidden";
         this.itemContainer.style.position="absolute";
         this.overallContainer.appendChild(this.itemContainer);
-
-        
-        // this.itemContainer.style.position="absolute";
-        // this.itemContainer.style.left="0px";
-        // this.itemContainer.style.top="1em";
-        // this.itemContainer.style.border="1px solid black";
-        // this.itemContainer.style.boxShadow = "0.2em 0.2em 0.1em rgba(0,0,0,0.5)";
 
     }
 

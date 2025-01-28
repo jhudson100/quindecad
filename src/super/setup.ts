@@ -73,7 +73,7 @@ export function setupInterface(){
     let viewdiv = createGridCell( contentArea, currentRow,1, 1,1 );
     viewdiv.style.width="calc(100%)";
     viewdiv.style.height="calc(100%)";
-    viewdiv.style.background="#cccccc";
+    viewdiv.style.background="#cccccc"; //this is only seen during resizing
 
     View.initialize(viewdiv);
 
@@ -301,13 +301,6 @@ function setupMenubar(parent: HTMLElement)
 
 
 }
-
-function styleSizer(g: HTMLDivElement, splitDirection: SplitDirection){
-    g.style.background="#aaaaaa";
-    g.style.borderStyle="outset";
-    g.style.borderColor="lightgrey";
-    g.style.cursor = (splitDirection == SplitDirection.VERTICAL) ? "col-resize" : "row-resize";
-}
  
 function createHorizontalSizer(parent: HTMLElement, 
     row: number, firstColumn: number, colspan: number,
@@ -316,7 +309,10 @@ function createHorizontalSizer(parent: HTMLElement,
     let gutters: any[] = [];
 
     let g = createGridCell(parent,row,firstColumn,1,colspan);
-    styleSizer(g,SplitDirection.HORIZONTAL);
+    g.classList.add("sizer");
+    g.classList.add("horizontalSizer");
+    
+    // styleSizer(g,SplitDirection.HORIZONTAL);
     gutters.push({ track: row-1, element: g } );
 
     Split( {
@@ -338,7 +334,10 @@ function createVerticalSizer(parent: HTMLElement,
     let gutters: any[] = [];
 
     let g = createGridCell(parent,firstRow,column,rowSpan,1);
-    styleSizer(g,SplitDirection.VERTICAL);
+    g.classList.add("sizer");
+    g.classList.add("verticalSizer");
+    // styleSizer(g,SplitDirection.VERTICAL);
+
     gutters.push({ track: column-1, element: g } );
 
     Split( {
