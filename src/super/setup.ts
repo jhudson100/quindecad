@@ -147,7 +147,7 @@ function setupMenubar(parent: HTMLElement)
                 }
             }
         }
-        menu.addItem( label, () => {
+        return menu.addItem( label, () => {
             Editor.get().executeCommand(cmd) 
         }, accel );
     }
@@ -159,8 +159,18 @@ function setupMenubar(parent: HTMLElement)
     let saveItem = filemenu.addItem("Save STL...", ()=>{ saveSTL(); } );
     
     let editmenu = mbar.addMenu("Edit");
-    item(editmenu,"Undo","undo");
-    item(editmenu,"Redo","redo");
+    let undoitem = item(editmenu,"Undo","undo");
+    let redoitem = item(editmenu,"Redo","redo");
+    Editor.get().setUndoRedoCallback( (canUndo:boolean, canRedo:boolean) => {
+        if( canUndo )
+            undoitem.setEnabled();
+        else
+            undoitem.setDisabled();
+        if( canRedo )
+            redoitem.setEnabled();
+        else
+            redoitem.setDisabled();
+    });
     editmenu.addSeparator();
     
     //we need to interface with the system clipboard ourselves
