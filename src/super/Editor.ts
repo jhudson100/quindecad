@@ -261,8 +261,21 @@ export class Editor{
         //     //delta: https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Delta.html
         // });
 
+        this.ed.session.addEventListener("endOperation", ()=>{
+            if( this.selectionChangedCallback ){
+                let sel = this.ed.session.getSelection();
+                let hasSelection=true;
+                if( sel.$isEmpty )
+                    hasSelection=false;
+                if( !sel.anchor || !sel.cursor || (sel.anchor.row === sel.cursor.row && sel.anchor.col === sel.cursor.col ) )
+                    hasSelection=false;
+                this.selectionChangedCallback(hasSelection);
+            }
+        });
+            
         //called after change has been made to document
         this.ed.session.addEventListener("beforeEndOperation", ()=>{
+            
             if( this.undoRedoCallback ){
                 this.undoRedoCallback(
                     this.ed.session.getUndoManager().canUndo(),
