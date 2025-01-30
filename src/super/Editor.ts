@@ -196,6 +196,7 @@ let mycompleter = {
 //a change occurs in undo/redo availability. The callback would
 //typically be responsible for enabling/disabling menu items.
 export type UndoRedoCallback = (canUndo: boolean, canRedo: boolean) => void;
+export type SelectionChangedCallback = (hasSelection: boolean) => void;
 
 export class Editor{
 
@@ -205,6 +206,7 @@ export class Editor{
     //parent: HTMLElement;
 
     undoRedoCallback: UndoRedoCallback;
+    selectionChangedCallback: SelectionChangedCallback;
 
     static get(){
         if(!this.instance){
@@ -213,6 +215,10 @@ export class Editor{
         return this.instance;
     }
 
+    setSelectionChangedCallback( c: SelectionChangedCallback) {
+        this.selectionChangedCallback = c;
+    }
+    
     setUndoRedoCallback( c: UndoRedoCallback ){
         this.undoRedoCallback = c;
     }
