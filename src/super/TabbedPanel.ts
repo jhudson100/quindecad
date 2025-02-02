@@ -1,4 +1,7 @@
 
+export enum TabSide {
+    TOP, BOTTOM
+};
 
 export class TabbedPanel{
     parent:HTMLElement;     //parent of tabs
@@ -12,7 +15,7 @@ export class TabbedPanel{
 
     selectedTabIndex=-1;
 
-    constructor(parent:HTMLElement){
+    constructor(parent:HTMLElement, tabSide: TabSide){
         this.parent=parent;
         this.overallContainer=document.createElement("div");
         this.overallContainer.classList.add("tabOverallContainer");
@@ -20,15 +23,21 @@ export class TabbedPanel{
         
         this.headerContainer = document.createElement("div");
         this.headerContainer.classList.add("tabHeaderContainer");
-        this.overallContainer.appendChild(this.headerContainer);
 
         this.contentContainer = document.createElement("div");
         this.contentContainer.classList.add("tabContentContainer");
-        this.overallContainer.appendChild(this.contentContainer);
+
+        if( tabSide == TabSide.TOP ){
+            this.overallContainer.appendChild(this.headerContainer);
+            this.overallContainer.appendChild(this.contentContainer);
+        } else {
+            this.overallContainer.appendChild(this.contentContainer);
+            this.overallContainer.appendChild(this.headerContainer);
+        }
 
     }
 
-    addTab(name: string){
+    addTab(name: string): HTMLElement{
         let header = document.createElement("div");
         header.appendChild(document.createTextNode(name));
         header.classList.add("tabHeader");

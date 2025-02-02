@@ -1,0 +1,6 @@
+https://www.python.org/community/logos/
+
+From the site:
+
+Projects and companies that use Python are encouraged to incorporate the Python logo on their websites, brochures, packaging, and elsewhere to indicate suitability for use with Python or implementation in Python. Use of the "two snakes" logo element alone (the logo device), without the accompanying wordmark is permitted on the same terms as the combined logo.
+

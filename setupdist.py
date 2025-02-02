@@ -15,6 +15,10 @@ shutil.copyfile("src/about.txt","dist/about.txt")
 shutil.copyfile("src/help.html","dist/help.html")
 shutil.copyfile("src/demo.txt","dist/demo.txt")
 shutil.copyfile("src/main.css","dist/main.css")
+shutil.copyfile("src/treeicons.svg","dist/treeicons.svg")
+
+for icon in ["sphere","box","cylinder","union","intersection","difference"]:
+  shutil.copyfile(f"src/{icon}.svg",f"dist/{icon}.svg")
 
 #some web hosts treat *anything* with a .py in the name as
 #if it is a cgi script, even if we don't ask to execute it.
@@ -58,6 +62,12 @@ for fname in [
     # "src/ext/three/package/examples/jsm/renderers/CSS2DRenderer.js",
     # "src/ext/three/package/examples/jsm/controls/TrackballControls.js",
     "src/ext/split/package/dist/split-grid.mjs",
+
+    "src/ext/jquery/jquery.js",
+    "src/ext/jstree/jstree.min.js",
+    "src/ext/jstree/mystyle.css",
+
+    "src/ext/pythonlogo/python-logo-small.svg",
     # "src/ext/jquery/jquery-3.7.1.min.js",
     # "src/ext/jqueryui/jquery-ui.min.css",
     # "src/ext/jqueryui/jquery-ui.min.js",
@@ -73,4 +83,3 @@ for fname in [
     os.makedirs(folder,exist_ok=True)
     shutil.copyfile(fname,dest)
 
-# link("../ext","dist/ext")
