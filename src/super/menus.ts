@@ -7,6 +7,7 @@ import { PythonManager } from "PythonManager";
 import { Spinner } from "Spinner";
 import { Dialog } from "Dialog";
 
+
 export function setupMenubar(parent: HTMLElement)
 {
     let shortcuts = Editor.get().getKeyboardShortcuts();
@@ -28,7 +29,7 @@ export function setupMenubar(parent: HTMLElement)
                 }
             }
         }
-        menu.addItem( label, () => {
+        return menu.addItem( label, () => {
             Editor.get().executeCommand(cmd) 
         }, accel );
     }
@@ -40,13 +41,23 @@ export function setupMenubar(parent: HTMLElement)
     let saveItem = filemenu.addItem("Save STL...", ()=>{ saveSTL(); } );
     
     let editmenu = mbar.addMenu("Edit");
-    item(editmenu,"Undo","undo");
-    item(editmenu,"Redo","redo");
+    let undoitem = item(editmenu,"Undo","undo");
+    let redoitem = item(editmenu,"Redo","redo");
+    Editor.get().setUndoRedoCallback( (canUndo:boolean, canRedo:boolean) => {
+        if( canUndo )
+            undoitem.setEnabled();
+        else
+            undoitem.setDisabled();
+        if( canRedo )
+            redoitem.setEnabled();
+        else
+            redoitem.setDisabled();
+    });
     editmenu.addSeparator();
     
     //we need to interface with the system clipboard ourselves
     //ref: https://stackoverflow.com/questions/59998538/cut-and-paste-in-ace-editor
-    editmenu.addItem("Cut", 
+    let cutItem = editmenu.addItem("Cut", 
         ()=>{
             let v = Editor.get().getCopyText();
             Editor.get().executeCommand("cut");
@@ -54,7 +65,7 @@ export function setupMenubar(parent: HTMLElement)
         },
         isMac ? "Command-X":"Ctrl-X"
     );
-    editmenu.addItem("Copy", 
+    let copyItem = editmenu.addItem("Copy", 
         ()=>{
             let v = Editor.get().getCopyText();
             Editor.get().executeCommand("copy");
@@ -62,6 +73,17 @@ export function setupMenubar(parent: HTMLElement)
         },
         isMac ? "Command-C":"Ctrl-C"
     );
+
+    Editor.get().setSelectionChangedCallback( (hasSelection) => {
+        if( hasSelection ){
+            cutItem.setEnabled();
+            copyItem.setEnabled();
+        } else {
+            cutItem.setDisabled();
+            copyItem.setDisabled();
+        }
+    })
+
     editmenu.addItem("Paste", 
     ()=>{
         navigator.clipboard.readText().then(
@@ -74,8 +96,8 @@ export function setupMenubar(parent: HTMLElement)
             }
         );
     },
-    isMac ? "Command-V":"Ctrl-V"
-);
+        isMac ? "Command-V":"Ctrl-V"
+    );
 
     editmenu.addSeparator();
     item(editmenu,"Delete line","removeline");
@@ -182,7 +204,6 @@ export function setupMenubar(parent: HTMLElement)
 
 
 }
- 
 
 function conductGridDialog(){
 
