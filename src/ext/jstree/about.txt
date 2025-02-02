@@ -1,0 +1,14 @@
+https://www.jstree.com/
+
+unzip
+
+Note: Requires jquery 1.9.0+
+
+Add css link to dist/themes/default/style.min.css
+script src=dist/jstree.min.js
+
+create container <div>
+
+When DOM is ready:
+
+$( ()=>{ $(div).jstree() } );
