@@ -26,6 +26,8 @@ export class ErrorReporter{
     clear(){
         this.div.innerHTML="";
         this.div.scrollTop=0;
+        if(this.tabs)
+            this.tabs.tabNoLongerWantsAttention(this.parent)
     }
 
     initialize(parent: HTMLElement, tabs: TabbedPanel){

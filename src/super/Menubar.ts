@@ -190,12 +190,40 @@ export class Menu{
     pullUp(){
         this.itemContainer.style.visibility="hidden";
         this.title.classList.remove("menuSelected");
+        //make sure no items on this menu are selected
+        this.items.forEach( (I: MenuItem)=>{
+            I.unselect();
+        });
     }
 
     getTitleRectangle(){
         if( this.rect === undefined )
             this.rect = this.title.getBoundingClientRect();
         return this.rect;
+    }
+
+    mouseIsOverMenuTitle(x:number, y:number){
+        let r = this.getTitleRectangle();
+        if( r.left <= x && x <= r.right && r.top <= y && y <= r.bottom )
+            return true;
+        else
+            return false;
+    }
+
+    getItemUnderMouse(x:number, y:number){
+        for(let i=0;i<this.items.length;++i){
+            let menuItem = this.items[i];
+
+            //disabled menu items are not eligible for selection
+            if( !menuItem.enabled )
+                continue;
+
+            let r = menuItem.getRectangle();
+            if( x >= r.left && x <= r.right && y >= r.top && y <= r.bottom ){
+                return menuItem;
+            }
+        }
+        return undefined;
     }
 
     clearStoredRectangles(){
@@ -254,15 +282,53 @@ export class Menubar{
         return m;
     }
 
+    private getMenuWhoseTitleWeAreOver(x:number,y:number){
+        for(let i=0;i<this.menus.length;++i){
+            if( this.menus[i].mouseIsOverMenuTitle( x,y ) ){
+                return this.menus[i];
+            }
+        }
+        return undefined;
+    }
+
     setupMouseHandlers(){
 
-        let selectedMenu: Menu = undefined;
+        //the menu that is currently pulled down, or undefined if none
+        let pulledDownMenu: Menu = undefined;
+
+        //menu item the mouse is over, or undefined if none
         let selectedItem: MenuItem = undefined;
 
-        let mouseDown=false;
+        //if true, we are tracking mouse motion for menus. If false, we are not.
+        //This is not the same as the mouse being down: If the user clicks
+        //on a menu title, we track the mouse for menus even though the button
+        //is up.
+        let trackingMouseForMenus=false;
+
+        //time when pointer was pressed down
+        let pointerDownTime: number = 0;
+
+        //coordinates where pointer was pressed down
+        let pointerDownX:number = 0;
+        let pointerDownY:number = 0;
 
 
-        this.mbar.addEventListener("pointerdown", (ev: PointerEvent)=>{
+        //this div captures any mouse clicks outside of the menus so
+        //the user can dismiss a menu by clicking in the background.
+        //if the user clicks the menu bar, we add this to the document;
+        //when the user chooses a menu item or clicks in the background,
+        //we remove it from the document
+        let dismissdiv: HTMLElement;
+
+        let pointerDownCallback = (ev: PointerEvent)=>{
+            //only reset these if there isn't a menu open already.
+            //There will be a menu open if the user clicked
+            //on a menu title and then released the mouse button.
+            if( pulledDownMenu === undefined ){
+                pointerDownTime = ev.timeStamp;
+                pointerDownX = ev.clientX;
+                pointerDownY = ev.clientY;
+            }
 
             //clear out all cached rectangles
             //if the user has zoomed the window, the locations and sizes
@@ -272,124 +338,158 @@ export class Menubar{
                 m.clearStoredRectangles();
             });
 
-            selectedMenu=undefined;
-            selectedItem=undefined;
-
             this.mbar.setPointerCapture(ev.pointerId);
 
-            //see if we're over a menu title.
-            //if we aren't then we will ignore any future events where
-            //the mouse does move over a menu title (at least until the
-            //mouse gets released)
-            for(let i=0;i<this.menus.length;++i){
-                let r = this.menus[i].getTitleRectangle();
-                if( r.left <= ev.clientX && ev.clientX <= r.right && r.top <= ev.clientY && ev.clientY <= r.bottom ){
-                    //we've found a menu
-                    selectedMenu = this.menus[i];
-                    selectedMenu.pullDown();
-                    break;
-                }
-            }
-
-            //if we aren't over a menu, we don't set this to true;
-            //that means pointermove events will do nothing.
-            if(selectedMenu !== undefined )
-                mouseDown=true;
-
-            //always call this even if we're not over a menu title
+            //always call this even if we're not over a menu title or item
             ev.preventDefault();
-        });
 
-        this.mbar.addEventListener("pointermove", (ev: PointerEvent) => {
+            //menu whose title we are over, or undefined if none
+            let menuWhoseTitleWeAreOver = this.getMenuWhoseTitleWeAreOver(ev.clientX,ev.clientY);
+            if( menuWhoseTitleWeAreOver){
+                if( pulledDownMenu !== menuWhoseTitleWeAreOver ){
+                    if( pulledDownMenu )
+                        pulledDownMenu.pullUp();
+                    selectedItem=undefined;
+                }
+                menuWhoseTitleWeAreOver.pullDown();
+                pulledDownMenu = menuWhoseTitleWeAreOver;
+                trackingMouseForMenus=true;
+                //we can't possibly be over a menu item since we are over
+                //a title, so we don't need to look at any items.
+                //The pullUp call above has cleared the selected state
+                //on selectedItem, if there was one
+                return;
+            }
+            
+            //if we get here, the mouse is not over any menu title.
+            //But it might be over a menu item if we have a menu pulled down
+            //(and the user clicked a menu to open it instead of dragging)
+            //But we don't want to take action unless the user *releases*
+            //the mouse over an item, so do nothing.
+            //Don't change trackingMouseForMenus: It only gets set to false
+            //on a mouse up event (unless the user clicks on the background)
+            //and it gets set to true only when
+            //we have a mouse down event, which was handled above.
 
-            if(!mouseDown)
+            // originallySelectedMenu   originallySelected
+            //if we aren't over a menu, we don't set this to true;
+            // //that means pointermove events will do nothing.
+            // if(selectedMenu !== undefined )
+            //     trackingMouseForMenus=true;
+
+        };
+
+        let pointermoveCallback = (ev: PointerEvent) => {
+
+            if(!trackingMouseForMenus)
                 return;
 
-            //selectedMenu should never be undefined here
-            if( selectedMenu === undefined)
-                return;
-
-            //start by seeing if the user is over any item of the currently pulled down menu
-
+            //set to true if we find an item that the mouse cursor is over
             let foundIt=false;
-            for(let i=0;i<selectedMenu.items.length;++i){
 
-                let menuItem = selectedMenu.items[i];
-
-                //disabled menu items are not eligible for selection
-                if( !menuItem.enabled )
-                    continue;
-
-                let r = menuItem.getRectangle();
-                if( ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom ){
-                    //we are over this menu item
-                    //remove selection from previous item
-                    if( selectedItem !== undefined && selectedItem !== menuItem ){
-                        selectedItem.unselect();
-                    }
-
-                    //indicate we now have this one selected
-                    selectedItem = menuItem;
-
-                    //add highlight to the item we are over
-                    selectedItem.select();
-                    
-                    foundIt=true;
-
-                    //no need to look further
-                    break;
+            //see if we have a menu pulled down; if so, see if there's an item
+            //on that menu that we are over
+            if( pulledDownMenu !== undefined){
+                let menuItem = pulledDownMenu.getItemUnderMouse(ev.clientX, ev.clientY);
+                if( menuItem ){
+                    foundIt = true;
+                    //remove selection from previous item, if there was one
+                    if( selectedItem !== menuItem ){
+                        if(selectedItem)
+                            selectedItem.unselect();
+                        menuItem.select();
+                        selectedItem = menuItem;
+                    } // else there's nothing to do: It's the same menu item
                 }
             }
 
             if(!foundIt){
-                //if cursor is not over any item, remove highlight from the 
+                //if cursor is not over any item on the currently pulled down
+                //menu. Remove highlight from the 
                 //item that was previously selected, if there is one
                 if(selectedItem){
                     selectedItem.unselect();
                     selectedItem=undefined;
                 }
 
-                //see if we're over any other menu title
-                for(let i=0;i<this.menus.length;++i){
-                    let r = this.menus[i].getTitleRectangle();
-                    if( r.left <= ev.clientX && ev.clientX <= r.right && r.top <= ev.clientY && ev.clientY <= r.bottom ){
-                        //we are over this menu
-                        //if it's the same as the current menu, there's nothing to do
-                        if( this.menus[i] === selectedMenu){
-                        } else {
-                            //otherwise, pull that menu down
-                            selectedMenu.pullUp();
-                            selectedMenu = this.menus[i];
-                            selectedMenu.pullDown();
-                        }
+                //see if the mouse is over a different menu's title. If so,
+                //pull that menu down.
+                let m = this.getMenuWhoseTitleWeAreOver(ev.clientX,ev.clientY);
+                if( m ){
+                    if( pulledDownMenu !== m ){
+                        if( pulledDownMenu )
+                            pulledDownMenu.pullUp();
+                        m.pullDown();
+                        pulledDownMenu=m;
                     }
                 }
             }
-        });
+        }; //end pointer move event handler
 
-        this.mbar.addEventListener("pointerup", (ev: PointerEvent) => {
+        let pointerupCallback = (ev: PointerEvent) => {
 
-            mouseDown=false;
-            this.mbar.releasePointerCapture(ev.pointerId);
-            
-            if( selectedMenu ){
-                selectedMenu.pullUp();
+            if(!trackingMouseForMenus)
+                return;
+
+            //if user clicks on a menu, we want to leave the menus open
+            //and let the user browse them without having to hold
+            //the mouse button down. We're fairly forgiving here
+            //since we don't know what the system mouse sensitivity
+            //settings are.
+            if( ev.timeStamp - pointerDownTime < 500 &&
+                Math.abs(pointerDownX - ev.clientX) < 10 &&
+                Math.abs(pointerDownY - ev.clientY) < 10 ){
+                    
+                if( !dismissdiv.parentElement) 
+                    document.body.appendChild(dismissdiv);
+                //leave trackingMouseForMenus true; don't examine hit boxes;
+                //don't hide any menus; don't deselect anything.
+                return;
             }
 
-            //if there is an item, remove the selection highlight
+            if( dismissdiv.parentElement ){
+                dismissdiv.parentElement.removeChild(dismissdiv);
+            }
+
+            trackingMouseForMenus=false;
+            this.mbar.releasePointerCapture(ev.pointerId);
+
+            //hide the menu first so that if the invoke callback
+            //puts up a dialog or something, the menu will
+            //be gone before that happens
+            if( pulledDownMenu ){
+                //removes menu and highlight on selectedItem, if there is one
+                pulledDownMenu.pullUp();
+            }
+
+            //if there is an item, invoke it
             if(selectedItem ){
                 //run the callback
                 selectedItem.invoke();  
-                
-                //remove highlight
-                selectedItem.unselect();
-
-                //item is no longer selected
-                selectedItem = undefined;
             }
             
 
+            selectedItem = undefined;
+            pulledDownMenu=undefined;
+
             ev.preventDefault();
-        });
+        };
+
+        dismissdiv = document.createElement("div");
+        dismissdiv.style.position="fixed";
+        dismissdiv.style.left="0px";
+        dismissdiv.style.top="0px";
+        dismissdiv.style.width="100vw";
+        dismissdiv.style.height="100vh";
+        dismissdiv.classList.add("dismissdiv")
+        dismissdiv.style.background="rgba(0,0,0,0)";
+
+        this.mbar.addEventListener("pointerdown", pointerDownCallback);
+        this.mbar.addEventListener("pointermove", pointermoveCallback);
+        this.mbar.addEventListener("pointerup", pointerupCallback);
+        dismissdiv.addEventListener("pointerdown", pointerDownCallback);
+        dismissdiv.addEventListener("pointermove", pointermoveCallback);
+        dismissdiv.addEventListener("pointerup", pointerupCallback);
+
     } //end function setupMouseHandlers
 } //end class Menubar

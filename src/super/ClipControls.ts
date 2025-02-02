@@ -31,7 +31,6 @@ export class ClipControls{
             });
 
             this.minSliders[i].addListener( (v:number) => {
-                console.log(v);
                 if( this.maxSliders[i].value < v ){
                     this.maxSliders[i].setValue(v);
                 }
@@ -39,7 +38,6 @@ export class ClipControls{
             });
 
             this.maxSliders[i].addListener( (v:number) => {
-                console.log(v);
                 if( this.minSliders[i].value > v ){
                     this.minSliders[i].setValue(v);
                 }

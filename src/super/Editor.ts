@@ -192,6 +192,12 @@ let mycompleter = {
     }
 };
 
+//An UndoRedo callback is called by the Editor whenever
+//a change occurs in undo/redo availability. The callback would
+//typically be responsible for enabling/disabling menu items.
+export type UndoRedoCallback = (canUndo: boolean, canRedo: boolean) => void;
+export type SelectionChangedCallback = (hasSelection: boolean) => void;
+
 export class Editor{
 
     private static instance: Editor;
@@ -199,11 +205,22 @@ export class Editor{
     localStorage: Storage|undefined = undefined;
     //parent: HTMLElement;
 
+    undoRedoCallback: UndoRedoCallback;
+    selectionChangedCallback: SelectionChangedCallback;
+
     static get(){
         if(!this.instance){
             this.instance = new Editor();
         }
         return this.instance;
+    }
+
+    setSelectionChangedCallback( c: SelectionChangedCallback) {
+        this.selectionChangedCallback = c;
+    }
+    
+    setUndoRedoCallback( c: UndoRedoCallback ){
+        this.undoRedoCallback = c;
     }
 
     initialize(parent: HTMLElement){
@@ -244,6 +261,34 @@ export class Editor{
 
         this.ed.setTheme("ace/theme/eclipse");
         this.ed.session.setMode("ace/mode/python");
+
+        //called before a change is made to document
+        // this.ed.session.addEventListener("change", (delta:any)=>{
+        //     //delta: https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Delta.html
+        // });
+
+        this.ed.session.addEventListener("endOperation", ()=>{
+            if( this.selectionChangedCallback ){
+                let sel = this.ed.session.getSelection();
+                let hasSelection=true;
+                if( sel.$isEmpty )
+                    hasSelection=false;
+                if( !sel.anchor || !sel.cursor || (sel.anchor.row === sel.cursor.row && sel.anchor.col === sel.cursor.col ) )
+                    hasSelection=false;
+                this.selectionChangedCallback(hasSelection);
+            }
+        });
+            
+        //called after change has been made to document
+        this.ed.session.addEventListener("beforeEndOperation", ()=>{
+            
+            if( this.undoRedoCallback ){
+                this.undoRedoCallback(
+                    this.ed.session.getUndoManager().canUndo(),
+                    this.ed.session.getUndoManager().canRedo()
+                );
+            }
+        });
 
         //ref: https://stackoverflow.com/questions/44807283/how-to-resize-the-auto-suggestion-menu-width-in-ace-editor
         // this.ed.completer.popup.container.style.width="20em";
@@ -368,7 +413,7 @@ export class Editor{
     getAceEditor(){
         return this.ed;
     }
-    
+
     executeCommand(cmd: string){
         this.ed.execCommand(cmd);
         //force one of the commands to run
@@ -380,3 +425,10 @@ export class Editor{
     }
 
 }
+
+
+//Notes for future implementation work:
+// Creating several sessions:
+//  ref: https://stackoverflow.com/questions/19049399/ace-editor-setting-new-session
+// sess = ace.createEditSession("initial data", "ace/mode/python")
+// 
