@@ -17,8 +17,9 @@ shutil.copyfile("src/demo.txt","dist/demo.txt")
 shutil.copyfile("src/main.css","dist/main.css")
 shutil.copyfile("src/treeicons.svg","dist/treeicons.svg")
 
+os.makedirs("dist/icons",exist_ok=True)
 for icon in ["sphere","box","cylinder","union","intersection","difference"]:
-  shutil.copyfile(f"src/{icon}.svg",f"dist/{icon}.svg")
+    shutil.copyfile(f"src/icons/{icon}.svg",f"dist/icons/{icon}.svg")
 
 #some web hosts treat *anything* with a .py in the name as
 #if it is a cgi script, even if we don't ask to execute it.
