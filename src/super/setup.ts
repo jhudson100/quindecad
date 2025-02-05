@@ -10,6 +10,7 @@ import { HelpInfo } from "HelpInfo";
 import { ClipControls } from "ClipControls";
 import { setupMenubar } from "menus";
 import { TreeEditor } from "TreeEditor";
+import { createSplit } from "Grid";
 
 
 // @ts-ignore
@@ -42,7 +43,10 @@ export function setupInterface(){
 
     */
 
+    let SIZER_SIZE="10px";
+
     let sizeCallback = () => {
+        // viewAndEditDiv.style.height=
         View.get().resize();
         Editor.get().resize();
         tabs.resize();
@@ -52,31 +56,66 @@ export function setupInterface(){
         edTabs.resize();
     };
 
-    //Split.js can't work with em's here; px work though
-    let contentArea = createGrid(  document.body, 
-            "auto 1fr 10px 0.25fr",               //rows
-            "1fr 10px 1fr"                          //cols
+    let tmp = createSplit(
+        document.body,
+        SplitDirection.HORIZONTAL, 
+        ["auto","1fr","0.25fr"],
+        SIZER_SIZE,
+        [false,true],
+        sizeCallback);
+
+    tmp.container.style.width="99vw";
+    tmp.container.style.height="99vh";
+    let rows = tmp.cells;
+    let menubardiv = rows[0];
+    let viewAndEditDiv = rows[1];
+    let infodiv = rows[2];
+
+    viewAndEditDiv.style.height="100%";
+
+    tmp = createSplit(
+        viewAndEditDiv,
+        SplitDirection.VERTICAL,
+        ["1fr","1fr"],
+        SIZER_SIZE,
+        true,
+        sizeCallback
     );
-    contentArea.style.width = "99vw";
-    contentArea.style.height = "99vh";
+    
+    tmp.container.style.height="100%";
 
-    let currentRow = 1;
+    let viewdiv = tmp.cells[0];
+    viewdiv.style.height="100%";
+    let eddiv = tmp.cells[1];
+    eddiv.style.height="100%";
+    
 
-    let bbardiv =createGridCell( contentArea, currentRow,1, 1,3 );
-    bbardiv.style.width="calc(100%)";
+    //split-grid.js can't work with em's here; px work though
+    // let contentArea = createGrid(  document.body, 
+    //         "auto 1fr 10px 0.25fr",               //rows
+    //         "1fr 10px 1fr"                          //cols
+    // );
+    // contentArea.style.width = "99vw";
+    // contentArea.style.height = "99vh";
 
-    currentRow=2;
+    // let currentRow = 1;
 
-    createVerticalSizer(contentArea, 2, currentRow, 1, sizeCallback );
+    // let bbardiv =createGridCell( contentArea, currentRow,1, 1,3 );
+    // bbardiv.style.width="calc(100%)";
 
-    let viewdiv = createGridCell( contentArea, currentRow,1, 1,1 );
+    // currentRow=2;
+
+    // createVerticalSizer(contentArea, 2, currentRow, 1, sizeCallback );
+
+    // let viewdiv = createGridCell( contentArea, currentRow,1, 1,1 );
+
     viewdiv.style.width="calc(100%)";
     viewdiv.style.height="calc(100%)";
     viewdiv.style.background="#cccccc"; //this is only seen during resizing
 
     View.initialize(viewdiv);
 
-    let eddiv = createGridCell( contentArea, currentRow,3, 1,1);
+    // let eddiv = createGridCell( contentArea, currentRow,3, 1,1);
     eddiv.style.height="100%";
 
     let edTabs = new TabbedPanel(eddiv,TabSide.BOTTOM);
@@ -95,15 +134,27 @@ export function setupInterface(){
     });
 
     let treetab = edTabs.addTab("Tree");
-    new TreeEditor(treetab);
 
-    currentRow++;
+    tmp = createSplit(treetab,SplitDirection.HORIZONTAL,
+        ["1fr","1fr"], SIZER_SIZE, true,
+        sizeCallback);
+    tmp.container.style.height="100%";
+    new TreeEditor(tmp.cells[0]);
+    
+    let div = document.createElement("div");
+    div.innerText="FOO!";
+    tmp.cells[1].appendChild(div);
 
-    createHorizontalSizer( contentArea, currentRow,  1, 3, sizeCallback );
+    // currentRow++;
 
-    currentRow++;
+    // createHorizontalSizer( contentArea, currentRow,  1, 3, sizeCallback );
 
-    let infodiv = createGridCell( contentArea, currentRow,1, 1,3);
+    // currentRow++;
+
+    // let infodiv = createGridCell( contentArea, currentRow,1, 1,3);
+
+
+
     //ref: https://blog.jim-nielsen.com/2023/width-and-height-in-css/
     //width looks up the tree and sets node to be as wide as widest parent
     //height looks down the tree and sets height to be maximum of children's heights
@@ -123,7 +174,7 @@ export function setupInterface(){
 
 
     //must be after editor has been created
-    setupMenubar(bbardiv);
+    setupMenubar(menubardiv);
 
     //force size computations
     sizeCallback();
