@@ -3,8 +3,6 @@ import {View} from "View";
 import {Editor} from "Editor";
 import {PythonManager} from "PythonManager";
 import { WorkerManager } from "WorkerManager";
-// @ts-ignore
-import Split from 'Split';
 import { TabSide, TabbedPanel } from "TabbedPanel";
 import { HelpInfo } from "HelpInfo";
 import { ClipControls } from "ClipControls";
@@ -21,32 +19,8 @@ enum SplitDirection{
 };
 
 export function setupInterface(){
-    // console.log("In setup");
-
-
-    /* 
-
-        sz1 = sizer1
-
-          col 1      col2   col3
-        ┌───────────┬───┬──────────────┐
-        │           bbardiv            │    row 1
-        ├───────────┼───┼──────────────┤
-        │ viewdiv   │sz1│    eddiv     │    row 2
-        ├───────────┼───┼──────────────┤
-        │           sizer2             │    row 3
-        ├───────────┼───┼──────────────┤
-        │           infodiv            │    row 4
-        └───────────┴───┴──────────────┘
-
-        
-
-    */
-
-    let SIZER_SIZE="10px";
 
     let sizeCallback = () => {
-        // viewAndEditDiv.style.height=
         View.get().resize();
         Editor.get().resize();
         tabs.resize();
@@ -60,7 +34,6 @@ export function setupInterface(){
         document.body,
         SplitDirection.HORIZONTAL, 
         ["auto","1fr","0.25fr"],
-        SIZER_SIZE,
         [false,true],
         sizeCallback);
 
@@ -77,7 +50,6 @@ export function setupInterface(){
         viewAndEditDiv,
         SplitDirection.VERTICAL,
         ["1fr","1fr"],
-        SIZER_SIZE,
         true,
         sizeCallback
     );
@@ -89,26 +61,7 @@ export function setupInterface(){
     let eddiv = tmp.cells[1];
     eddiv.style.height="100%";
     
-
-    //split-grid.js can't work with em's here; px work though
-    // let contentArea = createGrid(  document.body, 
-    //         "auto 1fr 10px 0.25fr",               //rows
-    //         "1fr 10px 1fr"                          //cols
-    // );
-    // contentArea.style.width = "99vw";
-    // contentArea.style.height = "99vh";
-
-    // let currentRow = 1;
-
-    // let bbardiv =createGridCell( contentArea, currentRow,1, 1,3 );
-    // bbardiv.style.width="calc(100%)";
-
-    // currentRow=2;
-
-    // createVerticalSizer(contentArea, 2, currentRow, 1, sizeCallback );
-
-    // let viewdiv = createGridCell( contentArea, currentRow,1, 1,1 );
-
+ 
     viewdiv.style.width="calc(100%)";
     viewdiv.style.height="calc(100%)";
     viewdiv.style.background="#cccccc"; //this is only seen during resizing
@@ -135,25 +88,20 @@ export function setupInterface(){
 
     let treetab = edTabs.addTab("Tree");
 
-    tmp = createSplit(treetab,SplitDirection.HORIZONTAL,
-        ["1fr","1fr"], SIZER_SIZE, true,
-        sizeCallback);
+    tmp = createSplit(
+        treetab,
+        SplitDirection.HORIZONTAL,
+        ["1fr","1fr"], 
+        true,
+        sizeCallback
+    );
     tmp.container.style.height="100%";
     new TreeEditor(tmp.cells[0]);
     
     let div = document.createElement("div");
     div.innerText="FOO!";
     tmp.cells[1].appendChild(div);
-
-    // currentRow++;
-
-    // createHorizontalSizer( contentArea, currentRow,  1, 3, sizeCallback );
-
-    // currentRow++;
-
-    // let infodiv = createGridCell( contentArea, currentRow,1, 1,3);
-
-
+ 
 
     //ref: https://blog.jim-nielsen.com/2023/width-and-height-in-css/
     //width looks up the tree and sets node to be as wide as widest parent
@@ -181,74 +129,4 @@ export function setupInterface(){
 
 }
 
- 
-function createHorizontalSizer(parent: HTMLElement, 
-    row: number, firstColumn: number, colspan: number,
-        dragEndCallback?: () => void )
-{
-    let gutters: any[] = [];
-
-    let g = createGridCell(parent,row,firstColumn,1,colspan);
-    g.classList.add("sizer");
-    g.classList.add("horizontalSizer");
-    
-    // styleSizer(g,SplitDirection.HORIZONTAL);
-    gutters.push({ track: row-1, element: g } );
-
-    Split( {
-        // minSize: 10,
-        rowGutters: gutters,
-        onDragEnd: (direction: string, track: number) => { 
-            if(dragEndCallback){
-                dragEndCallback();
-            }
-        }
-    });
-}
-
-
-function createVerticalSizer(parent: HTMLElement, 
-    column: number, firstRow: number, rowSpan: number,
-        dragEndCallback?: () => void )
-{
-    let gutters: any[] = [];
-
-    let g = createGridCell(parent,firstRow,column,rowSpan,1);
-    g.classList.add("sizer");
-    g.classList.add("verticalSizer");
-    // styleSizer(g,SplitDirection.VERTICAL);
-
-    gutters.push({ track: column-1, element: g } );
-
-    Split( {
-        // minSize: 10,
-        columnGutters: gutters,
-        onDragEnd: (direction: string, track: number) => { 
-            if(dragEndCallback){
-                dragEndCallback();
-            }
-        }
-    });
-}
-
-function createGrid( parent: HTMLElement, rowSpec: string, colSpec:string)
-{
-    let div = document.createElement("div");
-    div.style.display="grid";
-    div.style.gridTemplateRows = rowSpec;
-    div.style.gridTemplateColumns = colSpec;
-    parent.appendChild(div);
-    return div;
-}
-    
-function createGridCell( parent:HTMLElement, row: number, column: number, rowspan?: number, colspan?: number)
-{
-    let div = document.createElement("div");
-    div.style.gridRowStart = ""+row;
-    div.style.gridRowEnd = "span "+( rowspan ?? 1 )  ;
-    div.style.gridColumnStart = ""+column;
-    div.style.gridColumnEnd = "span "+( colspan ?? 1 );
-    div.style.overflow="hidden";
-    parent.appendChild(div);
-    return div;
-}
+  

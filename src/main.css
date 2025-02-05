@@ -263,3 +263,16 @@ input.invalidValue {
     width: 1em;
     height: 1em;
 }
+
+
+/**********************************
+ * styles for split-sizers        * 
+ **********************************/
+ .horizontalSizer {
+    padding-top: 2.5px;
+    padding-bottom: 2.5px;
+ }
+ .verticalSizer{
+    padding-left: 2.5px;
+    padding-right: 2.5px;
+ }
