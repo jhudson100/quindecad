@@ -96,12 +96,10 @@ export function setupInterface(){
         sizeCallback
     );
     tmp.container.style.height="100%";
-    new TreeEditor(tmp.cells[0]);
-    
-    let div = document.createElement("div");
-    div.innerText="FOO!";
-    tmp.cells[1].appendChild(div);
+    new TreeEditor(tmp.cells[0], tmp.cells[1]);
  
+
+    edTabs.selectTab(1);
 
     //ref: https://blog.jim-nielsen.com/2023/width-and-height-in-css/
     //width looks up the tree and sets node to be as wide as widest parent

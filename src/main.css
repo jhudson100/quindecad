@@ -276,3 +276,11 @@ input.invalidValue {
     padding-left: 2.5px;
     padding-right: 2.5px;
  }
+
+ 
+/**********************************
+ * styles for trees (experimental)* 
+ **********************************/
+ .propertyrow .propertyname {
+    width: 5em;
+ }

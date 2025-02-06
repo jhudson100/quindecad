@@ -52,16 +52,34 @@ enum PropertyType{
 
 type PropertyGetter<T> = ()=>T;
 type PropertySetter<T> = (value:T) => void;
+type PropertyChangeCallback = ()=>void;
+
 class GenericProperty<T>{
     name: string;
     type: PropertyType;
-    getter: PropertyGetter<T>;
-    setter: PropertySetter<T>;
+    private getter: PropertyGetter<T>;
+    private setter: PropertySetter<T>;
+    changeCallbacks: PropertyChangeCallback[] = [];
     constructor(name:string,type: PropertyType, getter: PropertyGetter<T>, setter: PropertySetter<T>){
         this.name=name;
         this.type=type;
         this.getter=getter;
         this.setter=setter;
+    }
+    addChangeListener( f: PropertyChangeCallback){
+        this.changeCallbacks.push(f);
+    }
+    canSetValue(){
+        return this.setter !== undefined ;
+    }
+    setValue(v:T){
+        this.setter(v);
+        this.changeCallbacks.forEach( (f: PropertyChangeCallback) => {
+            f();
+        });
+    }
+    getValue() {
+        return this.getter();
     }
 }
 
@@ -72,9 +90,10 @@ class NumberProperty extends GenericProperty<number>{
 }
 
 
-class PositiveNumberProperty extends GenericProperty<number>{
+class PositiveNumberProperty extends NumberProperty{
     constructor(name:string, getter: PropertyGetter<number>, setter: PropertySetter<number>){
-        super(name,PropertyType.POSITIVE_NUMBER,getter,setter);
+        super(name,getter,setter);
+        this.type = PropertyType.POSITIVE_NUMBER;
     }
 }
 
@@ -88,7 +107,7 @@ class BooleanProperty extends GenericProperty<boolean>{
 
 class Point3Property extends GenericProperty<Point3>{
     constructor(name:string, getter: PropertyGetter<Point3>, setter: PropertySetter<Point3>){
-        super(name,PropertyType.NUMBER,getter,setter);
+        super(name,PropertyType.POINT3,getter,setter);
     }
 }
 
@@ -155,8 +174,8 @@ class IntersectionNode extends TreeNodeWithChildren {
 
 
 class BoxNode extends TreeNode {
-    min: Point3;
-    max: Point3;
+    min: Point3 = new Point3(0,0,0);
+    max: Point3 = new Point3(1,1,1);
     constructor(name:string){
         super(name,"box");
         this.properties = [
@@ -200,10 +219,10 @@ class BoxNode extends TreeNode {
 
 
 class CylinderNode extends TreeNode {
-    point: Point3;
-    radius: number;
-    height: number;
-    zcenter: boolean;
+    point: Point3 = new Point3(0,0,0);
+    radius: number = 1;
+    height: number = 1;
+    zcenter: boolean = true;
     resolution: number = 36;
     constructor(name:string){
         super(name,"cylinder");
@@ -238,8 +257,8 @@ class CylinderNode extends TreeNode {
 
 
 class SphereNode extends TreeNode {
-    center: Point3;
-    radius: number;
+    center: Point3 = new Point3(0,0,0);
+    radius: number = 1;
     resolution: number = 36;
     constructor(name:string){
         super(name,"sphere");
@@ -270,15 +289,24 @@ class PythonNode extends TreeNode{
 
 export class TreeEditor{
 
-    parent: HTMLElement;
+    treeContainer: HTMLElement;
+    propertyContainer: HTMLElement;
 
-    constructor(container: HTMLElement){
-        this.parent=container;
+    constructor(treeContainer: HTMLElement, propertyContainer: HTMLElement){
+        this.treeContainer=treeContainer;
+        this.propertyContainer=propertyContainer;
 
-        let scroller = document.createElement("div");
-        scroller.style.overflow="scroll";
-        scroller.style.height="100%";
-        container.appendChild(scroller);
+        let treeScroller = document.createElement("div");
+        treeScroller.style.overflow="scroll";
+        treeScroller.style.height="100%";
+        this.treeContainer.appendChild(treeScroller);
+
+        let propertyScroller = document.createElement("div");
+        propertyScroller.style.overflow="scroll";
+        propertyScroller.style.height="100%";
+        this.propertyContainer.appendChild(propertyScroller);
+
+
 
         let r = new DifferenceNode("difference");
         let c1 = new BoxNode("pcbbase");
@@ -300,7 +328,7 @@ export class TreeEditor{
         g3.appendChild(gg3);
 
         let div = document.createElement("div");
-        scroller.appendChild(div);
+        treeScroller.appendChild(div);
 
         let types:any={};
         ["box","cylinder","difference","intersection","sphere","union"].forEach( (name:string) => {
@@ -309,7 +337,7 @@ export class TreeEditor{
         });
 
 
-        $(div).jstree({
+        let tree = $(div).jstree({
             core: {
                 data: [r],
                 animation: 100,       //default=200
@@ -399,6 +427,83 @@ export class TreeEditor{
             },
             types: types
         });
+        $(tree).on("select_node.jstree", (e: Event,data: any)=>{
+            let n: TreeNode = data.node.original
+            console.log("Selected",n);
+            while(propertyScroller.childNodes.length){
+                propertyScroller.removeChild(propertyScroller.firstChild);
+            }
+            n.properties.forEach( (p: AnyProperty) => {
+                let row = document.createElement("div");
+                row.classList.add("propertyrow");
+
+                let namenode = document.createElement("span");
+                namenode.style.display="inline-block";
+                namenode.classList.add("propertyname");
+                namenode.appendChild(document.createTextNode(p.name));
+                row.appendChild(namenode);
+
+                switch(p.type){
+                    case PropertyType.POINT3:
+                    {
+                        let p3:Point3 = (p as Point3Property).getValue();
+                        let current: number[] = [p3.x,p3.y,p3.z];
+                        console.log("current=",current);
+                        ["x","y","z"].forEach( (axis:string, idx: number) => {
+                            if( p.canSetValue() ){
+                                if( idx !== 0)
+                                row.appendChild(document.createTextNode(","));
+                                let inp = document.createElement("input");
+                                inp.size=4;
+                                inp.value = current[idx]+"";
+                                row.appendChild(inp);
+                            } else {
+                                console.error("FINISH");
+                            }
+                        });
+                        break;
+                    }
+                    case PropertyType.NUMBER:
+                    case PropertyType.POSITIVE_NUMBER:
+                    {
+                        if(p.canSetValue()){
+                            let inp = document.createElement("input");
+                            inp.size=4;
+                            row.appendChild(inp);
+                            p.addChangeListener( ()=>{
+                                let v = (p as NumberProperty).getValue();
+                                inp.value = v+"";
+                            });
+                        } else {
+                            let val = document.createElement("span");
+                            val.innerHTML = (p as NumberProperty).getValue()+"";
+                            row.appendChild(val);
+                            p.addChangeListener( ()=>{
+                                let v = (p as NumberProperty).getValue();
+                                val.innerText = v+"";
+                            });
+                        }
+                        break;  
+                    }
+                    case PropertyType.BOOLEAN:
+                    {
+                        if( p.canSetValue() ){
+                            let ch = document.createElement("input");
+                            ch.type="checkbox";
+                            row.appendChild(ch);
+                        } else {
+                            console.error("finish");
+                        }
+                        break;
+                    }
+                    default:
+                        console.error("What type is that?",p.name,p.type,
+                            PropertyType.NUMBER, PropertyType.POINT3);
+                }
+                propertyScroller.appendChild(row);
+            });
+        });
+        
     }
 }
 
