@@ -12,11 +12,6 @@ import { Dialog } from "./Dialog.js";
 import { TabbedPanel } from "./TabbedPanel.js";
 import { QuickReference } from "./QuickReference.js";
 import { ClipControls } from "./ClipControls.js";
-import { TabSide, TabbedPanel } from "TabbedPanel";
-import { HelpInfo } from "HelpInfo";
-import { ClipControls } from "ClipControls";
-import { setupMenubar } from "menus";
-import { TreeEditor } from "TreeEditor";
 import { createSplit } from "Grid";
 
 
@@ -60,7 +55,6 @@ export function setupInterface(){
         ErrorReporter.get().resize();   
         helpInfo.resize();
         clipper.resize();
-        edTabs.resize();
     };
 
     let tmp = createSplit(
@@ -137,13 +131,6 @@ export function setupInterface(){
         }
     });
 
-    let treetab = edTabs.addTab("Tree");
-
-    tmp = createSplit(treetab,SplitDirection.HORIZONTAL,
-        ["1fr","1fr"], SIZER_SIZE, true,
-        sizeCallback);
-    tmp.container.style.height="100%";
-    new TreeEditor(tmp.cells[0]);
     
     let div = document.createElement("div");
     div.innerText="FOO!";
