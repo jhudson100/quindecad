@@ -7,6 +7,7 @@ import { QuickReference } from "./QuickReference.js";
 import { ClipControls } from "./ClipControls.js";
 import { createSplit } from "./Grid.js";
 import { setupMenubar } from "./menus.js";
+import { View } from "./View.js";
 
 
 // @ts-ignore
