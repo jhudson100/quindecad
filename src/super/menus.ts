@@ -1,11 +1,11 @@
-import { Editor, simpleDemoCode } from "Editor";
-import { CheckMenuItem, Menu, Menubar } from "Menubar";
-import { CameraType, GridPlane, View } from "View";
-import { makeCheckbox, saveSTL, showAboutDialog, showHelp } from "utils";
-import { WorkerManager } from "WorkerManager";
-import { PythonManager } from "PythonManager";
-import { Spinner } from "Spinner";
-import { Dialog } from "Dialog";
+import { Editor, simpleDemoCode } from "./Editor.js";
+import { CheckMenuItem, Menu, Menubar } from "./Menubar.js";
+import { CameraType, GridPlane, View } from "./View.js";
+import { makeCheckbox, saveSTL, showAboutDialog, showHelp } from "./utils.js";
+import { WorkerManager } from "./WorkerManager.js";
+import { PythonManager } from "./PythonManager.js";
+import { Spinner } from "./Spinner.js";
+import { Dialog } from "./Dialog.js";
 
 
 export function setupMenubar(parent: HTMLElement)

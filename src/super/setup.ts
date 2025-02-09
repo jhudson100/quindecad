@@ -1,14 +1,17 @@
-import {ErrorReporter} from "ErrorReporter";
-import {View} from "View";
-import {Editor} from "Editor";
-import {PythonManager} from "PythonManager";
-import { WorkerManager } from "WorkerManager";
-import { TabSide, TabbedPanel } from "TabbedPanel";
-import { HelpInfo } from "HelpInfo";
-import { ClipControls } from "ClipControls";
-import { setupMenubar } from "menus";
-import { TreeEditor } from "TreeEditor";
-import { createSplit } from "Grid";
+import {ErrorReporter} from "./ErrorReporter.js";
+import {CameraType, GridPlane, View} from "./View.js";
+import {Editor, simpleDemoCode} from "./Editor.js";
+import {PythonManager} from "./PythonManager.js";
+import { WorkerManager } from "./WorkerManager.js";
+// @ts-ignore
+import Split from 'Split';
+import { makeCheckbox, saveSTL, showAboutDialog, showHelp } from "./utils.js";
+import { CheckMenuItem, Menu, Menubar } from "./Menubar.js";
+import { Spinner } from "./Spinner.js";
+import { Dialog } from "./Dialog.js";
+import { TabbedPanel } from "./TabbedPanel.js";
+import { QuickReference } from "./QuickReference.js";
+import { ClipControls } from "./ClipControls.js";
 
 
 // @ts-ignore
@@ -110,7 +113,7 @@ export function setupInterface(){
     let tabs = new TabbedPanel(infodiv,TabSide.TOP);
 
     ErrorReporter.get().initialize(tabs.addTab("Output"),tabs);
-    let helpInfo = new HelpInfo(tabs.addTab("Help"));
+    let helpInfo = new QuickReference(tabs.addTab("Help"));
     let clipper = new ClipControls(tabs.addTab("Clipping"));
 
    
@@ -126,5 +129,6 @@ export function setupInterface(){
     sizeCallback();
 
 }
+
 
   

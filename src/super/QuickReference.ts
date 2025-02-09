@@ -1,7 +1,10 @@
-import { FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
-import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation } from "utils";
+import { FuncSpec, getPreambleFunctionInfo } from "./pyshimdoc.js";
+import { getDetailedFunctionDocumentation, getFunctionSignatureDocumentation } from "./utils.js";
 
-export class HelpInfo{
+/**
+ * Class which manages an on-screen "quick-reference" guide for the user.
+ */
+export class QuickReference{
     parent:HTMLElement;
     seldiv: HTMLElement;
     contentdiv: HTMLElement;

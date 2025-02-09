@@ -1,7 +1,11 @@
-import {Editor} from "Editor";
-import { TabbedPanel } from "TabbedPanel";
-// import { preambleList } from "PythonBuiltins";
+import {Editor} from "./Editor.js";
+import { TabbedPanel } from "./TabbedPanel.js";
 
+
+/** 
+ * Class which handles reporting errors or displaying other
+ * output to the user.
+ */
 export class ErrorReporter{
     div: HTMLElement;
     parent: HTMLElement;
