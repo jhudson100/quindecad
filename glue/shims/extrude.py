@@ -1,7 +1,6 @@
 from shims.gluetypes import *
 
 
-# FIXME: Manifold can handle a CrossSection object here too...
 def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INTEGER=None,
             twist: NUMBER=None, scale: VEC2=None, zcenter: BOOLEAN=False,
             color: COLOR=None, name: STRING=None) -> MESH_HANDLE:

@@ -18,8 +18,6 @@ import makedocfile
 import makepython
 import makets
 
-#TODO: mirror, refine, refineToTolerance, slice, split
-
 
 shimfiles=[]
 

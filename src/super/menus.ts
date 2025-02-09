@@ -14,8 +14,6 @@ export function setupMenubar(parent: HTMLElement)
 
     // console.log(shortcuts);
 
-    //FIXME: Add key listener to window for keyboard shortcuts
-
     let platform : string = Editor.get().getPlatformForShortcuts();
     let isMac = (platform.toLowerCase().indexOf("mac") !== -1 );
     
@@ -162,7 +160,7 @@ export function setupMenubar(parent: HTMLElement)
     viewmenu.addItem("+Y view", ()=>{ View.get().lookDownAxis( 0, 1, 0); } );
     viewmenu.addItem("-Y view", ()=>{ View.get().lookDownAxis( 0,-1, 0); } );
 
-    //FIXME: These don't work well with OrbitControls.
+    //These don't work well with OrbitControls.
     // viewmenu.addItem("+Z view", ()=>{ View.get().lookDownAxis( 0, 0, 1); } );
     // viewmenu.addItem("-Z view", ()=>{ View.get().lookDownAxis( 0, 0,-1); } );
 

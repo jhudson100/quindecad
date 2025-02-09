@@ -126,15 +126,12 @@ export class CheckMenuItem extends MenuItem{
             this.labelSpan.insertBefore(this.checkboxSpan,this.labelSpan.firstChild);
     }
     private updateLabel(){
-        //FIXME: Should be put in main.css file.
         if( this.checked ){
             this.checkboxSpan.classList.add("selected");
             this.checkboxSpan.classList.remove("unselected");
-            // this.checkboxSpan.style.opacity="1";
         } else {
             this.checkboxSpan.classList.add("unselected");
             this.checkboxSpan.classList.remove("selected");
-            // this.checkboxSpan.style.opacity="0.15";
         }
     }
 

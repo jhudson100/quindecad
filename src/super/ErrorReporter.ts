@@ -94,7 +94,6 @@ export class ErrorReporter{
         a.classList.add("linkToCode");
         a.addEventListener("click", (ev: Event) => {
             Editor.get().moveCursorTo( errline, firstcol );
-            //FIXME: Should we select entire range?
             Editor.get().scrollTo(errline);
             Editor.get().takeFocus();
             ev.preventDefault();    //otherwise, the focus will be stolen from the editor

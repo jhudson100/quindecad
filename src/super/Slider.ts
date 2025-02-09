@@ -31,8 +31,6 @@ export class Slider{
         this.inp.value=""+initial;
         this.inp.addEventListener("change", ()=>{
 
-            //FIXME: This will accept things like 0.7f3
-            //Need to check for that.
             let v = parseFloat(this.inp.value);
             if( isNaN(v) || v < this.min || v > this.max ){
                 this.inp.classList.add("invalidValue");
@@ -76,10 +74,6 @@ export class Slider{
         let decimalPoint: string = (1.25).toLocaleString().substring(1,2);
 
         //chop off trailing zeros if we have a decimal point
-        //FIXME: Internationalize: What if 
-        //FIXME: What about exponential notation? We
-        //use toFixed above, but that might be a problem
-        //for large numbers. Need to think about this.
         if( s.indexOf(decimalPoint) !== 0 && s.indexOf("E") === -1 && s.indexOf("e") === -1 ){
             while( s.length > 0 && s[s.length-1] == '0' ){
                 s=s.substring(0,s.length-1);

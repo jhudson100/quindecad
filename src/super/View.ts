@@ -1,7 +1,3 @@
-//FIXME: Allow user to click edge and then show statistics (length, endpoints) of that edge
-//FIXME: Add wireframe display option: solid, solid+wireframe, wireframe only
-//FIXME: Use +,- to change rotateSpeed and panSpeed on orbitcontrols. Or put slider on screen
-
 
 
 //for testing
@@ -335,7 +331,6 @@ export class View{
             // this.axes.add(axis);
         }
 
-        //FIXME: Make these controls configurable
         //@ts-ignore
         this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
         this.perspectiveControls.listenToKeyEvents( window );
@@ -344,7 +339,6 @@ export class View{
         // this.perspectiveControls = new TrackballControls(this.perspectiveCamera,this.renderer.domElement);
         // this.perspectiveControls.staticMoving=true;
 
-        //FIXME: Make this configurable
         //this.perspectiveControls.rotateSpeed=2.0;
         this.perspectiveControls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
@@ -360,7 +354,6 @@ export class View{
         //this.orthoControls = new TrackballControls(this.orthoCamera,this.renderer.domElement);
         //this.orthoControls.staticMoving=true;
         
-        //FIXME: Make this configurable
         //this.orthoControls.rotateSpeed=2.0;
         //this.orthoControls.panSpeed=10.0;
         this.orthoControls.mouseButtons = {

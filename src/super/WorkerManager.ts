@@ -151,8 +151,6 @@ export class WorkerManager{
                     resolveFunc(true);
             });
             
-            //FIXME: Add error detection if worker doesn't start?
-
             if(verbose)
                 console.log("Worker new");
 
