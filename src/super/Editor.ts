@@ -19,7 +19,7 @@ export const simpleDemoCode=`# example code
 # the "Run" button above.
 # Use the Help menu to get a more full-featured demo.
  
-c = cube(xsize=3,ysize=2,zsize=1,centered=True,color=(255,255,0))
+c = cube(xsize=3,ysize=2,zsize=1,centered=True,color="yellow")
 s = sphere(x=0, y=0, z=0, radius=1.5)
 d = difference([c,s])
 draw(d)

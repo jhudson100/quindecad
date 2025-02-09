@@ -28,11 +28,12 @@ def cube(xsize: POSITIVE_NUMBER,
 
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     let c = manifold.Manifold.cube(
         [xsize, ysize, zsize],
         centered
     );
     let c2 = c.translate([x,y,z]);
     c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color_,name) );
 """

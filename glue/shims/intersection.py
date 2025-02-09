@@ -11,9 +11,12 @@ def intersection(objects: LIST_OF_MESH_HANDLE, color: COLOR=None, name: STRING=N
     pass
 
 TS="""
-    if( objects.length === 1 )
-        return objects[0];
+    if( objects.length === 1 ){
+        throw new Error("Cannot take intersection of only one object");
+    }
 
+    let color_ = convertColorToQuadruple(color);
+    
     let mw1 = handleToWrapper(objects[0]);
     let mw2 = handleToWrapper(objects[1]);
     let ob = manifold.Manifold.intersection(
@@ -27,5 +30,5 @@ TS="""
         ob.delete();
         ob=ob2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color,name ) );
+    return new MeshHandle( new ManifoldMeshWrapper(ob, color_ ?? mw1.color,name ) );
 """

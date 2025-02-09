@@ -13,11 +13,12 @@ def revolve(polygon: POLYGON2D, angle: NUMBER=None, color: COLOR=None,
     pass
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     let o1 = manifold.Manifold.revolve(
             polygon,
             resolution ?? 36,
             angle ?? 360
     );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color,name ) );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color_, name ) );
 
 """

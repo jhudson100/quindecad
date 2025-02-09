@@ -10,7 +10,9 @@ let manifold: ManifoldToplevel;
 export function setManifold(m: ManifoldToplevel){
     manifold=m;
 }
-type PyColor = [number,number,number,number?];
+type ColorTripleQuadrupleOrString = [number,number,number,number?]|string;
+type ColorQuadruple = [number,number,number,number];
+
 type TransformFunction = (m: Manifold) => Manifold;
 
 function transformAroundCentroid(centroid: Vec3|undefined, obj: ManifoldMeshWrapper, callback: TransformFunction)
@@ -74,6 +76,44 @@ function computeRotationMatrix(x:number,y:number,z:number,angle:number){
     return M;
 }
 
+type ColorDict = { [name:string]:ColorQuadruple };
+const namedColors: ColorDict = {
+    "red":      [255,   0,      0,      255],
+    "orange":   [255,   128,    0,      255],
+    "yellow":   [255,   255,    0,      255],
+    "green":    [0,     128,    0,      255],
+    "blue":     [0,     0,      255,    255],
+    "purple":   [128,   0,      255,    255],
+    "white":    [255,   255,    255,    255],
+    "black":    [0,     0,      0,      255],
+    "grey":     [128,   128,    128,    255],
+    "gray":     [128,   128,    128,    255]
+};
+
+//ref: https://stackoverflow.com/questions/26414770/getting-the-rgb-values-for-a-css-html-named-color-in-javascript
+const helperCanvas = new OffscreenCanvas(1,1);
+const helperContext:OffscreenCanvasRenderingContext2D = helperCanvas.getContext("2d",{willReadFrequently: true}) ;
+
+function convertColorToQuadruple(color: ColorTripleQuadrupleOrString): ColorQuadruple|undefined
+{
+    if( color === undefined )
+        return undefined;
+    if( typeof(color) === "string"){
+        let cs = color as string;
+        if( namedColors[cs] ){
+            return namedColors[cs];
+        }
+        helperContext.fillStyle = cs;
+        helperContext.fillRect(0,0,1,1);
+        let idata = helperContext.getImageData(0,0,1,1);
+        return [ idata.data[0], idata.data[1], idata.data[2], idata.data[3] ];
+    }
+    let c = color as [number,number,number,number?];
+    let tmp = [c[0],c[1],c[2],255];
+    if( c.length > 3 )
+        tmp[3] = c[3] as number;
+    return tmp as ColorQuadruple;
+}
 type boundingbox_t = ( objects : MeshHandle|MeshHandle[] ) => Vec3[] ;
 declare global {
     interface WorkerGlobalScope { impl_boundingbox : boundingbox_t }
@@ -108,13 +148,14 @@ self.impl_boundingbox = ( objects : MeshHandle|MeshHandle[] ) : Vec3[] => {
     }
 
 }
-type box_t = ( min : Vec3,max : Vec3,color : PyColor,name : string ) => MeshHandle ;
+type box_t = ( min : Vec3,max : Vec3,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_box : box_t }
 };
 
-self.impl_box = ( min : Vec3,max : Vec3,color : PyColor,name : string ) : MeshHandle => {
+self.impl_box = ( min : Vec3,max : Vec3,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
+    let color_ = convertColorToQuadruple(color);
     let xsize = max[0]-min[0];
     let ysize = max[1]-min[1];
     let zsize = max[2]-min[2];
@@ -131,7 +172,7 @@ self.impl_box = ( min : Vec3,max : Vec3,color : PyColor,name : string ) : MeshHa
     );
     let c2 = c.translate(min);
     c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color_,name) );
 
 }
 type centroid_t = ( objects : MeshHandle|MeshHandle[] ) => Vec3 ;
@@ -175,35 +216,37 @@ self.impl_centroid = ( objects : MeshHandle|MeshHandle[] ) : Vec3 => {
 
 
 }
-type cube_t = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : PyColor,name : string ) => MeshHandle ;
+type cube_t = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_cube : cube_t }
 };
 
-self.impl_cube = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : PyColor,name : string ) : MeshHandle => {
+self.impl_cube = ( xsize : number,ysize : number,zsize : number,x : number,y : number,z : number,centered : boolean,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
+    let color_ = convertColorToQuadruple(color);
     let c = manifold.Manifold.cube(
         [xsize, ysize, zsize],
         centered
     );
     let c2 = c.translate([x,y,z]);
     c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color_,name) );
 
 }
-type cut_t = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor,name : string ) => MeshHandle|MeshHandle[] ;
+type cut_t = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : number,keepPositive : boolean,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle|MeshHandle[] ;
 declare global {
     interface WorkerGlobalScope { impl_cut : cut_t }
 };
 
-self.impl_cut = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : number,keepPositive : boolean,color : PyColor,name : string ) : MeshHandle|MeshHandle[] => {
+self.impl_cut = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : number,keepPositive : boolean,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle|MeshHandle[] => {
 
+    let color_ = convertColorToQuadruple(color);
     if( !objects.hasOwnProperty("length") ){
         let mw = handleToWrapper(objects as MeshHandle);
         let results = mw.mesh.splitByPlane( planeNormal, planeD);
         let ki = ( keepPositive ? 0 : 1 );
         results[1-ki].delete();
-        return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color,name ) );
+        return new MeshHandle( new ManifoldMeshWrapper( results[ki], color_ ?? mw.color,name ) );
     } else {
         let ki = ( keepPositive ? 0 : 1 );
         let L = objects as MeshHandle[];
@@ -212,38 +255,40 @@ self.impl_cut = ( objects : MeshHandle|MeshHandle[],planeNormal : Vec3,planeD : 
             let mw = handleToWrapper(L[i]);
             let tmp = mw.mesh.splitByPlane( planeNormal, planeD);
             tmp[1-ki].delete();
-            result.push( new MeshHandle( new ManifoldMeshWrapper( tmp[ki], color ?? mw.color, name ) ) );
+            result.push( new MeshHandle( new ManifoldMeshWrapper( tmp[ki], color_ ?? mw.color, name ) ) );
         }
         return result;
     }
 
 }
-type cylinder_t = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number,name : string ) => MeshHandle ;
+type cylinder_t = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_cylinder : cylinder_t }
 };
 
-self.impl_cylinder = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : PyColor,resolution : number,name : string ) : MeshHandle => {
+self.impl_cylinder = ( x : number,y : number,z : number,radius : number,height : number,zcenter : boolean,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) : MeshHandle => {
 
+    let color_ = convertColorToQuadruple(color);
     let c = manifold.Manifold.cylinder(height,
         radius, radius, resolution,
         zcenter
     );
     let c2 = c.translate([x, y, z]);
     c.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color_,name) );
 
 }
-type difference_t = ( objects : MeshHandle[],color : PyColor,name : string ) => MeshHandle ;
+type difference_t = ( objects : MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_difference : difference_t }
 };
 
-self.impl_difference = ( objects : MeshHandle[],color : PyColor,name : string ) : MeshHandle => {
+self.impl_difference = ( objects : MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
-    if( objects.length === 1 )
-        return objects[0];
-
+    if( objects.length === 1 ){
+        throw new Error("Cannot take difference of only one object");
+    }
+    let color_ = convertColorToQuadruple(color);    
     let mw1 = handleToWrapper(objects[0]);
     let mw2 = handleToWrapper(objects[1]);
     let ob = manifold.Manifold.difference( mw1.mesh, mw2.mesh );
@@ -253,17 +298,17 @@ self.impl_difference = ( objects : MeshHandle[],color : PyColor,name : string ) 
         ob.delete();
         ob=ob2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(ob,color ?? mw1.color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(ob,color_ ?? mw1.color,name) );
 
 }
-type extrude_t = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : PyColor,name : string ) => MeshHandle ;
+type extrude_t = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_extrude : extrude_t }
 };
 
-self.impl_extrude = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : PyColor,name : string ) : MeshHandle => {
+self.impl_extrude = ( polygon : Vec2[],height : number,divisions : number,twist : number,scale : Vec2,zcenter : boolean,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
-
+    let color_ = convertColorToQuadruple(color);
     let poly: Vec2[] = [];
     for(let i=0;i<polygon.length;++i){
         poly.push( [polygon[i][0], polygon[i][1]] );
@@ -287,7 +332,7 @@ self.impl_extrude = ( polygon : Vec2[],height : number,divisions : number,twist 
             scale,
             zcenter
     );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color ,name) );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color_ ,name) );
 
 }
 type free_t = ( obj : MeshHandle ) => void ;
@@ -302,20 +347,21 @@ self.impl_free = ( obj : MeshHandle ) : void => {
     mw.freed=true;
 
 }
-type frustum_t = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : PyColor,resolution : number,name : string ) => MeshHandle ;
+type frustum_t = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_frustum : frustum_t }
 };
 
-self.impl_frustum = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : PyColor,resolution : number,name : string ) : MeshHandle => {
+self.impl_frustum = ( radius1 : number,radius2 : number,height : number,x : number,y : number,z : number,zcenter : boolean,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) : MeshHandle => {
 
+    let color_ = convertColorToQuadruple(color);
     let c = manifold.Manifold.cylinder(height,
         radius1, radius2, resolution,
         zcenter
     );
     let c2 = c.translate([x, y, z]);
     c.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color_,name) );
 
 }
 type genus_t = ( obj : MeshHandle ) => number ;
@@ -329,24 +375,24 @@ self.impl_genus = ( obj : MeshHandle ) : number => {
     return mh.mesh.genus();
 
 }
-type hull_t = ( objects : MeshHandle|MeshHandle[],color : PyColor,name : string ) => MeshHandle ;
+type hull_t = ( objects : MeshHandle|MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_hull : hull_t }
 };
 
-self.impl_hull = ( objects : MeshHandle|MeshHandle[],color : PyColor,name : string ) : MeshHandle => {
+self.impl_hull = ( objects : MeshHandle|MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
-
+    let color_ = convertColorToQuadruple(color);
     if(!objects.hasOwnProperty("length") ){
         let mw = handleToWrapper( objects as MeshHandle );
         let o2 = mw.mesh.hull();
-        return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color, name ) );
+        return new MeshHandle( new ManifoldMeshWrapper( o2, color_ ?? mw.color, name ) );
     } else {
         let L = objects as MeshHandle[];
         if( L.length === 1 ){
             let mw = handleToWrapper( L[0] );
             let o2 = mw.mesh.hull();
-            return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color, name ) );
+            return new MeshHandle( new ManifoldMeshWrapper( o2, color_ ?? mw.color, name ) );
         } else {
             let mw = handleToWrapper(L[0]);
             let ob = mw.mesh;
@@ -364,21 +410,24 @@ self.impl_hull = ( objects : MeshHandle|MeshHandle[],color : PyColor,name : stri
             //so ob represents the result of a union operation,
             //and we must delete it.
             ob.delete();
-            return new MeshHandle( new ManifoldMeshWrapper( ob3, color ?? mw.color,name ));
+            return new MeshHandle( new ManifoldMeshWrapper( ob3, color_ ?? mw.color,name ));
         }
     }
 
 }
-type intersection_t = ( objects : MeshHandle[],color : PyColor,name : string ) => MeshHandle ;
+type intersection_t = ( objects : MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_intersection : intersection_t }
 };
 
-self.impl_intersection = ( objects : MeshHandle[],color : PyColor,name : string ) : MeshHandle => {
+self.impl_intersection = ( objects : MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
-    if( objects.length === 1 )
-        return objects[0];
+    if( objects.length === 1 ){
+        throw new Error("Cannot take intersection of only one object");
+    }
 
+    let color_ = convertColorToQuadruple(color);
+    
     let mw1 = handleToWrapper(objects[0]);
     let mw2 = handleToWrapper(objects[1]);
     let ob = manifold.Manifold.intersection(
@@ -392,34 +441,35 @@ self.impl_intersection = ( objects : MeshHandle[],color : PyColor,name : string 
         ob.delete();
         ob=ob2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color,name ) );
+    return new MeshHandle( new ManifoldMeshWrapper(ob, color_ ?? mw1.color,name ) );
 
 }
-type revolve_t = ( polygon : Vec2[],angle : number,color : PyColor,resolution : number,name : string ) => MeshHandle ;
+type revolve_t = ( polygon : Vec2[],angle : number,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_revolve : revolve_t }
 };
 
-self.impl_revolve = ( polygon : Vec2[],angle : number,color : PyColor,resolution : number,name : string ) : MeshHandle => {
+self.impl_revolve = ( polygon : Vec2[],angle : number,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) : MeshHandle => {
 
+    let color_ = convertColorToQuadruple(color);
     let o1 = manifold.Manifold.revolve(
             polygon,
             resolution ?? 36,
             angle ?? 360
     );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color,name ) );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color_, name ) );
 
 
 }
-type rotate_t = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : number,centroid : Vec3,color : PyColor,name : string ) => MeshHandle|MeshHandle[] ;
+type rotate_t = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : number,centroid : Vec3,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle|MeshHandle[] ;
 declare global {
     interface WorkerGlobalScope { impl_rotate : rotate_t }
 };
 
-self.impl_rotate = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : number,centroid : Vec3,color : PyColor,name : string ) : MeshHandle|MeshHandle[] => {
+self.impl_rotate = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : number,centroid : Vec3,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle|MeshHandle[] => {
 
 
-
+    let color_ = convertColorToQuadruple(color);
     let x = axis[0];
     let y = axis[1];
     let z = axis[2];
@@ -456,7 +506,7 @@ self.impl_rotate = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : numbe
                 transformAroundCentroid( centroid, mw,
                     (m: Manifold) => { return m.rotate(rotV); }
                 ),
-                color ?? mw.color,
+                color_ ?? mw.color,
                 name
             );
         } else {
@@ -464,7 +514,7 @@ self.impl_rotate = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : numbe
                 transformAroundCentroid( centroid, mw,
                     (m: Manifold) => { return m.transform(M); }
                 ),
-                color ?? mw.color,
+                color_ ?? mw.color,
                 name
             );
         }
@@ -487,13 +537,14 @@ self.impl_rotate = ( objects : MeshHandle|MeshHandle[],axis : Vec3,angle : numbe
     }
 
 }
-type scale_t = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : PyColor,name : string ) => MeshHandle|MeshHandle[] ;
+type scale_t = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle|MeshHandle[] ;
 declare global {
     interface WorkerGlobalScope { impl_scale : scale_t }
 };
 
-self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : PyColor,name : string ) : MeshHandle|MeshHandle[] => {
+self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz : number,centroid : Vec3,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle|MeshHandle[] => {
 
+    let color_ = convertColorToQuadruple(color);
     if( !objects.hasOwnProperty("length") ){
         let object = objects as MeshHandle;
         let mw = handleToWrapper(object);
@@ -501,7 +552,7 @@ self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz
             transformAroundCentroid(centroid,mw,
                 (m: Manifold) => { return m.scale([sx,sy,sz]); }
             ),
-            color ?? mw.color,
+            color_ ?? mw.color,
             name
         );
         return new MeshHandle(mw2);
@@ -514,7 +565,7 @@ self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz
                 transformAroundCentroid( centroid, mw,
                     (m: Manifold) => { return m.scale([sx,sy,sz]); }
                 ),
-                color ?? mw.color,
+                color_ ?? mw.color,
                 name
             );
             output.push( new MeshHandle(mw2) );
@@ -523,33 +574,38 @@ self.impl_scale = ( objects : MeshHandle|MeshHandle[],sx : number,sy : number,sz
     }
 
 }
-type sphere_t = ( radius : number,x : number,y : number,z : number,color : PyColor,resolution : number,name : string ) => MeshHandle ;
+type sphere_t = ( radius : number,x : number,y : number,z : number,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_sphere : sphere_t }
 };
 
-self.impl_sphere = ( radius : number,x : number,y : number,z : number,color : PyColor,resolution : number,name : string ) : MeshHandle => {
+self.impl_sphere = ( radius : number,x : number,y : number,z : number,color : ColorTripleQuadrupleOrString,resolution : number,name : string ) : MeshHandle => {
 
+    let color_ = convertColorToQuadruple(color);
     let s = manifold.Manifold.sphere(radius, resolution);
-    let s2 = s.translate([x, y,z]);
-    s.delete();
-    return new MeshHandle( new ManifoldMeshWrapper(s2,color,name) );
+    if(x !== 0.0 || y !== 0.0 || z !== 0.0 ){
+        let s2 = s.translate([x, y, z]);
+        s.delete();
+        s=s2;
+    }
+    return new MeshHandle( new ManifoldMeshWrapper(s,color_,name) );
 
 }
-type translate_t = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : PyColor,name : string ) => MeshHandle|MeshHandle[] ;
+type translate_t = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle|MeshHandle[] ;
 declare global {
     interface WorkerGlobalScope { impl_translate : translate_t }
 };
 
-self.impl_translate = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : PyColor,name : string ) : MeshHandle|MeshHandle[] => {
+self.impl_translate = ( objects : MeshHandle|MeshHandle[],tx : number,ty : number,tz : number,color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle|MeshHandle[] => {
 
+    let color_ = convertColorToQuadruple(color);
     if( !objects.hasOwnProperty("length") ){
         //it's a single object
         let mw = handleToWrapper(objects as MeshHandle);
         return new MeshHandle(
             new ManifoldMeshWrapper(
                 mw.mesh.translate(tx,ty,tz),
-                color ?? mw.color,name
+                color_ ?? mw.color,name
             )
         );
     } else {
@@ -562,7 +618,7 @@ self.impl_translate = ( objects : MeshHandle|MeshHandle[],tx : number,ty : numbe
             output.push(
                 new MeshHandle(
                     new ManifoldMeshWrapper(
-                        ob, color ?? mw.color,name
+                        ob, color_ ?? mw.color,name
                     )
                 )
             );
@@ -571,15 +627,17 @@ self.impl_translate = ( objects : MeshHandle|MeshHandle[],tx : number,ty : numbe
     }
 
 }
-type union_t = ( objects : MeshHandle[],color : PyColor,name : string ) => MeshHandle ;
+type union_t = ( objects : MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) => MeshHandle ;
 declare global {
     interface WorkerGlobalScope { impl_union : union_t }
 };
 
-self.impl_union = ( objects : MeshHandle[],color : PyColor,name : string ) : MeshHandle => {
+self.impl_union = ( objects : MeshHandle[],color : ColorTripleQuadrupleOrString,name : string ) : MeshHandle => {
 
-    if( objects.length === 1 )
-        return objects[0];
+    let color_ = convertColorToQuadruple(color);
+    if( objects.length === 1 ){
+        throw new Error("Cannot take union of one object");
+    }
     let mw1 = handleToWrapper(objects[0]);
     let mw2 = handleToWrapper(objects[1]);
     let ob = manifold.Manifold.union(
@@ -593,6 +651,6 @@ self.impl_union = ( objects : MeshHandle[],color : PyColor,name : string ) : Mes
         ob.delete();
         ob=ob2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(ob, color ?? mw1.color,name ) );
+    return new MeshHandle( new ManifoldMeshWrapper(ob, color_ ?? mw1.color,name ) );
 
 }

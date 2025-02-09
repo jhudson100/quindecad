@@ -16,13 +16,14 @@ def translate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE,
     pass
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     if( !objects.hasOwnProperty("length") ){
         //it's a single object
         let mw = handleToWrapper(objects as MeshHandle);
         return new MeshHandle(
             new ManifoldMeshWrapper(
                 mw.mesh.translate(tx,ty,tz),
-                color ?? mw.color,name
+                color_ ?? mw.color,name
             )
         );
     } else {
@@ -35,7 +36,7 @@ TS="""
             output.push(
                 new MeshHandle(
                     new ManifoldMeshWrapper(
-                        ob, color ?? mw.color,name
+                        ob, color_ ?? mw.color,name
                     )
                 )
             );

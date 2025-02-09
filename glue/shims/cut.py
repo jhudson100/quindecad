@@ -16,12 +16,13 @@ def cut(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, planeNormal: NONZERO_VEC3, pla
 
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     if( !objects.hasOwnProperty("length") ){
         let mw = handleToWrapper(objects as MeshHandle);
         let results = mw.mesh.splitByPlane( planeNormal, planeD);
         let ki = ( keepPositive ? 0 : 1 );
         results[1-ki].delete();
-        return new MeshHandle( new ManifoldMeshWrapper( results[ki], color ?? mw.color,name ) );
+        return new MeshHandle( new ManifoldMeshWrapper( results[ki], color_ ?? mw.color,name ) );
     } else {
         let ki = ( keepPositive ? 0 : 1 );
         let L = objects as MeshHandle[];
@@ -30,7 +31,7 @@ TS="""
             let mw = handleToWrapper(L[i]);
             let tmp = mw.mesh.splitByPlane( planeNormal, planeD);
             tmp[1-ki].delete();
-            result.push( new MeshHandle( new ManifoldMeshWrapper( tmp[ki], color ?? mw.color, name ) ) );
+            result.push( new MeshHandle( new ManifoldMeshWrapper( tmp[ki], color_ ?? mw.color, name ) ) );
         }
         return result;
     }

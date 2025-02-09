@@ -16,6 +16,7 @@ def scale(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, sx:NUMBER, sy:NUMBER, sz: NU
     pass
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     if( !objects.hasOwnProperty("length") ){
         let object = objects as MeshHandle;
         let mw = handleToWrapper(object);
@@ -23,7 +24,7 @@ TS="""
             transformAroundCentroid(centroid,mw,
                 (m: Manifold) => { return m.scale([sx,sy,sz]); }
             ),
-            color ?? mw.color,
+            color_ ?? mw.color,
             name
         );
         return new MeshHandle(mw2);
@@ -36,7 +37,7 @@ TS="""
                 transformAroundCentroid( centroid, mw,
                     (m: Manifold) => { return m.scale([sx,sy,sz]); }
                 ),
-                color ?? mw.color,
+                color_ ?? mw.color,
                 name
             );
             output.push( new MeshHandle(mw2) );

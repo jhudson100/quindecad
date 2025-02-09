@@ -18,7 +18,7 @@ def extrude(polygon: POLYGON2D, height: POSITIVE_NUMBER, divisions: POSITIVE_INT
     pass
 
 TS="""
-
+    let color_ = convertColorToQuadruple(color);
     let poly: Vec2[] = [];
     for(let i=0;i<polygon.length;++i){
         poly.push( [polygon[i][0], polygon[i][1]] );
@@ -42,5 +42,5 @@ TS="""
             scale,
             zcenter
     );
-    return new MeshHandle( new ManifoldMeshWrapper( o1, color ,name) );
+    return new MeshHandle( new ManifoldMeshWrapper( o1, color_ ,name) );
 """

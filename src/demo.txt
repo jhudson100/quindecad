@@ -20,18 +20,18 @@
 draw( cube( x=-20, y=-20, z=0,
             xsize=5, ysize=3, zsize=2,
             centered=True,
-            color=(255,0,0) ) )
+            color="red" ) )
 
 #a box is like a cube, but its location is given
 #by min and max coordinates. Instead of
 #immediately passing the object to draw(), we can
 #put it in a variable so we can work with it later.
 bx = box( min=(-12,-22,-5), max=( -8, -18, 5 ),
-         color=(255,128,0) )
+         color="orange" )
 
 #a basic cylinder.
 cyl = cylinder( x=0, y=-20, z=0, radius=4,
-        height=5, zcenter=True, color=(255,255,0)
+        height=5, zcenter=True, color="yellow"
 )
 
 #we now draw two objects at once

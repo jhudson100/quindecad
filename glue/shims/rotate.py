@@ -17,7 +17,7 @@ def rotate(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, axis: NONZERO_VEC3, angle: 
 
 TS="""
 
-
+    let color_ = convertColorToQuadruple(color);
     let x = axis[0];
     let y = axis[1];
     let z = axis[2];
@@ -54,7 +54,7 @@ TS="""
                 transformAroundCentroid( centroid, mw,
                     (m: Manifold) => { return m.rotate(rotV); }
                 ),
-                color ?? mw.color,
+                color_ ?? mw.color,
                 name
             );
         } else {
@@ -62,7 +62,7 @@ TS="""
                 transformAroundCentroid( centroid, mw,
                     (m: Manifold) => { return m.transform(M); }
                 ),
-                color ?? mw.color,
+                color_ ?? mw.color,
                 name
             );
         }

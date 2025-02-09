@@ -13,6 +13,7 @@ def box( min: VEC3, max: VEC3, color: COLOR=None, name: STRING=None) -> MESH_HAN
 
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     let xsize = max[0]-min[0];
     let ysize = max[1]-min[1];
     let zsize = max[2]-min[2];
@@ -29,5 +30,5 @@ TS="""
     );
     let c2 = c.translate(min);
     c.delete()
-    return new MeshHandle( new ManifoldMeshWrapper(c2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(c2,color_,name) );
 """

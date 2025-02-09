@@ -25,6 +25,8 @@ def assertIsBoolean(x):
 
 def assertIsColor(x):
     """ """
+    if assertIsString(x):
+        return True
     if not assertIsList(x):
         return False
     if len(x) != 3 and len(x) != 4:

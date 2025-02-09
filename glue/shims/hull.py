@@ -12,17 +12,17 @@ def hull(objects: MESH_HANDLE|LIST_OF_MESH_HANDLE, color: COLOR=None, name: STRI
     pass
 
 TS="""
-
+    let color_ = convertColorToQuadruple(color);
     if(!objects.hasOwnProperty("length") ){
         let mw = handleToWrapper( objects as MeshHandle );
         let o2 = mw.mesh.hull();
-        return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color, name ) );
+        return new MeshHandle( new ManifoldMeshWrapper( o2, color_ ?? mw.color, name ) );
     } else {
         let L = objects as MeshHandle[];
         if( L.length === 1 ){
             let mw = handleToWrapper( L[0] );
             let o2 = mw.mesh.hull();
-            return new MeshHandle( new ManifoldMeshWrapper( o2, color ?? mw.color, name ) );
+            return new MeshHandle( new ManifoldMeshWrapper( o2, color_ ?? mw.color, name ) );
         } else {
             let mw = handleToWrapper(L[0]);
             let ob = mw.mesh;
@@ -40,7 +40,7 @@ TS="""
             //so ob represents the result of a union operation,
             //and we must delete it.
             ob.delete();
-            return new MeshHandle( new ManifoldMeshWrapper( ob3, color ?? mw.color,name ));
+            return new MeshHandle( new ManifoldMeshWrapper( ob3, color_ ?? mw.color,name ));
         }
     }
 """

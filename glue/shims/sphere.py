@@ -21,11 +21,12 @@ def sphere( radius: POSITIVE_NUMBER,
     pass
 
 TS="""
+    let color_ = convertColorToQuadruple(color);
     let s = manifold.Manifold.sphere(radius, resolution);
     if(x !== 0.0 || y !== 0.0 || z !== 0.0 ){
         let s2 = s.translate([x, y, z]);
         s.delete();
         s=s2;
     }
-    return new MeshHandle( new ManifoldMeshWrapper(s2,color,name) );
+    return new MeshHandle( new ManifoldMeshWrapper(s,color_,name) );
 """

@@ -82,7 +82,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object, or None for default color.",
                     "defaultValue": "None"
@@ -212,7 +212,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object, or None for default color.",
                     "defaultValue": "None"
@@ -289,7 +289,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
                     "defaultValue": "None"
@@ -386,7 +386,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object, or None for default color.",
                     "defaultValue": "None"
@@ -439,7 +439,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
                     "defaultValue": "None"
@@ -558,7 +558,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use default color",
                     "defaultValue": "None"
@@ -686,7 +686,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object, or None for default color.",
                     "defaultValue": "None"
@@ -761,7 +761,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
                     "defaultValue": "None"
@@ -803,7 +803,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
                     "defaultValue": "None"
@@ -903,7 +903,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use default color",
                     "defaultValue": "None"
@@ -991,7 +991,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the resulting objects; if None, use each individual object's color.",
                     "defaultValue": "None"
@@ -1079,7 +1079,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the resulting objects; if None, use each individual object's color.",
                     "defaultValue": "None"
@@ -1154,7 +1154,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object, or None for default color.",
                     "defaultValue": "None"
@@ -1242,7 +1242,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the resulting objects; if None, use each individual object's color.",
                     "defaultValue": "None"
@@ -1284,7 +1284,7 @@ preambleFunctions = new Map<string,FuncSpec>([
                         "color"
                     ],
                     "argtypesVerbose": [
-                        "a color (a list of three or four values 0...255 giving red, green, blue, and (optionally) opacity)"
+                        "a color"
                     ],
                     "doc": "Color for the object; if None, use the color of the first object in the list",
                     "defaultValue": "None"

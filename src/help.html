@@ -78,7 +78,15 @@ Many modules from the standard Python library are available and
 can be imported with "import" (ex: "import math").
 <br>
 Some additional functions are available. They are documented below.
- 
+<br>
+Colors can be specified in a number of ways:
+<ul>
+    <li>As a tuple of three integers in the range 0...255. These are interpreted as red, green, and blue values</li>
+    <li>As a quadruple of four integers in the range 0...255. The fourth value is the transparency: 0=completely transparent; 255=completely opaque</li>
+    <li>As a named color string. The names "red", "orange", "yellow", "green", "blue", "purple", 
+        "white", "black", and "grey"/"gray" are available in all browsers. Other colors (the CSS/SVG named colors)
+        are available if your browser recognizes them.</li>
+</ul> 
 
 <div class='functions'>
 <!--FUNCTIONS-->
