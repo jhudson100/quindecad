@@ -4,14 +4,12 @@ import {Editor, simpleDemoCode} from "./Editor.js";
 import {PythonManager} from "./PythonManager.js";
 import { WorkerManager } from "./WorkerManager.js";
 // @ts-ignore
-import Split from 'Split';
-import { makeCheckbox, saveSTL, showAboutDialog, showHelp } from "./utils.js";
-import { CheckMenuItem, Menu, Menubar } from "./Menubar.js";
-import { Spinner } from "./Spinner.js";
-import { Dialog } from "./Dialog.js";
-import { TabbedPanel } from "./TabbedPanel.js";
+import { TabSide, TabbedPanel } from "./TabbedPanel.js";
 import { QuickReference } from "./QuickReference.js";
 import { ClipControls } from "./ClipControls.js";
+import { createSplit } from "./Grid.js";
+import { TreeEditor } from "./TreeEditor.js";
+import { setupMenubar } from "./menus.js";
 
 
 // @ts-ignore
