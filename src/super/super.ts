@@ -1,7 +1,6 @@
-import {setupInterface} from "setup";
-import {WorkerManager} from "WorkerManager";
-import {PythonManager} from "PythonManager";
-import { initialize as PythonBuiltinsInitialize } from "PythonBuiltins";
+import {setupInterface} from "./setup.js";
+import {WorkerManager} from "./WorkerManager.js";
+import { initialize as PythonBuiltinsInitialize } from "./PythonBuiltins.js";
 
 async function main(){
     // console.log("In super main");
