@@ -12,7 +12,7 @@ import { Dialog } from "./Dialog.js";
 import { TabbedPanel } from "./TabbedPanel.js";
 import { QuickReference } from "./QuickReference.js";
 import { ClipControls } from "./ClipControls.js";
-import { createSplit } from "Grid";
+import { createSplit } from "./Grid.js";
 
 
 // @ts-ignore
