@@ -31,9 +31,9 @@ import {LineSegmentsGeometry} from "LineSegmentsGeometry";
 // @ts-ignore
 import {LineMaterial} from "LineMaterial";
 
-import { ErrorReporter } from "ErrorReporter";
-import { Editor } from "Editor";
-import { Box3, Camera, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "ThreeTypes";
+import { ErrorReporter } from "./ErrorReporter.js";
+import { Editor } from "./Editor.js";
+import { Box3, Camera, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "./ThreeTypes.js";
 
 //user data for meshes and other objects
 class UserData {

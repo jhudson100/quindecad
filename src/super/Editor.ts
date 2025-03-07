@@ -1,4 +1,4 @@
-import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
+import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "./pyshimdoc.js";
 
 // @ts-ignore
 let ace = window.ace;

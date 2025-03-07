@@ -1,4 +1,4 @@
-import { spinner_svg } from "spinner_svg";
+import { spinner_svg } from "./spinner_svg.js";
 
 
 export class Spinner{

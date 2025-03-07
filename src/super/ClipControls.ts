@@ -1,9 +1,9 @@
 
 //Controls clipping planes which allow the user to
 
-import { ClippingPlane, View } from "View";
-import { Slider } from "Slider";
-import { makeCheckbox } from "utils";
+import { ClippingPlane, View } from "./View.js";
+import { Slider } from "./Slider.js";
+import { makeCheckbox } from "./utils.js";
  
 //view inside the models
 export class ClipControls{

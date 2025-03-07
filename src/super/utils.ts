@@ -1,7 +1,7 @@
 import { Mesh } from "Mesh";
-import { View } from "View";
-import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "pyshimdoc";
-import { Dialog } from "Dialog";
+import { View } from "./View.js";
+import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "./pyshimdoc.js";
+import { Dialog } from "./Dialog.js";
 
 export function saveSTL(){
     let meshes = View.get().getMeshes();

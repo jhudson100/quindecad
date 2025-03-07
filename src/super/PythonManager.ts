@@ -4,12 +4,12 @@
 //to the WorkerManager and forwards the results to the
 //ErrorReporter and View objects.
 
-import {Editor} from "Editor";
-import { ErrorReporter } from "ErrorReporter";
-import { WorkerManager} from "WorkerManager";
-import {View} from "View";
+import {Editor} from "./Editor.js";
+import { ErrorReporter } from "./ErrorReporter.js";
+import { WorkerManager} from "./WorkerManager.js";
+import {View} from "./View.js";
 import { numPreambleLines, preambleStr } from "./PythonBuiltins.js";
-import { PythonCodeResultMessage } from "Message";
+import { PythonCodeResultMessage } from "../common/Message.js";
 
 
 //for debugging

@@ -2,10 +2,7 @@
 //It dispatches a request to the worker and awaits the response.
 
 
-
-import {Mesh} from "Mesh";
 import { PythonCodeResultMessage, RunPythonCodeMessage, WorkerToSuperMessage} from "Message";
-// import {DrawCommand} from "DrawCommand";
 
 const WORKERPATH="./worker/workerbootstrap.js";
 
@@ -18,38 +15,11 @@ enum WorkerState{ IDLE, BUSY };
 type ResponseCallback = (m: WorkerToSuperMessage|undefined) => void;
 
 type WorkerStatusCallback = (isBusy: boolean) => void;
-
-// export interface PythonResult {
-//     //things to draw
-//     //commands: DrawCommand[];    
-//     meshes: Mesh[];
-//     //messages the worker wrote with print()
-//     printables: string[];       
-//     //line numbers where errors occurred (a traceback); most recent
-//     //function call is last
-//     errorLineNumbers: number[]; 
-//     //column numbers where the error occurred. start, start, end.
-//     errorPositions: number[][];
-//     //messages describing the error
-//     errorMessages: string[];
-// }
-
+ 
 
 function receivedMessageFromWorker(ev: MessageEvent){
     WorkerManager.get().receivedMessageFromWorker(ev);
 }
-
-
-// export class RunAndComputeResult{
-//     result: PythonResult
-//     meshes: Mesh[];
-//     error: string;
-//     constructor(result:PythonResult, meshes:Mesh[], error: string){
-//         this.result=result;
-//         this.meshes=meshes;
-//         this.error=error;
-//     }
-// }
 
    
 export class WorkerManager{
