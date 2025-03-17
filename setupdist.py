@@ -19,9 +19,9 @@ shutil.copyfile("src/main.css","dist/main.css")
 #some web hosts treat *anything* with a .py in the name as
 #if it is a cgi script, even if we don't ask to execute it.
 #So we rename this to .txt in the dist folder
-#shutil.copyfile("src/super/pyshims.py","dist/super/pyshims.txt")
+shutil.copyfile("src/super/pythonpreamble.py","dist/super/pythonpreamble.py")
 os.makedirs("dist/worker/Lib/site-packages",exist_ok=True)
-shutil.copyfile("src/super/pyshims.py","dist/worker/Lib/site-packages/quin.py")
+shutil.copyfile("src/super/quin.py","dist/worker/Lib/site-packages/quin.py")
 
 for fname in [
     "src/ext/ace/ace-builds/src-min/ace.js",

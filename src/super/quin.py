@@ -7,17 +7,17 @@ import javascript  #type: ignore
 import browser  #type: ignore
 
 #ref: Wikipedia
-pi = 3.141592653589793238462643383279
+# pi = 3.141592653589793238462643383279
 
 #ensure we can still use the builtin print() that writes
 #to the debug console
 _print = print
  
-def degrees(radians):
-    return radians / 3.141592653589793238462643383279 * 180
+# def degrees(radians):
+#     return radians / 3.141592653589793238462643383279 * 180
 
-def radians(degrees):
-    return degrees/180 * 3.141592653589793238462643383279
+# def radians(degrees):
+#     return degrees/180 * 3.141592653589793238462643383279
 
 
 def boundingbox ( objects ):
@@ -262,97 +262,6 @@ def lookAt ( eye,target ):
     if eye is None: eye = javascript.UNDEFINED
     if target is None: target = javascript.UNDEFINED
     return browser.self.impl_lookAt(eye , target)
-
-def assertIsBoolean ( x ):
-    return (x == True or x == False)
-
-def assertIsByte ( x ):
-    return assertIsNumber(x) and x >= 0 and x <= 255
-
-def assertIsColor ( x ):
-    if assertIsString(x):
-        return True
-    if not assertIsList(x):
-        return False
-    if len(x) != 3 and len(x) != 4:
-        return False
-    return all( [ assertIsByte(q) for q in x] )
-
-def assertIsList ( x ):
-    return type(x) == list or type(x) == tuple or type(x) == javascript.Array
-
-def assertIsListOfMeshHandle ( obj ):
-    if not assertIsList(obj):
-        return False
-    if len(obj) == 0:
-        return False
-    return all( [ assertIsMeshHandle(q) for q in obj ] )
-
-def assertIsListOfVec3 ( obj ):
-    if not assertIsList(obj):
-        return False
-    if len(obj) == 0:
-        return False
-    return all( [assertIsVec3(q) for q in obj] )
-
-def assertIsMeshHandle ( obj ):
-    try:
-        tmp = obj.to_dict()
-        if tmp.get("_is_solid_object_") != True:
-            return False
-        return True
-    except Exception as e:
-        return False
-
-def assertIsNonnegativeInteger ( obj ):
-    return type(obj) == int and obj >= 0
-
-def assertIsNonnegativeNumber ( x ):
-    return assertIsNumber(x) and x >= 0
-
-def assertIsNonzeroVec3 ( obj ):
-    if not assertIsList(obj):
-        return False
-    if len(obj) != 3:
-        return False
-    if not all( [ assertIsNumber(q) for q in obj] ):
-        return False
-    if obj[0]*obj[0] + obj[1]*obj[1] + obj[2]*obj[2] < 0.001:
-        return False
-    return True
-
-def assertIsNumber ( x ):
-    return type(x) == int or type(x) == float
-
-def assertIsPolygon2D ( obj ):
-    if not assertIsList(obj):
-        return False
-    if len(obj) < 3:
-        return False
-    return all( [ assertIsVec2(q) for q in obj] )
-
-def assertIsPositiveInteger ( obj ):
-    return type(obj) == int and obj > 0
-
-def assertIsPositiveNumber ( x ):
-    return assertIsNumber(x) and x > 0
-
-def assertIsString ( obj ):
-    return type(obj) == str
-
-def assertIsVec2 ( obj ):
-    if not assertIsList(obj):
-        return False
-    if len(obj) != 2:
-        return False
-    return all( [ assertIsNumber(q) for q in obj] )
-
-def assertIsVec3 ( obj ):
-    if not assertIsList(obj):
-        return False
-    if len(obj) != 3:
-        return False
-    return all( [ assertIsNumber(q) for q in obj] )
 
 def print ( args ):
     if type(args) != list and type(args) != tuple:

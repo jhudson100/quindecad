@@ -8,6 +8,7 @@ import {Editor} from "./Editor.js";
 import { ErrorReporter } from "./ErrorReporter.js";
 import { WorkerManager} from "./WorkerManager.js";
 import {View} from "./View.js";
+import { numPreambleLines, preambleStr } from "./PythonBuiltins.js";
 import { PythonCodeResultMessage } from "../common/Message.js";
 
 
@@ -39,7 +40,7 @@ export class PythonManager{
         let userCode = Editor.get().getValue(true);
 
         //concatenate with our built-in routines
-        let finalCode = userCode;
+        let finalCode = preambleStr + userCode;
 
 
         if(verbose){
@@ -79,7 +80,7 @@ export class PythonManager{
                 result.errorLineNumbers,
                 result.errorPositions,
                 result.errorMessages,
-                0 //numPreambleLines-1
+                numPreambleLines-1
             );
         }
 
