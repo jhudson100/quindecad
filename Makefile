@@ -1,7 +1,11 @@
 
+.PHONY: glue
 
 all: common super worker
 
+glue:
+	$(MAKE) -C glue
+	
 common: setupdist
 	tsc -p src/common/tsconfig.json
 

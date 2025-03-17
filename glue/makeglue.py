@@ -3,14 +3,9 @@
 #make the Python glue between the user's Python code and the JS implementation.
 #Also make the JS implementations.
 
-import enum
-import typing
 import inspect
-import sys
-import re
 import os
 import os.path
-import types
 import importlib
 
 
@@ -50,7 +45,6 @@ for fname in sorted(os.listdir(shimdir)):
 
 
 def main():
-
     makepython.makePythonShims(shimfiles)
     makedocfile.makeDocFile(shimfiles)
     makets.makeTSImpl(shimfiles)

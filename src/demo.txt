@@ -4,6 +4,10 @@
 # To run this, use the "Run" menu or press
 # shift+enter.
 
+#all the quindecad built-in functions 
+#are in the "quin" module
+import quin
+
 ###################################################
 
 #basic objects. Some parameters are optional; see
@@ -17,7 +21,7 @@
 #or if xyz will be the minimum coordinates of the cube.
 #Since the x, y, and z sizes can be different, this
 #is technically a cuboid and not a cube.
-draw( cube( x=-20, y=-20, z=0,
+quin.draw( quin.cube( x=-20, y=-20, z=0,
             xsize=5, ysize=3, zsize=2,
             centered=True,
             color="red" ) )
@@ -26,70 +30,70 @@ draw( cube( x=-20, y=-20, z=0,
 #by min and max coordinates. Instead of
 #immediately passing the object to draw(), we can
 #put it in a variable so we can work with it later.
-bx = box( min=(-12,-22,-5), max=( -8, -18, 5 ),
+bx = quin.box( min=(-12,-22,-5), max=( -8, -18, 5 ),
          color="orange" )
 
 #a basic cylinder.
-cyl = cylinder( x=0, y=-20, z=0, radius=4,
+cyl = quin.cylinder( x=0, y=-20, z=0, radius=4,
         height=5, zcenter=True, color="yellow"
 )
 
 #we now draw two objects at once
-draw([bx,cyl])
+quin.draw([bx,cyl])
 
 #to get shapes like hexagons we can specify the resolution
 #of the cylinder
-hexagon = cylinder( x=10, y=-20, z=-2, radius=4, height=4,
+hexagon = quin.cylinder( x=10, y=-20, z=-2, radius=4, height=4,
     resolution=6, color=(128,255,0) )
-draw(hexagon)
+quin.draw(hexagon)
 
 # If we want a cylinder with a different size on the top
 # compared to the bottom, the frustum function can be used.
-draw(
-    frustum(x=20, y=-20, z=0, height=4, radius1=2, radius2=1,
+quin.draw(
+    quin.frustum(x=20, y=-20, z=0, height=4, radius1=2, radius2=1,
         zcenter=True, color=(0,255,0) )
 )
 
 # A cone can be created using frustum() as well.
-draw(
-    frustum(x=-20, y=-10, z=0, height=5, radius1=2, radius2=0,
+quin.draw(
+    quin.frustum(x=-20, y=-10, z=0, height=5, radius1=2, radius2=0,
         zcenter=False, color=(0,255,128) )
 )
 
 # Spheres are a basic building block of many objects
-sph = sphere( x=-10, y=-10, z=0, radius=3, color=(0,255,255) )
-draw(sph)
+sph = quin.sphere( x=-10, y=-10, z=0, radius=3, color=(0,255,255) )
+quin.draw(sph)
 
 # CSG operations are very useful. We have three of them...
 # The first is the union() operation which "glues" one or more
 # objects together into a single solid.
-s1 = sphere(x=0,y=-10,z=0, radius=2)
-c1 = cube(x=0,y=-10,z=0, xsize=3, ysize=3, zsize=3, centered=True)
-cy1 = cylinder(x=0, y=-10,z=0, height=7, radius=0.5, zcenter=True)
-draw( union([s1,c1,cy1], color=(0,128,255)) )
+s1 = quin.sphere(x=0,y=-10,z=0, radius=2)
+c1 = quin.cube(x=0,y=-10,z=0, xsize=3, ysize=3, zsize=3, centered=True)
+cy1 = quin.cylinder(x=0, y=-10,z=0, height=7, radius=0.5, zcenter=True)
+quin.draw( quin.union([s1,c1,cy1], color=(0,128,255)) )
 
 # Another CSG operation is intersection, which keeps the points
 # that are inside of all the solids passed in.
-s1 = sphere(x=10,y=-10,z=0, radius=2)
-c1 = cube(x=10,y=-10,z=0, xsize=3, ysize=3, zsize=3, centered=True)
-draw( intersection([s1,c1], color=(64,64,255)) )
+s1 = quin.sphere(x=10,y=-10,z=0, radius=2)
+c1 = quin.cube(x=10,y=-10,z=0, xsize=3, ysize=3, zsize=3, centered=True)
+quin.draw( quin.intersection([s1,c1], color=(64,64,255)) )
 
 # The final CSG operation is difference. This operation keeps those
 # points that are in the first object and not in any other object.
-s1 = sphere(x=20,y=-10,z=0, radius=2)
-c1 = cube(x=20,y=-10,z=0, xsize=3.5, ysize=3.5, zsize=3, centered=True)
-draw( difference([s1,c1], color=(128,64,255)) )
+s1 = quin.sphere(x=20,y=-10,z=0, radius=2)
+c1 = quin.cube(x=20,y=-10,z=0, xsize=3.5, ysize=3.5, zsize=3, centered=True)
+quin.draw( quin.difference([s1,c1], color=(128,64,255)) )
 
 
 # Three common affine transformations are rotate,
 # translaten, and scale. All three are available.
-c = cube(xsize=5, ysize=5, zsize=5, centered=True )
-draw( translate(c, tx=-20, ty=0, tz=0 ) )
+c = quin.cube(xsize=5, ysize=5, zsize=5, centered=True )
+quin.draw( quin.translate(c, tx=-20, ty=0, tz=0 ) )
 
 #we can combine transformations as well
-draw(
-    translate(
-        rotate(
+quin.draw(
+    quin.translate(
+        quin.rotate(
             c, axis=(1,1,1), angle=45
         ),
         tx=-10, ty=0, tz=0,
@@ -97,8 +101,8 @@ draw(
      )
 )
 
-c = scale(c, sx=0.5,sy=2,sz=0.25, color=(128,255,128) )
-draw(c)
+c = quin.scale(c, sx=0.5,sy=2,sz=0.25, color=(128,255,128) )
+quin.draw(c)
 
 
 # We can extrude a 2D polygon to form a solid. If desired, a twist
@@ -107,7 +111,7 @@ draw(c)
 # result to be at the origin, you'll likely want to apply translate()
 # to the extruded object. The top can be scaled to be larger or
 # smaller than the bottom.
-ex = extrude(polygon=[ (3,0),  (0.5,0.5), ( 0,3 ), (-0.5,0.5 ),
+ex = quin.extrude(polygon=[ (3,0),  (0.5,0.5), ( 0,3 ), (-0.5,0.5 ),
                   (-3,0), (-0.5,-0.5), ( 0,-3 ), (0.5,-0.5) ],
         height=4,
         divisions=20, twist=45,
@@ -115,22 +119,22 @@ ex = extrude(polygon=[ (3,0),  (0.5,0.5), ( 0,3 ), (-0.5,0.5 ),
         zcenter=True,
         color=(255,0,255)
 )
-draw(translate( ex, tx=10, ty=0, tz=0))
+quin.draw(quin.translate( ex, tx=10, ty=0, tz=0))
 
 # The hull() function gives the convex hull of an object.
-draw(
-    translate(
-        hull(ex),
+quin.draw(
+    quin.translate(
+        quin.hull(ex),
         tx=20, ty=0, tz=0, color=(255,0,128)
     )
 )
 
 
 #we can cut an object along a plane using the cut function.
-sph = sphere(radius=4)
-sph = cut( sph, planeNormal=(1,1,1), planeD=0.5, keepPositive=False)
-sph = translate( sph, tx=-20, ty=10, tz=0, color=(192,192,192) )
-draw(sph)
+sph = quin.sphere(radius=4)
+sph = quin.cut( sph, planeNormal=(1,1,1), planeD=0.5, keepPositive=False)
+sph = quin.translate( sph, tx=-20, ty=10, tz=0, color=(192,192,192) )
+quin.draw(sph)
 
 # A solid of revolution is produced with the revolve function
 # The polygon must be specified in counterclockwise order!
@@ -145,9 +149,9 @@ for i in range(numpoints):
     x = math.cos(theta)
     y = math.sin(theta)
     points.append( (x+5, y) )
-donut = revolve( polygon=points, angle=360)
-donut = translate( donut, tx=-10, ty=10, tz=0, color=(192, 64, 32)  )
-draw(donut)
+donut = quin.revolve( polygon=points, angle=360)
+donut = quin.translate( donut, tx=-10, ty=10, tz=0, color=(192, 64, 32)  )
+quin.draw(donut)
 
 
 # boundingbox() doesn't create anything
@@ -155,17 +159,17 @@ draw(donut)
 # and maximum extents of the object.
 # This also shows the use of transparency in
 # the color specification.
-bbmin, bbmax = boundingbox( donut )
-draw(box( min=bbmin, max=bbmax, color=(64,192,32,128) ) )
+bbmin, bbmax = quin.boundingbox( donut )
+quin.draw(quin.box( min=bbmin, max=bbmax, color=(64,192,32,128) ) )
 
 
 #centroid() gives us the centroid of an object
 #as an x,y,z triple.
-sph = sphere(x=10, y=10, z=0, radius=3 )
-cen = centroid(sph)
-cub = cube( x=cen[0], y=cen[1], z=cen[2], xsize=1, ysize=1, zsize=50, centered=True )
-draw( difference( [sph,cub], color=(255,255,172,128) ) )
+sph = quin.sphere(x=10, y=10, z=0, radius=3 )
+cen = quin.centroid(sph)
+cub = quin.cube( x=cen[0], y=cen[1], z=cen[2], xsize=1, ysize=1, zsize=50, centered=True )
+quin.draw( quin.difference( [sph,cub], color=(255,255,172,128) ) )
 
 
 #lookAt is used to set the camera to a specified position
-lookAt( eye=(0, -60,50), target=(0,0,0) )
+quin.lookAt( eye=(0, -60,50), target=(0,0,0) )

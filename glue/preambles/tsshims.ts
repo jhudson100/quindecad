@@ -1,4 +1,4 @@
-import {Manifold, ManifoldToplevel, Mat4, Vec2, Vec3} from "../ext/manifold/manifold.js";
+import { Manifold, ManifoldToplevel, Mat4, Vec2, Vec3 } from "../ext/manifold/manifold.js";
 import { ManifoldMeshWrapper, MeshHandle, manifoldMeshes, handleToWrapper } from "./workertypes.js";
 let manifold: ManifoldToplevel;
 
@@ -86,9 +86,12 @@ const namedColors: ColorDict = {
 };
 
 //ref: https://stackoverflow.com/questions/26414770/getting-the-rgb-values-for-a-css-html-named-color-in-javascript
-const helperCanvas = document.createElement("canvas");
-helperCanvas.width=1; helperCanvas.height=1;
-const helperContext:CanvasRenderingContext2D = helperCanvas.getContext("2d") as CanvasRenderingContext2D;
+const helperCanvas = new OffscreenCanvas(1,1); //document.createElement("canvas");
+//helperCanvas.width=1; helperCanvas.height=1;
+
+//the ! tells typescript this variable is not null
+const helperContext = helperCanvas.getContext("2d")!;
+
 
 function convertColorToQuadruple(color: ColorTripleQuadrupleOrString): ColorQuadruple|undefined
 {
