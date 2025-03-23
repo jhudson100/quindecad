@@ -1,0 +1,5 @@
+https://jquery.com/
+
+Download zip file
+
+ln -s jquery-3.7.1.min.js jquery.js

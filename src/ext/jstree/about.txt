@@ -1,0 +1,16 @@
+https://www.jstree.com/
+Get the zip file
+unzip it
+
+ln -s vakata-jstree-6256df0/dist/jstree.min.js .
+ln -s vakata-jstree-6256df0/dist/themes/default/style.css  .
+
+
+Note: Requires jquery 1.9.0+
+
+
+create container <div>
+
+When DOM is ready:
+
+$( ()=>{ $(div).jstree() } );

@@ -8,3 +8,5 @@ Ability to change speed of rotate/pan when dragging in 3d view
 Wireframe display mode: Solid, wireframe, both
 Axis parameter for cylinder() and frustum()
 3mf export
+Add tube primitive
+Move primitives to separate module

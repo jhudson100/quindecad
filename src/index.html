@@ -6,12 +6,9 @@
             Quindecad
         </title>
 
+        <link rel="stylesheet" href="ext/jstree/mystyle.css" />
         <link rel="stylesheet" href="main.css" />
-        <style>
-            body{
-                overflow: hidden;
-            }
-        </style>
+        
         <script type="importmap">
             {
                 "imports": {
@@ -23,7 +20,10 @@
                     "Split":  "./ext/split/split-grid.mjs",
                     "LineMaterial" : "./ext/three/LineMaterial.js",
                     "LineSegmentsGeometry" : "./ext/three/LineSegmentsGeometry.js",
-                    "LineSegments2": "./ext/three/LineSegments2.js"
+                    "LineSegments2": "./ext/three/LineSegments2.js",
+                    "menus": "./super/menus.js",
+                    "TreeEditor": "./super/TreeEditor.js",
+                    "Grid": "./super/Grid.js"
                 }
             }
         </script>
@@ -32,6 +32,8 @@
         <script src="ext/ace/ace.js"></script>
         <script src="ext/ace/ext-language_tools.js"></script>
         <brython-options debug="1" cache="false"></brython-options>
+        <script src="ext/jquery/jquery.js"></script>
+        <script src="ext/jstree/jstree.min.js"></script>
         <script type="module" src="super/super.js"></script>
         
 <script class="webworker" type="text/python" id="blah">

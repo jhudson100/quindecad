@@ -4,10 +4,10 @@ enum SplitDirection{
     HORIZONTAL, VERTICAL
 };
 
+
 export function createSplit(parent: HTMLElement,
         splitDirection: SplitDirection,
         sizes: string[],        //ex: 1fr 1fr. Must be in units of fr or px
-        sizerSize: string,      //ex: 10px. Must be in units of fr or px
         createSizers: boolean[]|boolean,    //if createSizers[i] is true, create a sizer between cells i and i+1
                                             //if createSizers is a boolean, treat it like a list of that particular boolean.
         resizeCallback: ()=>void)
@@ -33,7 +33,7 @@ export function createSplit(parent: HTMLElement,
     for(let i=0;i<sizes.length;++i){
         sizespec.push(sizes[i]);
         if( i < sizes.length-1 && sizerFlagList[i] )
-            sizespec.push(sizerSize);
+            sizespec.push("auto");
     }
 
     if( splitDirection === SplitDirection.HORIZONTAL ){

@@ -2,12 +2,13 @@ import {ErrorReporter} from "./ErrorReporter.js";
 import {Editor} from "./Editor.js";
 import {PythonManager} from "./PythonManager.js";
 import { WorkerManager } from "./WorkerManager.js";
-import { TabbedPanel } from "./TabbedPanel.js";
+// @ts-ignore
+import { TabSide, TabbedPanel } from "./TabbedPanel.js";
 import { QuickReference } from "./QuickReference.js";
 import { ClipControls } from "./ClipControls.js";
 import { createSplit } from "./Grid.js";
+import { TreeEditor } from "./TreeEditor.js";
 import { setupMenubar } from "./menus.js";
-import { View } from "./View.js";
 
 
 // @ts-ignore
@@ -29,13 +30,13 @@ export function setupInterface(){
         ErrorReporter.get().resize();   
         helpInfo.resize();
         clipper.resize();
+        edTabs.resize();
     };
 
     let tmp = createSplit(
         document.body,
         SplitDirection.HORIZONTAL, 
         ["auto","1fr","0.25fr"],
-        SIZER_SIZE,
         [false,true],
         sizeCallback);
 
@@ -52,7 +53,6 @@ export function setupInterface(){
         viewAndEditDiv,
         SplitDirection.VERTICAL,
         ["1fr","1fr"],
-        SIZER_SIZE,
         true,
         sizeCallback
     );
@@ -73,7 +73,10 @@ export function setupInterface(){
 
     // let eddiv = createGridCell( contentArea, currentRow,3, 1,1);
     eddiv.style.height="100%";
-    Editor.get().initialize(eddiv);
+
+    let edTabs = new TabbedPanel(eddiv,TabSide.BOTTOM);
+    let edtab = edTabs.addTab("Editor");
+    Editor.get().initialize(edtab);
     Editor.get().addKeyEventCommand( (ev: KeyboardEvent) => {
         if( ev.shiftKey && ev.key === "Enter" ){
             ev.preventDefault();
@@ -84,18 +87,28 @@ export function setupInterface(){
         }
     });
 
-    
-    let div = document.createElement("div");
-    div.innerText="FOO!";
-    tmp.cells[1].appendChild(div);
+    let treetab = edTabs.addTab("Tree");
+
+    tmp = createSplit(
+        treetab,
+        SplitDirection.HORIZONTAL,
+        ["1fr","1fr"], 
+        true,
+        sizeCallback
+    );
+    tmp.container.style.height="100%";
+    new TreeEditor(tmp.cells[0], tmp.cells[1]);
  
+
+    edTabs.selectTab(1);
+
     //ref: https://blog.jim-nielsen.com/2023/width-and-height-in-css/
     //width looks up the tree and sets node to be as wide as widest parent
     //height looks down the tree and sets height to be maximum of children's heights
     infodiv.style.height="100%";
 
 
-    let tabs = new TabbedPanel(infodiv);
+    let tabs = new TabbedPanel(infodiv,TabSide.TOP);
 
     ErrorReporter.get().initialize(tabs.addTab("Output"),tabs);
     let helpInfo = new QuickReference(tabs.addTab("Help"));
@@ -114,3 +127,6 @@ export function setupInterface(){
     sizeCallback();
 
 }
+
+
+  
