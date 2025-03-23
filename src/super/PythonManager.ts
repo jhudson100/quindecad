@@ -7,7 +7,7 @@
 import {Editor} from "./Editor.js";
 import { ErrorReporter } from "./ErrorReporter.js";
 import { WorkerManager} from "./WorkerManager.js";
-import {View} from "./View.js";
+import { View } from "./View.js";
 import { numPreambleLines, preambleStr } from "./PythonBuiltins.js";
 import { PythonCodeResultMessage } from "../common/Message.js";
 

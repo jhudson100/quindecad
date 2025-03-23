@@ -9,6 +9,7 @@ import { ClipControls } from "./ClipControls.js";
 import { createSplit } from "./Grid.js";
 import { TreeEditor } from "./TreeEditor.js";
 import { setupMenubar } from "./menus.js";
+import { View } from "./View.js";
 
 
 // @ts-ignore

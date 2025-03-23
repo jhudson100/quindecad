@@ -1,11 +1,8 @@
 
+/* The View is the 3D view widget that allows the user
+    to interact with the geometry
+*/
 
-//for testing
-// let geom = new THREE.BoxGeometry(1,1,1);
-// let mtl = new THREE.MeshLambertMaterial({color: 0x00ff00 } );
-// let cube = new THREE.Mesh(geom,mtl);
-// cube.name="test cube";
-// this.scene.add(cube);
 
 import {Mesh} from "Mesh";
 
@@ -31,7 +28,8 @@ import { ErrorReporter } from "./ErrorReporter.js";
 import { Editor } from "./Editor.js";
 import { Box3, Camera, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "./ThreeTypes.js";
 
-//user data for meshes and other objects
+//THREE allows us to attach user data to each object in the scene
+//This user data can contain anything we want to associate with the object.
 class UserData {
     isMesh: boolean;        //true if it's a Manifold mesh
     constructor(isMesh: boolean){
@@ -41,6 +39,10 @@ class UserData {
 
 type ParameterlessCallback = ()=>void;
 
+/** A clipping plane. This is used to specify clipping along
+ *  the x, y, z axes for viewing (but not for modifying
+ * geometry)
+*/
 export class ClippingPlane{
     A: number;
     B: number;
