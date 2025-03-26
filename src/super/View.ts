@@ -27,6 +27,8 @@ import {LineMaterial} from "LineMaterial";
 import { ErrorReporter } from "./ErrorReporter.js";
 import { Editor } from "./Editor.js";
 import { Box3, Camera, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "./ThreeTypes.js";
+import { addAddObjectListener } from "./ObjectDepot.js";
+import { GeometricObject } from "./Objects/GeometricObject.js";
 
 //THREE allows us to attach user data to each object in the scene
 //This user data can contain anything we want to associate with the object.
@@ -150,7 +152,7 @@ export class View{
     //list of all the materials of the meshes (but not materials
     //for view widgets, grids, axes, etc.). This is here
     //because we want to do clipping but we don't want
-    //to clip the axes and such
+    //to clip the axes and such, so we set up per-material clipping
     allMaterials: Material[] = [];
     
     //currently active clipping planes
@@ -440,8 +442,59 @@ export class View{
         //     }
         // });
 
+        addAddObjectListener( (obj: GeometricObject) => {
+            this.objectWasAdded(obj);
+        })
     } // constructor
 
+    private objectWasAdded(obj: GeometricObject) {
+        let v=obj.vertices;
+        let geo = new THREE.BufferGeometry();
+        //NOTE: setIndex needs a buffer attribute, not the raw list of vertices.
+        //This seems to be an error in the Three.js documentation.
+        geo.setAttribute("position",new THREE.BufferAttribute(v, 3) );
+        geo.computeVertexNormals();
+        let color = [0x00, 0xcc, 0xff];
+        let c = color[0] << 16 ;
+        c |= color[1] << 8;
+        c |= color[2] ;
+        let mtl: Material = new THREE.MeshLambertMaterial( { color: c } );
+        this.allMaterials.push(mtl);
+        mtl.clippingPlanes = this.clippingPlanes;
+        mtl.side = THREE.DoubleSide;
+        if( color.length === 4 ){
+            mtl.transparent=true;
+            mtl.opacity = color[3]/255;
+        }
+        let m3 = new THREE.Mesh(geo,mtl);
+        m3.name = obj.name ?? "";
+        m3.userData = new UserData(true);
+        this.scene.add(m3);
+
+        let bbminx: number = this.bbox.min.x;
+
+
+        //not using geo.computeBoundingBox()...
+        for(let i=0;i<v.length;){
+            this.bbox.min.x = Math.min( this.bbox.min.x, v[i]);
+            this.bbox.max.x = Math.max( this.bbox.max.x, v[i]);
+            i++;
+            
+            this.bbox.min.y = Math.min( this.bbox.min.y, v[i]);
+            this.bbox.max.y = Math.max( this.bbox.max.y, v[i]);
+            i++;
+            
+            this.bbox.min.z = Math.min( this.bbox.min.z, v[i]);
+            this.bbox.max.z = Math.max( this.bbox.max.z, v[i]);
+            i++;
+        }
+
+        // this.bbox = new THREE.Box3(new THREE.Vector3(bbminx,bbminy,bbminz),
+        //                            new THREE.Vector3(bbmaxx,bbmaxy,bbmaxz));
+
+        this.draw();
+
+    }
 
     addLabel(pos: Vector3, txt: string){
         this.labels.push( new Label(this.labeldiv, pos, txt));
@@ -773,6 +826,7 @@ export class View{
         return this.meshes;
     }
     
+
     setMeshes(meshes: Mesh[]) {
 
         this.clearLabels();
