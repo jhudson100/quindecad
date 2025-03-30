@@ -1,5 +1,5 @@
 import { Mesh } from "Mesh";
-import { View } from "./View.js";
+import { View } from "./View/View.js";
 import { ArgSpec, FuncSpec, getPreambleFunctionInfo } from "./pyshimdoc.js";
 import { Dialog } from "./Dialog.js";
 

@@ -1,7 +1,8 @@
 
 //Controls clipping planes which allow the user to
 
-import { ClippingPlane, View } from "./View.js";
+import { View } from "./View/View.js";
+import { ClippingPlane } from "./View/ClippingPlane.js";
 import { Slider } from "./Slider.js";
 import { makeCheckbox } from "./utils.js";
  

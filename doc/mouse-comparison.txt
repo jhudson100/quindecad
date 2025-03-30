@@ -1,0 +1,41 @@
+blender:
+
+select: left click or left drag out a box
+orbit: middle
+pan: shift+middle
+dolly: wheel
+cursor: right
+
+inkscape:
+select: left
+orbit: n/a
+pan: wheel
+zoom: ctrl+wheel
+
+freecad/CAD
+select: left
+dolly: wheel
+center view on cursor: middle click
+orbit: middle, then left or right, then drag
+       OR: shift+right
+pan: middle
+
+freecad/Mac
+select: left
+zoom: wheel
+orbit: left (hold then drag)
+pan: right (hold then drag)
+
+freecad/Maya
+select: left
+zoom: wheel or alt+right
+orbit: alt+left
+pan: alt+middle
+
+
+prusa-slicer
+
+orbit: left (if not over an object)
+select: left (if over an object)
+pan: right
+zoom: wheel

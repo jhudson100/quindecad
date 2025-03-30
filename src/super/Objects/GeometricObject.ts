@@ -1,4 +1,5 @@
 import Module, { Manifold,ManifoldToplevel } from "../../ext/manifold/manifold.js";
+import { TreeNode } from "../TreeNode.js";
 
 let manifoldTopLevel: ManifoldToplevel;
 
@@ -16,8 +17,24 @@ export async function GeometricObjectInitialize(){
     manifoldTopLevel=manifoldModule;
 }
 
+let counter=0;
 
 export class GeometricObject{
+
+    //this is a unique identifer for the GeometricObject;
+    //every GeometricObject gets a different unique number.
+    unique: number;
+
+
+    selected: boolean = false;
+
+    //this is not set or managed by the GeometricObject at all;
+    //the View handles this
+    threeJsObject: any;
+
+    //this is not set or managed by the GeometricObject at all;
+    //the TreeView handles this
+    treeNode: TreeNode;
 
     name: string;
     iconName: string;
@@ -28,6 +45,7 @@ export class GeometricObject{
     
     //iconName = "cube", "cylinder", etc.
     constructor(name: string, iconName: string){
+        this.unique = counter++;
         this.name=name;
         this.iconName=iconName;
     }

@@ -1,6 +1,7 @@
 import { Editor, simpleDemoCode } from "./Editor.js";
 import { CheckMenuItem, Menu, Menubar } from "./Menubar.js";
-import { CameraType, GridPlane, View } from "./View.js";
+import { CameraType, View } from "./View/View.js";
+import { GridPlane } from "./View/Grid.js";
 import { makeCheckbox, saveSTL, showAboutDialog, showHelp } from "./utils.js";
 import { WorkerManager } from "./WorkerManager.js";
 import { PythonManager } from "./PythonManager.js";

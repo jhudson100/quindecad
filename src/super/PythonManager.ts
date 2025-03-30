@@ -7,7 +7,7 @@
 import {Editor} from "./Editor.js";
 import { ErrorReporter } from "./ErrorReporter.js";
 import { WorkerManager} from "./WorkerManager.js";
-import { View } from "./View.js";
+import { View } from "./View/View.js";
 import { numPreambleLines, preambleStr } from "./PythonBuiltins.js";
 import { PythonCodeResultMessage } from "../common/Message.js";
 
@@ -93,7 +93,8 @@ export class PythonManager{
         }
 
         if(result.meshes){
-            View.get().setMeshes(result.meshes);
+            throw new Error("TODO: Need to write this");
+            //TODO: Re-incorporate this--> View.get().setMeshes(result.meshes);
             if( result.cameraParameters && result.cameraParameters.length > 0 ){
                 let c = result.cameraParameters;
                 View.get().lookAt(c[0],c[1],c[2],  c[3],c[4],c[5],  0,0,1 );

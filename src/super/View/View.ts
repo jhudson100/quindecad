@@ -24,108 +24,36 @@ import {LineSegmentsGeometry} from "LineSegmentsGeometry";
 // @ts-ignore
 import {LineMaterial} from "LineMaterial";
 
-import { ErrorReporter } from "./ErrorReporter.js";
-import { Editor } from "./Editor.js";
-import { Box3, Camera, Group, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "./ThreeTypes.js";
-import { addAddObjectListener } from "./ObjectDepot.js";
-import { GeometricObject } from "./Objects/GeometricObject.js";
-
-//THREE allows us to attach user data to each object in the scene
-//This user data can contain anything we want to associate with the object.
-class UserData {
-    isMesh: boolean;        //true if it's a Manifold mesh
-    constructor(isMesh: boolean){
-        this.isMesh=isMesh;
-    }
-}
+import { ErrorReporter } from "../ErrorReporter.js";
+import { Editor } from "../Editor.js";
+import { Box3, Camera, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "../ThreeTypes.js";
+import { ObjectDepot, SelectionEvent } from "../ObjectDepot.js";
+import { GeometricObject } from "../Objects/GeometricObject.js";
+import { UserData } from "./UserData.js";
+import { ClippingPlane } from "./ClippingPlane.js";
+import { Label } from "./Label.js";
+import { Grid, GridPlane } from "./Grid.js";
+import { Point3 } from "../Point3.js";
 
 type ParameterlessCallback = ()=>void;
 
-/** A clipping plane. This is used to specify clipping along
- *  the x, y, z axes for viewing (but not for modifying
- * geometry)
-*/
-export class ClippingPlane{
-    A: number;
-    B: number;
-    C: number;
-    D: number;
-    constructor(A:number,B:number,C:number,D:number){
-        this.A=A;
-        this.B=B;
-        this.C=C;
-        this.D=D;
-    }
-}
 
-export enum GridPlane{
-    XZ, YZ, XY
-};
+interface RaycastIntersection {
+    distance: number;
+    distanceToRay: number;  //might be undefined
+    point: Point3;
+    face: any;      //TODO: Look up type; documentation doesn't say
+    faceIndex: number;
+    object: any;    //THREE.js object?
+    uv: any;
+    uv1: any;
+    normal: Vector3;
+    instanceId: number;
+}
 
 export enum CameraType {
     PERSPECTIVE, ORTHOGRAPHIC
 };
-
-class Label{
-    worldPoint: Vector3;
-    cvs: HTMLCanvasElement;
-    elem: HTMLElement;
-    elemW: number;
-    constructor( parent: HTMLElement, p: Vector3, txt: string){
-        this.worldPoint = p;
-        this.elem = document.createElement("span");
-        parent.appendChild(this.elem);
-        this.elem.appendChild(document.createTextNode(txt));
-        this.elem.style.position="absolute";
-        this.elem.classList.add("label3d");
-
-        //do this after applying css styles
-        let r = this.elem.getBoundingClientRect();
-        this.elemW = r.width;
-
-        this.cvs = document.createElement("canvas");
-        this.cvs.style.position="absolute";
-        this.cvs.width=8;
-        this.cvs.height=8;
-        let ctx = this.cvs.getContext("2d");
-        ctx.clearRect(0,0,this.cvs.width,this.cvs.height);
-        ctx.fillStyle="#8080ff";
-        ctx.strokeStyle="black";
-        ctx.arc(this.cvs.width/2, this.cvs.height/2,this.cvs.width/2,0,2*Math.PI);
-        ctx.fill();
-        ctx.stroke();
-        parent.appendChild(this.cvs);
-        
-    }
-    removeDOMElements(){
-        this.cvs.parentNode.removeChild(this.cvs);
-        this.elem.parentNode.removeChild(this.elem);
-    }
-
-    updatePosition(camera:Camera, w: number, h: number){
-        let p = new THREE.Vector4(this.worldPoint.x, this.worldPoint.y, this.worldPoint.z,1);
-        
-        p.applyMatrix4(camera.matrixWorldInverse);
-        p.applyMatrix4(camera.projectionMatrix);
-        let x = p.x / p.w;
-        let y = p.y / p.w;
-        y=-y;
-        x = (x+1)/2;
-        y = (y+1)/2;
-        x = x * w;
-        y = y * h ;
-
-        let tmp = x-this.elemW/2;
-        this.elem.style.left=tmp+"px";
-        this.elem.style.top=(y+4)+"px";
-
-        let cx = (x-this.cvs.width/2);
-        let cy = (y-this.cvs.height/2);
-        this.cvs.style.left=cx+"px";
-        this.cvs.style.top=cy+"px";
-    }
-}
-
 
 export class View{
 
@@ -134,8 +62,9 @@ export class View{
     private static instance: View;
 
     //bounding box of objects in scene: A THREE.Box3 object
+    //If the scene has no geometric objects, this is <undefined>.
     //@ts-ignore
-    bbox: Box3 = new THREE.Box3( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) );
+    bbox: Box3; // = new THREE.Box3( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) );
 
     //parent DOM node
     parent: HTMLElement;
@@ -186,10 +115,19 @@ export class View{
     //the coordinate axes: A THREE group
     axes: any;
 
+    //the ground grids that we are displaying. Can have zero to three elements
+    grids: Grid[] = [];
+
+    // gridXY: Grid;
+    // gridYZ: Grid;
+    // gridXZ: Grid;
+
     //the ground grid (grid along the xy plane)
-    gridXY: Group;
-    gridYZ: Group;        //THREE group
-    gridXZ: Group;        //THREE group
+    // gridXY: Group;
+    // gridYZ: Group;        //THREE group
+    // gridXZ: Group;        //THREE group
+
+    //TODO: Move these out and into the grid objects
     majorColor: number;
     majorWidth: number;
     majorInterval: number;
@@ -226,6 +164,22 @@ export class View{
                 let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
                 let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
                 this.showPointUnderMouse(x,y);
+            } else if( ev.button === 0 ){
+                ev.stopImmediatePropagation();
+                ev.preventDefault();
+                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+                let I = this.getObjectUnderMouse(x,y);
+                if(!I || !I.object.userData){
+                    ObjectDepot.clearSelection();
+                    return;
+                }
+                let u : UserData = I.object.userData;
+                if( ev.shiftKey ){
+                    ObjectDepot.toggleSelection(u.associatedObject);
+                } else {
+                    ObjectDepot.replaceSelection([u.associatedObject]);
+                }
             }
         });
 
@@ -269,11 +223,11 @@ export class View{
         this.scene.background = new THREE.Color(0xffffff);
         let amb = new THREE.AmbientLight(0x808080);
         amb.name="ambient light";
-        amb.userData = new UserData(false);
+        //amb.userData = new UserData(false);
         this.scene.add(amb);
 
         this.lightTarget = new THREE.Object3D();
-        this.lightTarget.userData = new UserData(false);
+        //this.lightTarget.userData = new UserData(false);
         this.scene.add(this.lightTarget);
 
         this.light = new THREE.DirectionalLight(
@@ -289,7 +243,7 @@ export class View{
         //     0,          //max distance
         //     0           //decay
         // );
-        this.light.userData = new UserData(false);
+        //this.light.userData = new UserData(false);
         this.light.name="moving light";
 
 
@@ -303,7 +257,7 @@ export class View{
         //axes
         this.axes = new THREE.Group();
         this.axes.name = "axes";
-        this.axes.userData = new UserData(false);
+        //this.axes.userData = new UserData(false);
         this.scene.add(this.axes);
         let axp = [ [1,0,0], [0,1,0], [0,0,1] ];
         let col = [ 0xff0000, 0x00ff00, 0x0000ff ];
@@ -316,23 +270,6 @@ export class View{
             });
             let axis = new LineSegments2(geo,mtl);
             this.axes.add(axis);
-
-            
-            // let geo = new THREE.BufferGeometry();
-            // geo.setFromPoints( 
-            //         [ 
-            //         new THREE.Vector3(0,0,0), 
-            //         new THREE.Vector3(
-            //             axp[i][0]*100,
-            //             axp[i][1]*100,
-            //             axp[i][2]*100
-            //         )
-            //     ]
-            // );
-            // let axis = new THREE.Line(geo,new THREE.LineBasicMaterial({
-            //     color: col[i], linewidth: 3}));
-            // axis.name="axis"+i;
-            // this.axes.add(axis);
         }
 
         //@ts-ignore
@@ -344,10 +281,13 @@ export class View{
         // this.perspectiveControls.staticMoving=true;
 
         //this.perspectiveControls.rotateSpeed=2.0;
+
+        //we override some of these controls in the pointer listener
+        //THREE.MOUSE.{ROTATE,PAN,DOLLY}
         this.perspectiveControls.mouseButtons = {
-            LEFT: THREE.MOUSE.ROTATE,
-            MIDDLE: THREE.MOUSE.PAN,
-            RIGHT: THREE.MOUSE.DOLLY
+            LEFT: undefined, //THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.ROTATE,
+            RIGHT: THREE.MOUSE.PAN
         };
         
         //@ts-ignore
@@ -442,9 +382,21 @@ export class View{
         //     }
         // });
 
-        addAddObjectListener( (obj: GeometricObject) => {
+        ObjectDepot.addAddObjectListener( (obj: GeometricObject) => {
             this.objectWasAdded(obj);
-        })
+        });
+        ObjectDepot.addSelectionChangeListener( (changes: SelectionEvent[]) => {
+            changes.forEach( (ev: SelectionEvent) => {
+                if( ev.nowSelected ){
+                    ev.obj.threeJsObject.material.color = new THREE.Color(0xffff00);
+                } else {
+                    //FIXME: Set it back to its original color
+                    ev.obj.threeJsObject.material.color = new THREE.Color(0x00ff00);
+                }
+            });
+            this.draw();
+        });
+
     } // constructor
 
     private objectWasAdded(obj: GeometricObject) {
@@ -458,6 +410,9 @@ export class View{
         let c = color[0] << 16 ;
         c |= color[1] << 8;
         c |= color[2] ;
+
+        //every object gets its own private material
+        //this lets us do selection and such
         let mtl: Material = new THREE.MeshLambertMaterial( { color: c } );
         this.allMaterials.push(mtl);
         mtl.clippingPlanes = this.clippingPlanes;
@@ -468,11 +423,17 @@ export class View{
         }
         let m3 = new THREE.Mesh(geo,mtl);
         m3.name = obj.name ?? "";
-        m3.userData = new UserData(true);
+        m3.userData = new UserData(obj);
+        obj.threeJsObject = m3;
         this.scene.add(m3);
 
-        let bbminx: number = this.bbox.min.x;
-
+        //if this is the first object being added,
+        //make a new bounding box
+        if( this.bbox === undefined ){
+            this.bbox = new THREE.Box3();
+            this.bbox.min = new THREE.Vector3( v[0], v[1], v[2] );
+            this.bbox.max = new THREE.Vector3( v[0], v[1], v[2] );
+        }
 
         //not using geo.computeBoundingBox()...
         for(let i=0;i<v.length;){
@@ -489,14 +450,11 @@ export class View{
             i++;
         }
 
-        // this.bbox = new THREE.Box3(new THREE.Vector3(bbminx,bbminy,bbminz),
-        //                            new THREE.Vector3(bbmaxx,bbmaxy,bbmaxz));
-
         this.draw();
 
     }
 
-    addLabel(pos: Vector3, txt: string){
+    addLabel(pos: Point3, txt: string){
         this.labels.push( new Label(this.labeldiv, pos, txt));
         this.labelPositionsAreStale=true;
         this.draw();
@@ -525,10 +483,7 @@ export class View{
         });
     }
 
-    showPointUnderMouse(x:number,y:number){
-        //x,y are in normalized -1...1 coordinates, not pixel coordinates
-
-        this.clearLabels();
+    getObjectUnderMouse(x:number,y: number): RaycastIntersection{
 
         //ref: https://threejs.org/docs/#api/en/core/Raycaster
         let p = new THREE.Vector2(x,y);
@@ -536,23 +491,16 @@ export class View{
         this.raycaster.setFromCamera( p, this.getCamera() );
         let intersections = this.raycaster.intersectObjects( this.scene.children );
         //intersections is a list, sorted by distance. Each entry
-        //has these fields:
-        //distance
-        //point (in world coordinates): Vector3
-        //face
-        //faceIndex
-        //object (the intersected object)
-        //uv (uv coordinates)
-        //uv1 (second uv coords)
-        //normal
-        //instanceId (for instanced meshes)
+        //is of type RaycastIntersection (this is not a Three.js type;
+        //it is a locally defined type which matches the fields
+        //in Three's returned object)
         
-        //only consider manifoldmesh objects
-        //and discard anything that a clipping plane rejects
-        // console.log(intersections);
+        //only consider things in the scene that represent a GeometricObject
+        //(by looking at the userData field)
+        //Discard anything that a clipping plane rejects
         for(let i=0;i<intersections.length;++i){
             let I = intersections[i];
-            if( I.object && I.object.userData && (I.object.userData as UserData).isMesh ){
+            if( I.object && I.object.userData && (I.object.userData as UserData)?.associatedObject ){
                 let keep=true;
                 for(let j=0;j<this.clippingPlanes.length;++j){
                     if( this.clippingPlanes[j].distanceToPoint(I.point) < 0 ){
@@ -563,35 +511,40 @@ export class View{
                 if(!keep)
                     continue;
 
-                let s="";
-                if( I.object.name && I.object.name.length > 0 )
-                    s += I.object.name+": ";
-                s += `( ${I.point.x} , ${I.point.y} , ${I.point.z} )`;
-                ErrorReporter.get().addMessage( s );
-                ErrorReporter.get().scrollToBottom();
-
-                let ptxt = `${I.point.x.toFixed(3)} , ${I.point.y.toFixed(3)} , ${I.point.z.toFixed(3)}`;
-                this.addLabel( I.point, ptxt );
-
-                return;
+                return I;
             }
         }
-        ErrorReporter.get().addMessage( "No visible point under the mouse" );
-        ErrorReporter.get().scrollToBottom();
+    }
+    showPointUnderMouse(x:number,y:number){
+        //x,y are in normalized -1...1 coordinates, not pixel coordinates
+        this.clearLabels();
+
+        let I = this.getObjectUnderMouse(x,y);
+        if( !I ){
+            ErrorReporter.get().addMessage( "No visible point under the mouse" );
+            ErrorReporter.get().scrollToBottom();
+        } else {
+            let s="";
+            if( I.object.name && I.object.name.length > 0 )
+                s += I.object.name+": ";
+            s += `( ${I.point.x} , ${I.point.y} , ${I.point.z} )`;
+            ErrorReporter.get().addMessage( s );
+            ErrorReporter.get().scrollToBottom();
+
+            let ptxt = `${I.point.x.toFixed(3)} , ${I.point.y.toFixed(3)} , ${I.point.z.toFixed(3)}`;
+            this.addLabel( I.point, ptxt );
+
+            return;
+        }            
         return;
     }
     
     isGridVisible(which: GridPlane ){
-        switch(which){
-            case GridPlane.XY:
-                return this.gridXY !== undefined;
-            case GridPlane.XZ:
-                return this.gridXZ !== undefined;
-            case GridPlane.YZ:
-                return this.gridYZ !== undefined;
-            default:
-                throw new Error();
+        for(let i=0;i<this.grids.length;++i){
+            if( this.grids[i].plane === which )
+                return true;
         }
+        return false;
     }
 
     makeGrids(majorColor:number, majorWidth:number, majorInterval:number,
@@ -606,130 +559,24 @@ export class View{
         this.minorSpacing=minorSpacing;
         this.gridExtent=gridExtent;
 
-        if(this.gridXY){
-            this.gridXY.removeFromParent();
-            this.gridXY=undefined;
-        }
-        if( xy ){
-            this.gridXY = this.makeGrid(
-                majorColor, majorWidth, majorInterval,
-                minorColor, minorWidth, minorSpacing,
-                gridExtent, GridPlane.XY
-            );
-            this.scene.add(this.gridXY);
-        }
-
-        if(this.gridXZ){
-            this.gridXZ.removeFromParent();
-            this.gridXZ=undefined;
-        }
-        if( xz ){
-            this.gridXZ = this.makeGrid(
-                majorColor, majorWidth, majorInterval,
-                minorColor, minorWidth, minorSpacing,
-                gridExtent, GridPlane.XZ
-            );
-            this.scene.add(this.gridXZ);
-        }
+        this.grids.forEach( (g: Grid) => {
+            g.removeFromParent();
+        });
+        this.grids=[];
         
-        if(this.gridYZ){
-            this.gridYZ.removeFromParent();
-            this.gridYZ=undefined;
-        }
-        if( yz ){
-            this.gridYZ = this.makeGrid(
-                majorColor, majorWidth, majorInterval,
-                minorColor, minorWidth, minorSpacing,
-                gridExtent, GridPlane.YZ
-            );
-            this.scene.add(this.gridYZ);
-        }
+        [ [xy,GridPlane.XY], [xz,GridPlane.XZ], [yz,GridPlane.YZ] ].forEach( (tmp: [boolean,GridPlane] ) => {
+            if(tmp[0]){
+                let g = new Grid(
+                    majorColor, majorWidth, majorInterval,
+                    minorColor, minorWidth, minorSpacing,
+                    gridExtent, tmp[1]
+                );
+                g.addToScene(this.scene);
+                this.grids.push(g);
+            }
+        });
+         
         this.draw();
-    }
-     
-    private makeGrid( majorColor:number, majorWidth:number, majorInterval:number,
-        minorColor:number, minorWidth:number, minorDistance:number,
-        gridExtent:number, gridType:GridPlane) {
-
-
-
-        let majorMtl:any = new LineMaterial({color:majorColor, linewidth: majorWidth});
-        let minorMtl:any = new LineMaterial({color:minorColor, linewidth: minorWidth});
-        let majorLines: number[] = [];
-        let minorLines: number[] = [];
-        for(let i=-gridExtent,j=0;i<=gridExtent;i+=minorDistance,j++){
-            let idx: number;
-            let L: any[];
-            if( j === majorInterval ){
-                j=0;
-                L=majorLines;
-            } else {
-                L=minorLines;
-            }
-
-            switch(gridType){
-                case GridPlane.XY:
-                    L.push(i);              L.push(-gridExtent); L.push(0);
-                    L.push(i);              L.push( gridExtent); L.push(0);
-                    L.push(-gridExtent);    L.push(i);           L.push(0);
-                    L.push( gridExtent);    L.push(i);           L.push(0);
-                    // L.push( new THREE.Vector3(   i,         -gridExtent, 0) );
-                    // L.push( new THREE.Vector3(   i,         gridExtent,  0) );
-                    // L.push( new THREE.Vector3(-gridExtent,   i,          0) );
-                    // L.push( new THREE.Vector3( gridExtent,   i,          0));
-                    break;
-                case GridPlane.YZ:
-                    L.push(0);    L.push(i);            L.push(-gridExtent);
-                    L.push(0);    L.push(i);            L.push(gridExtent);
-                    L.push(0);    L.push(-gridExtent);  L.push(i);
-                    L.push(0);    L.push(gridExtent);   L.push(i);
-                    // L.push( new THREE.Vector3(  0,  i,          -gridExtent) );
-                    // L.push( new THREE.Vector3(  0,  i,           gridExtent) );
-                    // L.push( new THREE.Vector3(  0,  -gridExtent,  i) );
-                    // L.push( new THREE.Vector3(  0,   gridExtent,  i));
-                    break;
-                case GridPlane.XZ:
-                    L.push(i);              L.push(0);  L.push(-gridExtent);
-                    L.push(i);              L.push(0);  L.push(gridExtent);
-                    L.push(-gridExtent);    L.push(0);  L.push(i);
-                    L.push( gridExtent);    L.push(0);  L.push(i);
-                    // L.push( new THREE.Vector3(  i,           0, -gridExtent) );
-                    // L.push( new THREE.Vector3(  i,           0,  gridExtent) );
-                    // L.push( new THREE.Vector3(  -gridExtent, 0,  i) );
-                    // L.push( new THREE.Vector3(   gridExtent, 0,  i));
-                    break;
-                default:
-                    throw new Error();
-            }
-        }
-        let grp = new THREE.Group();
-        grp.name = "grid";
-        
-
-        let geo = new LineSegmentsGeometry();
-        geo.setPositions(majorLines);
-        let m = new LineSegments2(geo,majorMtl);
-        grp.add(m);
-
-        geo = new LineSegmentsGeometry();
-        geo.setPositions(minorLines);
-        m = new LineSegments2(geo,minorMtl);
-        grp.add(m);
-
-        // let geo = new THREE.BufferGeometry();
-        // geo.setFromPoints(majorLines);
-        // let m = new THREE.LineSegments(geo,majorMtl);
-        // m.name="gridLine";
-        // grp.add(m);
-
-        // geo = new THREE.BufferGeometry();
-        // geo.setFromPoints(minorLines);
-        // m = new THREE.LineSegments(geo,minorMtl);
-        // m.name="gridLine";
-        // grp.add(m);
-
-        grp.userData = new UserData(false);
-        return grp;
     }
 
     lookAt( eyex:number, eyey:number, eyez:number, 
@@ -827,6 +674,7 @@ export class View{
     }
     
 
+    /*
     setMeshes(meshes: Mesh[]) {
 
         this.clearLabels();
@@ -912,11 +760,18 @@ export class View{
         });
 
     }
-
+    */
     getBoundingBox(){
+        if( this.bbox === undefined){
+            let m = new THREE.Box3();
+            m.min = new THREE.Vector3(0,0,0);
+            m.max = new THREE.Vector3(0,0,0);
+            return m;
+        }
         return this.bbox;
     }
-
+    
+   
     getCamera(){
         switch(this.activeCameraType){
             case CameraType.PERSPECTIVE:
