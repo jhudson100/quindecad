@@ -29,11 +29,12 @@ import { Editor } from "../Editor.js";
 import { Box3, Camera, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "../ThreeTypes.js";
 import { ObjectDepot, SelectionEvent } from "../ObjectDepot.js";
 import { GeometricObject } from "../Objects/GeometricObject.js";
-import { UserData } from "./UserData.js";
+import { ObjectType, UserData } from "./UserData.js";
 import { ClippingPlane } from "./ClippingPlane.js";
 import { Label } from "./Label.js";
 import { Grid, GridPlane } from "./Grid.js";
 import { Point3 } from "../Point3.js";
+import { TransformWidget } from "./TransformWidget.js";
 
 type ParameterlessCallback = ()=>void;
 
@@ -136,6 +137,9 @@ export class View{
     minorSpacing: number;
     gridExtent: number;
 
+    //transform widgets
+    transformWidget: TransformWidget;
+
     //raycaster for object picking
     raycaster: any;
 
@@ -152,37 +156,54 @@ export class View{
         this.renderer = new THREE.WebGLRenderer({antialias:true} );
         this.renderer.setSize(16,16,false);   //dummy
         this.renderer.localClippingEnabled=true;
+        this.renderer.autoClear=false;
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xffffff);
+        parent.appendChild(this.renderer.domElement);
 
 
-        //we want to intercept some mouse events before the orbitcontrol has a chance
-        //to see them.
-        this.renderer.domElement.addEventListener("pointerdown", (ev: MouseEvent)=>{
-            if( ev.button === 0 && ev.ctrlKey ){
-                //intercept the event and don't let it get to the controls
-                ev.stopImmediatePropagation();  
-                ev.preventDefault();
-                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
-                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
-                this.showPointUnderMouse(x,y);
-            } else if( ev.button === 0 ){
-                ev.stopImmediatePropagation();
-                ev.preventDefault();
-                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
-                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
-                let I = this.getObjectUnderMouse(x,y);
-                if(!I || !I.object.userData){
-                    ObjectDepot.clearSelection();
-                    return;
-                }
-                let u : UserData = I.object.userData;
-                if( ev.shiftKey ){
-                    ObjectDepot.toggleSelection(u.associatedObject);
-                } else {
-                    ObjectDepot.replaceSelection([u.associatedObject]);
-                }
+        this.transformWidget = new TransformWidget();
+
+        this.addEventListeners();
+        this.createOverlayLabel(parent);
+        this.createCamera();
+        this.createLights();
+        this.makeGrids(
+            0xa0a0a0, 0.5, 10,
+            0xddddff, 0.5, 1,
+            200,
+            true,false,false
+        );
+        this.createAxes();
+        this.createControls();
+
+
+
+        //requestAnimationFrame pegs the cpu in my tests;
+        //we don't need that, so we throttle the rate a bit
+        //ref: https://stackoverflow.com/questions/19764018/controlling-fps-with-requestanimationframe
+        // let nextDrawTime = 0;
+        let periodicFunc =  (timestamp: DOMHighResTimeStamp) => {
+            requestAnimationFrame(periodicFunc);
+            if( this.viewIsStale ){ //timestamp >= nextDrawTime ){
+                // nextDrawTime = timestamp + 30;
+                // this.controls.update;
+                this.draw();    
             }
-        });
+        };
+        periodicFunc(0);
 
+        this.raycaster = new THREE.Raycaster();
+
+        this.lookAt( 5.5, -5, 5, 0,0,0, 0,0,1);
+        this.resize();
+        this.draw();
+
+    } // constructor
+
+
+       
+    private createOverlayLabel(parent: HTMLElement){
         let labeldiv1 = document.createElement("div");
         labeldiv1.style.position="relative";
         labeldiv1.style.left="0px";
@@ -198,80 +219,148 @@ export class View{
         this.labeldiv.style.height="100vh";
         //@ts-ignore
         this.labeldiv.style.zIndex=2;
+    }
+
+    private addEventListeners(){
+
+       
+        //if the user clicks on the view, we want to take focus
+        //away from the editor
+        //on Linux, for example, a middle mouse press is 
+        //sent to the text editor as a paste operation if we don't
+        //handle this
+        this.renderer.domElement.addEventListener( "mousedown", (ev: MouseEvent) => {
+            Editor.get().blur();
+            ev.preventDefault();        //prevent editor from getting middle mouse event
+        } );
+       
+
+        this.renderer.domElement.addEventListener( "pointermove", (ev: MouseEvent) => {
+            let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+            let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+
+            //the ObjectDepot will take care of notifying the View
+            //to execute a re-draw if something is being dragged. Note
+            //that the transform widget always returns false for isChange
+            //when something is being dragged. If nothing is being dragged,
+            //then we consult isChange so we can do highlighting of the
+            //drag handles when the mouse is over them.
+            let [isCurrentlyOver,isChange] = this.transformWidget.mouseMove(x,y,this.getCamera());
+            if(isChange){
+                this.draw();
+            }
+        });
+
+        //we want to intercept some mouse events before the orbitcontrol has a chance
+        //to see them.
+        this.renderer.domElement.addEventListener("pointerdown", (ev: PointerEvent)=>{
+            if( ev.button === 0 && ev.ctrlKey ){
+                //intercept the event and don't let it get to the controls
+                ev.stopImmediatePropagation();  
+                ev.preventDefault();
+                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+                this.showPointUnderMouse(x,y);
+            } else if( ev.button === 0 ){
+                ev.stopImmediatePropagation();
+                ev.preventDefault();
+                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
 
 
-        // this.labelRenderer = new CSS2DRenderer(labeldiv);
-        // this.labelRenderer.setSize(16,16);        //dummy
-        // this.labelRenderer.domElement.style.position="absolute";
+                //first, try the transform widgets
+                let [isOver,_] = this.transformWidget.mouseMove( x,y, this.getCamera() );
+                if( isOver ){
+                    this.renderer.domElement.setPointerCapture(ev.pointerId);
+                    this.transformWidget.beginDrag(x,y,this.getCamera() );
+                    return;
+                }
 
-        this.perspectiveCamera = new THREE.PerspectiveCamera( 
-            45, //fov
-            1.0,    //aspect ratio
-            0.1,        //hither
-            1000        //yon
-        );
-        this.perspectiveCamera.up = new THREE.Vector3(0,0,1);   //so controls knows which way is up
+                //if mouse is not over transform widget, then see if it's over
+                //any scene objects
 
-        this.orthoCamera = new THREE.OrthographicCamera(
-            -1,1, 1,-1, -1000, 1000
-        )
-        this.orthoCamera.zoom=0.2;
-        this.orthoCamera.up = new THREE.Vector3(0,0,1);
-
-
-        this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xffffff);
-        let amb = new THREE.AmbientLight(0x808080);
-        amb.name="ambient light";
-        //amb.userData = new UserData(false);
-        this.scene.add(amb);
-
-        this.lightTarget = new THREE.Object3D();
-        //this.lightTarget.userData = new UserData(false);
-        this.scene.add(this.lightTarget);
-
-        this.light = new THREE.DirectionalLight(
-            0xffffff, //color
-            4.0     //intensity
-        );
-        this.scene.add(this.light);
-        this.light.target = this.lightTarget;
-
-        // this.light = new THREE.PointLight(
-        //     0xffffff,   //color
-        //     4,          //intensity
-        //     0,          //max distance
-        //     0           //decay
-        // );
-        //this.light.userData = new UserData(false);
-        this.light.name="moving light";
+                let I = this.getObjectUnderMouse(x,y,this.getCamera(), this.scene, true);
+                if(!I || !I.object.userData || I.object.userData.type === undefined ){
+                    //mouse clicked over empty space, so clear selection
+                    ObjectDepot.clearSelection();
+                    return;
+                }
+                let u : UserData = I.object.userData;
+                console.log(I.object, u);
 
 
-        this.makeGrids(
-            0xa0a0a0, 0.5, 10,
-            0xddddff, 0.5, 1,
-            200,
-            true,false,false
-        );
+                if( ev.shiftKey ){
+                    ObjectDepot.toggleSelection(u.associatedObject);
+                } else {
+                    ObjectDepot.replaceSelection([u.associatedObject]);
+                }
+            }
+        });
 
-        //axes
-        this.axes = new THREE.Group();
-        this.axes.name = "axes";
-        //this.axes.userData = new UserData(false);
-        this.scene.add(this.axes);
-        let axp = [ [1,0,0], [0,1,0], [0,0,1] ];
-        let col = [ 0xff0000, 0x00ff00, 0x0000ff ];
-        for(let i=0;i<3;++i){
-            let geo = new LineSegmentsGeometry();
-            geo.setPositions( [ 0,0,0, axp[i][0]*100, axp[i][1]*100, axp[i][2]*100 ] );
-            let mtl = new LineMaterial({
-                color: col[i], 
-                linewidth: 3
+        this.renderer.domElement.addEventListener("pointerup", (ev: PointerEvent)=>{
+            this.transformWidget.endDrag(); //called even if we weren't doing a drag
+        });
+
+        ObjectDepot.addObjectCreatedListener( (obj: GeometricObject) => {
+            this.objectWasAdded(obj);
+        });
+        ObjectDepot.addSelectionChangeListener( (changes: SelectionEvent[]) => {
+            changes.forEach( (ev: SelectionEvent) => {
+                if( ev.nowSelected ){
+                    ev.obj.threeJsObject.material.color = new THREE.Color(0xffff00);
+                } else {
+                    //FIXME: Set it back to its original color
+                    ev.obj.threeJsObject.material.color = new THREE.Color(0x00ff00);
+                }
             });
-            let axis = new LineSegments2(geo,mtl);
-            this.axes.add(axis);
-        }
+            this.draw();
+        });
 
+        ObjectDepot.addObjectTransformedListener( (objs: GeometricObject[]) => {
+            console.log("OTL?");
+            objs.forEach( (obj: GeometricObject) => {
+                console.log("OTL",obj.transform.translation);
+                obj.threeJsObject.position.set( obj.transform.translation[0],
+                                                obj.transform.translation[1],
+                                                obj.transform.translation[2]
+                );
+            });
+            this.draw();
+        });
+
+
+        // this.renderer.domElement.addEventListener( "pointermove", 
+        //     (ev: PointerEvent) => {
+        //         //domElement is a canvas
+        //         //map 0...w to range -1...1
+        //         this.lastMouseX = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+        //         this.lastMouseY = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+        //     }
+        // );
+
+        // ["over","enter","down","move","up","cancel","out","leave"].forEach( (evname:string) => {
+        //     this.renderer.domElement.addEventListener("pointer"+evname, () => {
+        //         this.viewIsStale=true;
+        //     })
+        // });
+        
+        // ["wheel","mousewheel"].forEach( (evname: string) => {
+        //     this.renderer.domElement.addEventListener(evname, () => {
+        //         this.viewIsStale=true;
+        //     })
+        // });
+
+        // ["keydown","keyup"].forEach( (evname: string) => {
+        //     window.addEventListener(evname, () => {
+        //         this.viewIsStale=true;
+        //     })
+        // });
+
+    }
+
+
+
+    private createControls(){
         //@ts-ignore
         this.perspectiveControls = new OrbitControls(this.perspectiveCamera,this.renderer.domElement);
         this.perspectiveControls.listenToKeyEvents( window );
@@ -305,99 +394,78 @@ export class View{
             MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.DOLLY
         };
-        
-        parent.appendChild(this.renderer.domElement);
 
         this.perspectiveControls.addEventListener("change",()=>{
             this.viewIsStale=true;
             this.labelPositionsAreStale=true;
         });
 
-        // this.renderer.domElement.addEventListener( "pointermove", 
-        //     (ev: PointerEvent) => {
-        //         //domElement is a canvas
-        //         //map 0...w to range -1...1
-        //         this.lastMouseX = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
-        //         this.lastMouseY = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
-        //     }
+    }
+
+    private createLights(){
+        let amb = new THREE.AmbientLight(0x808080);
+        amb.name="ambient light";
+        //amb.userData = new UserData(false);
+        this.scene.add(amb);
+
+        this.lightTarget = new THREE.Object3D();
+        //this.lightTarget.userData = new UserData(false);
+        this.scene.add(this.lightTarget);
+
+        this.light = new THREE.DirectionalLight(
+            0xffffff, //color
+            4.0     //intensity
+        );
+        this.scene.add(this.light);
+        this.light.target = this.lightTarget;
+
+        // this.light = new THREE.PointLight(
+        //     0xffffff,   //color
+        //     4,          //intensity
+        //     0,          //max distance
+        //     0           //decay
         // );
-
-        // ["over","enter","down","move","up","cancel","out","leave"].forEach( (evname:string) => {
-        //     this.renderer.domElement.addEventListener("pointer"+evname, () => {
-        //         this.viewIsStale=true;
-        //     })
-        // });
-        
-        // ["wheel","mousewheel"].forEach( (evname: string) => {
-        //     this.renderer.domElement.addEventListener(evname, () => {
-        //         this.viewIsStale=true;
-        //     })
-        // });
-
-        // ["keydown","keyup"].forEach( (evname: string) => {
-        //     window.addEventListener(evname, () => {
-        //         this.viewIsStale=true;
-        //     })
-        // });
+        //this.light.userData = new UserData(false);
+        this.light.name="moving light";
+    }
 
 
-        //if the user clicks on the view, we want to take focus
-        //away from the editor
-        //on Linux, for example, a middle mouse press is 
-        //sent to the text editor as a paste operation if we don't
-        //handle this
-        this.renderer.domElement.addEventListener( "mousedown", (ev: MouseEvent) => {
-            Editor.get().blur();
-            ev.preventDefault();        //prevent editor from getting middle mouse event
-        } );
-
-        this.lookAt( 5.5, -5, 5, 0,0,0, 0,0,1);
-
-        this.resize();
-        this.draw();
-
-        //requestAnimationFrame pegs the cpu in my tests;
-        //we don't need that, so we throttle the rate a bit
-        //ref: https://stackoverflow.com/questions/19764018/controlling-fps-with-requestanimationframe
-        // let nextDrawTime = 0;
-        let periodicFunc =  (timestamp: DOMHighResTimeStamp) => {
-            requestAnimationFrame(periodicFunc);
-            if( this.viewIsStale ){ //timestamp >= nextDrawTime ){
-                // nextDrawTime = timestamp + 30;
-                // this.controls.update;
-                this.draw();    
-            }
-        };
-        periodicFunc(0);
-
-
-        this.raycaster = new THREE.Raycaster();
-
-        // document.addEventListener("keydown", (ev: KeyboardEvent) => {
-        //     if( document.activeElement === document.body ){
-        //         switch(ev.key){
-        //             default:
-        //                 break;
-        //         }
-        //     }
-        // });
-
-        ObjectDepot.addAddObjectListener( (obj: GeometricObject) => {
-            this.objectWasAdded(obj);
-        });
-        ObjectDepot.addSelectionChangeListener( (changes: SelectionEvent[]) => {
-            changes.forEach( (ev: SelectionEvent) => {
-                if( ev.nowSelected ){
-                    ev.obj.threeJsObject.material.color = new THREE.Color(0xffff00);
-                } else {
-                    //FIXME: Set it back to its original color
-                    ev.obj.threeJsObject.material.color = new THREE.Color(0x00ff00);
-                }
+    private createAxes(){
+        //axes
+        this.axes = new THREE.Group();
+        this.axes.name = "axes";
+        //this.axes.userData = new UserData(false);
+        this.scene.add(this.axes);
+        let axp = [ [1,0,0], [0,1,0], [0,0,1] ];
+        let col = [ 0xff0000, 0x00ff00, 0x0000ff ];
+        for(let i=0;i<3;++i){
+            let geo = new LineSegmentsGeometry();
+            geo.setPositions( [ 0,0,0, axp[i][0]*100, axp[i][1]*100, axp[i][2]*100 ] );
+            let mtl = new LineMaterial({
+                color: col[i], 
+                linewidth: 3
             });
-            this.draw();
-        });
+            let axis = new LineSegments2(geo,mtl);
+            this.axes.add(axis);
+        }
+    }
+    
 
-    } // constructor
+    private createCamera(){
+        this.perspectiveCamera = new THREE.PerspectiveCamera( 
+            45, //fov
+            1.0,    //aspect ratio
+            0.1,        //hither
+            1000        //yon
+        );
+        this.perspectiveCamera.up = new THREE.Vector3(0,0,1);   //so controls knows which way is up
+
+        this.orthoCamera = new THREE.OrthographicCamera(
+            -1,1, 1,-1, -1000, 1000
+        )
+        this.orthoCamera.zoom=0.2;
+        this.orthoCamera.up = new THREE.Vector3(0,0,1);
+    }
 
     private objectWasAdded(obj: GeometricObject) {
         let v=obj.vertices;
@@ -423,7 +491,7 @@ export class View{
         }
         let m3 = new THREE.Mesh(geo,mtl);
         m3.name = obj.name ?? "";
-        m3.userData = new UserData(obj);
+        m3.userData = new UserData({ type: ObjectType.GEOMETRIC_OBJECT, obj: obj });
         obj.threeJsObject = m3;
         this.scene.add(m3);
 
@@ -483,33 +551,39 @@ export class View{
         });
     }
 
-    getObjectUnderMouse(x:number,y: number): RaycastIntersection{
+    getObjectUnderMouse(x:number,y: number,
+            camera: Camera, scene: any, respectClippingPlanes: boolean): RaycastIntersection{
 
         //ref: https://threejs.org/docs/#api/en/core/Raycaster
         let p = new THREE.Vector2(x,y);
-        console.log("Testing with p=",p);
-        this.raycaster.setFromCamera( p, this.getCamera() );
-        let intersections = this.raycaster.intersectObjects( this.scene.children );
+        //console.log("Testing with p=",p);
+        //this.raycaster.setFromCamera( p, this.getCamera() );
+        this.raycaster.setFromCamera( p, camera );
+        // let intersections = this.raycaster.intersectObjects( this.scene.children );
+        let intersections = this.raycaster.intersectObjects( scene.children );
         //intersections is a list, sorted by distance. Each entry
         //is of type RaycastIntersection (this is not a Three.js type;
         //it is a locally defined type which matches the fields
         //in Three's returned object)
         
-        //only consider things in the scene that represent a GeometricObject
-        //(by looking at the userData field)
+        //only consider things in the scene that represent 
+        //things with UserData fields.
         //Discard anything that a clipping plane rejects
         for(let i=0;i<intersections.length;++i){
             let I = intersections[i];
-            if( I.object && I.object.userData && (I.object.userData as UserData)?.associatedObject ){
-                let keep=true;
-                for(let j=0;j<this.clippingPlanes.length;++j){
-                    if( this.clippingPlanes[j].distanceToPoint(I.point) < 0 ){
-                        keep=false;
-                        break;
+            if( I.object && I.object.userData ){ //&& (I.object.userData as UserData)?.associatedObject ){
+
+                if( respectClippingPlanes ){
+                    let keep = true;
+                    for(let j=0;j<this.clippingPlanes.length;++j){
+                        if( this.clippingPlanes[j].distanceToPoint(I.point) < 0 ){
+                            keep=false;
+                            break;
+                        }
                     }
+                    if(!keep)
+                        continue;
                 }
-                if(!keep)
-                    continue;
 
                 return I;
             }
@@ -519,7 +593,7 @@ export class View{
         //x,y are in normalized -1...1 coordinates, not pixel coordinates
         this.clearLabels();
 
-        let I = this.getObjectUnderMouse(x,y);
+        let I = this.getObjectUnderMouse(x,y, this.getCamera(), this.scene, true );
         if( !I ){
             ErrorReporter.get().addMessage( "No visible point under the mouse" );
             ErrorReporter.get().scrollToBottom();
@@ -638,7 +712,14 @@ export class View{
             this.lightTarget.position.set( pfront.x, pfront.y, pfront.z );
         }
 
+
+        //ref: https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
+        this.renderer.clear();
         this.renderer.render(this.scene, camera );
+        this.renderer.clearDepth();
+        this.transformWidget.draw(this.renderer,camera);
+
+
         this.viewIsStale=false;
     }
 

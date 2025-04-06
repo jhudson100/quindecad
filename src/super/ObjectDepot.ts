@@ -12,13 +12,17 @@ let allObjects: GeometricObject[] = [];
 let allObjectNames = new Set<string>();
 
 //callbacks to be executed whenever we add an object to the depot
-type AddObjectListener = (obj: GeometricObject) => void;
-let addObjectCallbacks: AddObjectListener[] = [];
+type ObjectCreatedListener = (obj: GeometricObject) => void;
+let objectCreatedCallbacks: ObjectCreatedListener[] = [];
+
+//callbacks to be executed whenever we change object transforms
+type ObjectTransformedListener = (obj: GeometricObject[]) => void;
+let objectTransformedCallbacks: ObjectTransformedListener[] = [];
 
 //callbacks to execute whenever selection changes
 export interface SelectionEvent {
-    obj: GeometricObject;
-    nowSelected: boolean;
+    obj: GeometricObject;   //affected object
+    nowSelected: boolean;   //true if the object is now selected; false if not
 }
 type SelectionChangeListener = (changed: SelectionEvent[]) => void;
 let selectionChangedCallbacks: SelectionChangeListener[] = [];
@@ -26,6 +30,8 @@ let selectionChangedCallbacks: SelectionChangeListener[] = [];
 
 export class ObjectDepot{
 
+    //only the ObjectDepot should change this list;
+    //it may be read by anyone
     static selectedObjects: GeometricObject[] = [];
 
     static getUniqueNameForObject( stem: string){
@@ -38,8 +44,8 @@ export class ObjectDepot{
         }
     }
 
-    static addAddObjectListener( func: AddObjectListener){
-        addObjectCallbacks.push(func);
+    static addObjectCreatedListener( func: ObjectCreatedListener){
+        objectCreatedCallbacks.push(func);
     }
 
     //callback gets a list of changed selections; things that didn't have
@@ -51,14 +57,36 @@ export class ObjectDepot{
     static addObjectToDepot( obj: GeometricObject ){
         allObjects.push(obj);
         allObjectNames.add(obj.name);
-        addObjectCallbacks.forEach( (f: AddObjectListener ) => {
+        objectCreatedCallbacks.forEach( (f: ObjectCreatedListener ) => {
             f(obj);
         });
     }
 
+    //This adds tx,ty,tz to the existing objects' translation
+    //and calls the listeners
+    static translateSelection( tx: number, ty: number, tz: number){
+        let changed: GeometricObject[] = [];
+
+        ObjectDepot.selectedObjects.forEach( (obj: GeometricObject) => {
+            obj.transform.translation[0] += tx;
+            obj.transform.translation[1] += ty;
+            obj.transform.translation[2] += tz;
+            changed.push(obj);
+        });
+
+        objectTransformedCallbacks.forEach( (f: ObjectTransformedListener) => {
+            f(changed);
+        });
+    }
+
+    static addObjectTransformedListener(f: ObjectTransformedListener ){
+        objectTransformedCallbacks.push(f);
+    }
+    
     static removeObjectFromDepot( obj: GeometricObject ) {
         //Remove it from selection if it's there
         //call removeObjectCallback's
+        //FIXME: TODO
         throw new Error();
     }
 

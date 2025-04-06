@@ -1,5 +1,6 @@
 import Module, { Manifold,ManifoldToplevel } from "../../ext/manifold/manifold.js";
 import { TreeNode } from "../TreeNode.js";
+import { Transformation } from "./Transformation.js";
 
 let manifoldTopLevel: ManifoldToplevel;
 
@@ -25,7 +26,13 @@ export class GeometricObject{
     //every GeometricObject gets a different unique number.
     unique: number;
 
+    //this should be changed only by the ObjectDepot, but
+    //it may be read by anyone
+    transform: Transformation = new Transformation();
 
+    //true if this object is part of current selection; false if not
+    //This should be changed only by the ObjectDepot, but it
+    //may be read by anyone
     selected: boolean = false;
 
     //this is not set or managed by the GeometricObject at all;
@@ -36,7 +43,10 @@ export class GeometricObject{
     //the TreeView handles this
     treeNode: TreeNode;
 
+    //humanly readable name for the object
     name: string;
+
+    //name for the icon that is used to represent this kind of object
     iconName: string;
 
     //raw geometric data; we don't use indices since

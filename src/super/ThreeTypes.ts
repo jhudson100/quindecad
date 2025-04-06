@@ -8,6 +8,9 @@ export interface WebGLRenderer{
     setSize: (width:number, height: number, updateStyle: boolean) => void;
     localClippingEnabled: boolean;
     render: (scene:Object3D, camera: Camera) => void;
+    clear: (color?: boolean, depth?: boolean, stencil?: boolean) => void;
+    clearDepth: () => void;
+    autoClear: boolean;
 }
 
 export interface THREECSS2DRenderer{
@@ -23,11 +26,21 @@ export interface Vector3{
     z: number;
     length: () => number;
     set: (x:number, y:number, z:number) => void;
+    clone: ()=>Vector3;
+    multiplyScalar: (f: number) => Vector3;
+    sub: (v: Vector3) => Vector3;
+    project: (c: Camera) => Vector3;
 }
 
 export interface Box3{
     min: Vector3;
     max: Vector3;
+}
+
+export interface Sphere{
+    center: Vector3;
+    radius: number;
+    translate: (offset:Vector3)=>Sphere;
 }
 
 export interface Plane{

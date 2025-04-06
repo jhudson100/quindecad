@@ -492,7 +492,7 @@ export class TreeEditor{
             // });
         });
 
-        ObjectDepot.addAddObjectListener( (obj: GeometricObject) => {
+        ObjectDepot.addObjectCreatedListener( (obj: GeometricObject) => {
             // let nndata = new DifferenceNode("blah blah");
             //the 'true' tells jstree to get an existing instance
             //instead of creating a new one
