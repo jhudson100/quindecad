@@ -35,6 +35,8 @@ import { Label } from "./Label.js";
 import { Grid, GridPlane } from "./Grid.js";
 import { Point3 } from "../Point3.js";
 import { TransformWidget } from "./TransformWidget.js";
+import { Transformation } from "../Objects/Transformation.js";
+import {Mesh as THREEMesh } from "../ThreeTypes.js";
 
 type ParameterlessCallback = ()=>void;
 
@@ -161,9 +163,6 @@ export class View{
         this.scene.background = new THREE.Color(0xffffff);
         parent.appendChild(this.renderer.domElement);
 
-
-        this.transformWidget = new TransformWidget();
-
         this.addEventListeners();
         this.createOverlayLabel(parent);
         this.createCamera();
@@ -201,7 +200,9 @@ export class View{
 
     } // constructor
 
-
+    enableTransformWidget(origin: Vector3){
+        this.transformWidget = new TransformWidget(origin, this.getCamera() );
+    }
        
     private createOverlayLabel(parent: HTMLElement){
         let labeldiv1 = document.createElement("div");
@@ -236,18 +237,21 @@ export class View{
        
 
         this.renderer.domElement.addEventListener( "pointermove", (ev: MouseEvent) => {
-            let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
-            let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
+            if( this.transformWidget ){
+                    
+                let x = -1 + 2 * ev.offsetX / this.renderer.domElement.width;
+                let y = -(-1 + 2 * ev.offsetY / this.renderer.domElement.height);
 
-            //the ObjectDepot will take care of notifying the View
-            //to execute a re-draw if something is being dragged. Note
-            //that the transform widget always returns false for isChange
-            //when something is being dragged. If nothing is being dragged,
-            //then we consult isChange so we can do highlighting of the
-            //drag handles when the mouse is over them.
-            let [isCurrentlyOver,isChange] = this.transformWidget.mouseMove(x,y,this.getCamera());
-            if(isChange){
-                this.draw();
+                //the ObjectDepot will take care of notifying the View
+                //to execute a re-draw if something is being dragged. Note
+                //that the transform widget always returns false for isChange
+                //when something is being dragged. If nothing is being dragged,
+                //then we consult isChange so we can do highlighting of the
+                //drag handles when the mouse is over them.
+                let [isCurrentlyOver,isChange] = this.transformWidget.mouseMove(x,y,this.getCamera());
+                if(isChange){
+                    this.draw();
+                }
             }
         });
 
@@ -269,11 +273,13 @@ export class View{
 
 
                 //first, try the transform widgets
-                let [isOver,_] = this.transformWidget.mouseMove( x,y, this.getCamera() );
-                if( isOver ){
-                    this.renderer.domElement.setPointerCapture(ev.pointerId);
-                    this.transformWidget.beginDrag(x,y,this.getCamera() );
-                    return;
+                if( this.transformWidget ){
+                    let [isOver,_] = this.transformWidget.mouseMove( x,y, this.getCamera() );
+                    if( isOver ){
+                        this.renderer.domElement.setPointerCapture(ev.pointerId);
+                        this.transformWidget.beginDrag(x,y,this.getCamera() );
+                        return;
+                    }
                 }
 
                 //if mouse is not over transform widget, then see if it's over
@@ -313,13 +319,28 @@ export class View{
                     ev.obj.threeJsObject.material.color = new THREE.Color(0x00ff00);
                 }
             });
+
+            console.log("This is just for testing");
+            let cen = new THREE.Vector3(0,0,0);
+            ObjectDepot.selectedObjects.forEach( (obj: GeometricObject) => {
+                let c: number[] = obj.centroid();
+                cen.add( new THREE.Vector3(c[0],c[1],c[2]));
+            });
+            View.get().enableTransformWidget( cen );
+
+
             this.draw();
         });
 
         ObjectDepot.addObjectTransformedListener( (objs: GeometricObject[]) => {
-            console.log("OTL?");
             objs.forEach( (obj: GeometricObject) => {
-                console.log("OTL",obj.transform.translation);
+                obj.threeJsObject.scale.set( obj.transform.scale[0],
+                                             obj.transform.scale[1],
+                                             obj.transform.scale[2]
+                );
+
+                //FIXME: ROTATION
+
                 obj.threeJsObject.position.set( obj.transform.translation[0],
                                                 obj.transform.translation[1],
                                                 obj.transform.translation[2]
@@ -492,6 +513,7 @@ export class View{
         let m3 = new THREE.Mesh(geo,mtl);
         m3.name = obj.name ?? "";
         m3.userData = new UserData({ type: ObjectType.GEOMETRIC_OBJECT, obj: obj });
+        this.setThreeTransformFromGeometricObjectTransform( m3, obj.transform );
         obj.threeJsObject = m3;
         this.scene.add(m3);
 
@@ -520,6 +542,12 @@ export class View{
 
         this.draw();
 
+    }
+
+    setThreeTransformFromGeometricObjectTransform( m3: THREEMesh, transform: Transformation ){
+        m3.position.set( transform.translation[0], transform.translation[1], transform.translation[2] );
+        m3.scale.set( transform.scale[0], transform.scale[1], transform.scale[2]);
+        //FIXME: Set rotation
     }
 
     addLabel(pos: Point3, txt: string){
@@ -716,8 +744,11 @@ export class View{
         //ref: https://stackoverflow.com/questions/12666570/how-to-change-the-zorder-of-object-with-threejs/12666937#12666937
         this.renderer.clear();
         this.renderer.render(this.scene, camera );
-        this.renderer.clearDepth();
-        this.transformWidget.draw(this.renderer,camera);
+
+        if( this.transformWidget ){
+            this.renderer.clearDepth();
+            this.transformWidget.draw(this.renderer,camera);
+        }
 
 
         this.viewIsStale=false;

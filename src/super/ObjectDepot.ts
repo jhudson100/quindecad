@@ -90,6 +90,16 @@ export class ObjectDepot{
         throw new Error();
     }
 
+    /** Transform an object and call the callbacks */
+    static setObjectTransformation( obj: GeometricObject, translation: number[])
+    {
+        obj.transform.translation = [translation[0], translation[1], translation[2]];
+        let L=[obj];
+        objectTransformedCallbacks.forEach( (f: ObjectTransformedListener) => {
+            f(L);
+        });
+    }
+
     /** Clear current selection */
     static clearSelection(){
         if( ObjectDepot.selectedObjects.length > 0 ){

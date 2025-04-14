@@ -12,4 +12,14 @@ export class Transformation{
         this.scale = [1,1,1];
     }
 
+    apply( x: number, y: number, z: number ){
+        x *= this.scale[0];
+        y *= this.scale[1];
+        z *= this.scale[2];
+        //apply rotation
+        x += this.translation[0];
+        y += this.translation[1];
+        z += this.translation[2];
+        return [x,y,z];
+    }
 }

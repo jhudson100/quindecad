@@ -20,6 +20,12 @@ export interface THREECSS2DRenderer{
 
 }
 
+export interface Vector2{
+    x:number;
+    y:number;
+
+}
+
 export interface Vector3{
     x: number;
     y: number;
@@ -28,8 +34,12 @@ export interface Vector3{
     set: (x:number, y:number, z:number) => void;
     clone: ()=>Vector3;
     multiplyScalar: (f: number) => Vector3;
+    add: (v: Vector3) => Vector3;
     sub: (v: Vector3) => Vector3;
     project: (c: Camera) => Vector3;
+    unproject: (c: Camera) => Vector3;
+    applyMatrix4: (m: Matrix4) => Vector3;      //assumes w == 1
+    dot: (v: Vector3) => number;
 }
 
 export interface Box3{
@@ -132,4 +142,8 @@ export interface OrthographicCamera extends Camera{
     bottom: number;
     zoom: number;
     updateProjectionMatrix: ()=>void;
+}
+
+export interface Mesh extends Object3D {
+
 }

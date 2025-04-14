@@ -554,11 +554,12 @@ export class TreeEditor{
 
 
         console.log("===================Auto-adding for testing");
-        let cyl = new Cylinder(ObjectDepot.getUniqueNameForObject("cylinder"),new Point3(0,0,0),1,1);
+        let cyl = new Cylinder(ObjectDepot.getUniqueNameForObject("cylinder"),1,1);
         ObjectDepot.addObjectToDepot( cyl );
 
-        let cube = new Box(ObjectDepot.getUniqueNameForObject("box"),new Point3(1,0,0),1,1,1);
+        let cube = new Box(ObjectDepot.getUniqueNameForObject("box"),1,1,1);
         ObjectDepot.addObjectToDepot( cube );
+        ObjectDepot.setObjectTransformation( cube, [1,0,0] );
     }
 }
 

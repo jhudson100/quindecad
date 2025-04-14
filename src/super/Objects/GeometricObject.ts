@@ -26,8 +26,10 @@ export class GeometricObject{
     //every GeometricObject gets a different unique number.
     unique: number;
 
-    //this should be changed only by the ObjectDepot, but
+    //this should be changed only by the ObjectDepot (so
+    //that callbacks get executed correctly), but
     //it may be read by anyone
+    //FIXME: Ensure this is enforced by the codebase...
     transform: Transformation = new Transformation();
 
     //true if this object is part of current selection; false if not
@@ -60,6 +62,9 @@ export class GeometricObject{
         this.iconName=iconName;
     }
 
+    centroid(): number[]{
+        return this.transform.apply( 0,0,0 );
+    }
 
     manifoldToTriangles(ma: Manifold) {
         let m = ma.getMesh();
