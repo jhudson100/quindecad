@@ -1,8 +1,9 @@
-import { ObjectDepot, SelectionEvent } from "./ObjectDepot.js";
+import { ObjectDepot } from "./ObjectDepot.js";
 import { Box } from "./Objects/Cube.js";
 import { Cylinder } from "./Objects/Cylinder.js";
 import { GeometricObject } from "./Objects/GeometricObject.js";
 import { Point3 } from "./Point3.js";
+import { SelectionEvent, SelectionManager } from "./SelectionManager.js";
 import { TreeNode } from "./TreeNode.js";
 
 declare var $:any;
@@ -259,23 +260,15 @@ type ContextItemChosenCallback = ( data:ContextItemChosenData ) => void;
 export class TreeEditor{
 
     treeContainer: HTMLElement;
-    propertyContainer: HTMLElement;
+    // propertyContainer: HTMLElement;
 
-    constructor(treeContainer: HTMLElement, propertyContainer: HTMLElement){
+    constructor(treeContainer: HTMLElement){
         this.treeContainer=treeContainer;
-        this.propertyContainer=propertyContainer;
 
         let treeScroller = document.createElement("div");
         treeScroller.style.overflow="scroll";
         treeScroller.style.height="100%";
         this.treeContainer.appendChild(treeScroller);
-
-        let propertyScroller = document.createElement("div");
-        propertyScroller.style.overflow="scroll";
-        propertyScroller.style.height="100%";
-        this.propertyContainer.appendChild(propertyScroller);
-
-
 
         // let r = new DifferenceNode("difference");
         // let c1 = new BoxNode("pcbbase");
@@ -410,7 +403,7 @@ export class TreeEditor{
                 g.push(t.geo);
             });
             console.log("Replace sel with",g);
-            ObjectDepot.replaceSelection(g);
+            SelectionManager.replaceSelection(g);
 
             // console.log(data);
             // console.log(selected);
@@ -532,7 +525,7 @@ export class TreeEditor{
 
         });
 
-        ObjectDepot.addSelectionChangeListener( (changes: SelectionEvent[] ) => {
+        SelectionManager.addSelectionChangeListener( (changes: SelectionEvent[] ) => {
             changes.forEach( (s: SelectionEvent) => {
                 let id = s.obj.treeNode.jstreeID; //get the jstree ID for the dom node
                 console.log("SELECT",id);

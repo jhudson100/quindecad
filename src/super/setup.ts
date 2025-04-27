@@ -98,7 +98,9 @@ export function setupInterface(){
         sizeCallback
     );
     tmp.container.style.height="100%";
-    new TreeEditor(tmp.cells[0], tmp.cells[1]);
+
+    new TreeEditor(tmp.cells[0]);
+    new PropertyEditor(tmp.cells[1]);
  
 
     edTabs.selectTab(1);

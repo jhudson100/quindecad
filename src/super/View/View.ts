@@ -27,7 +27,7 @@ import {LineMaterial} from "LineMaterial";
 import { ErrorReporter } from "../ErrorReporter.js";
 import { Editor } from "../Editor.js";
 import { Box3, Camera, Material, OrthographicCamera, PerspectiveCamera, Plane, THREEOrbitControls, WebGLRenderer, Vector3 } from "../ThreeTypes.js";
-import { ObjectDepot, SelectionEvent } from "../ObjectDepot.js";
+import { ObjectDepot } from "../ObjectDepot.js";
 import { GeometricObject } from "../Objects/GeometricObject.js";
 import { ObjectType, UserData } from "./UserData.js";
 import { ClippingPlane } from "./ClippingPlane.js";
@@ -37,6 +37,7 @@ import { Point3 } from "../Point3.js";
 import { TransformWidget } from "./TransformWidget.js";
 import { Transformation } from "../Objects/Transformation.js";
 import {Mesh as THREEMesh } from "../ThreeTypes.js";
+import { SelectionEvent, SelectionManager } from "../SelectionManager.js";
 
 type ParameterlessCallback = ()=>void;
 
@@ -288,7 +289,7 @@ export class View{
                 let I = this.getObjectUnderMouse(x,y,this.getCamera(), this.scene, true);
                 if(!I || !I.object.userData || I.object.userData.type === undefined ){
                     //mouse clicked over empty space, so clear selection
-                    ObjectDepot.clearSelection();
+                    SelectionManager.clearSelection();
                     return;
                 }
                 let u : UserData = I.object.userData;
@@ -296,9 +297,9 @@ export class View{
 
 
                 if( ev.shiftKey ){
-                    ObjectDepot.toggleSelection(u.associatedObject);
+                    SelectionManager.toggleSelection(u.associatedObject);
                 } else {
-                    ObjectDepot.replaceSelection([u.associatedObject]);
+                    SelectionManager.replaceSelection([u.associatedObject]);
                 }
             }
         });
@@ -310,8 +311,8 @@ export class View{
         ObjectDepot.addObjectCreatedListener( (obj: GeometricObject) => {
             this.objectWasAdded(obj);
         });
-        ObjectDepot.addSelectionChangeListener( (changes: SelectionEvent[]) => {
-            changes.forEach( (ev: SelectionEvent) => {
+        SelectionManager.addSelectionChangeListener( (changes: SelectionEvent[]) => {
+            changes.forEach( (ev: SelectionEvent ) => {
                 if( ev.nowSelected ){
                     ev.obj.threeJsObject.material.color = new THREE.Color(0xffff00);
                 } else {
@@ -322,7 +323,7 @@ export class View{
 
             console.log("This is just for testing");
             let cen = new THREE.Vector3(0,0,0);
-            ObjectDepot.selectedObjects.forEach( (obj: GeometricObject) => {
+            SelectionManager.applyToSelection(  (obj: GeometricObject) => {
                 let c: number[] = obj.centroid();
                 cen.add( new THREE.Vector3(c[0],c[1],c[2]));
             });
