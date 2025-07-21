@@ -180,6 +180,10 @@ body {
     font-family: monospace;
 }
 
+.helpInfo .modulename {
+    color: grey;
+}
+
 .helpInfo .functionname {
     color: blueviolet;
     font-weight: bold;

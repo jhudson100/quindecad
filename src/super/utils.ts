@@ -100,6 +100,11 @@ export function getFunctionSignatureDocumentation(fs:FuncSpec, includeTypes: boo
     let toplevel = document.createElement("span");   
     toplevel.className = "functionsignature";
     
+    let modulename = document.createElement("span");
+    modulename.appendChild(document.createTextNode("quin."));
+    modulename.className="modulename";
+    toplevel.appendChild(modulename);
+
     let funcname = document.createElement("span");
     toplevel.appendChild(funcname);
     funcname.className="functionname";

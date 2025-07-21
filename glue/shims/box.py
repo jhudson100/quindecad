@@ -6,7 +6,7 @@ def box( min: VEC3, max: VEC3, color: COLOR=None, name: STRING=None) -> MESH_HAN
     Create a box that goes from the given minimum coordinate to the given maximum coordinate
     @param min The minimum coordinate
     @param max The maximum coordinate
-    @param color Color for the object, or None for default color.
+    @param color Color for the object, or None for default color
     @param name Name for the object
     """
     pass
