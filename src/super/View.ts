@@ -91,7 +91,6 @@ class Label{
         ctx.fill();
         ctx.stroke();
         parent.appendChild(this.cvs);
-        
     }
     removeDOMElements(){
         this.cvs.parentNode.removeChild(this.cvs);

@@ -17,12 +17,22 @@ enum SplitDirection{
     HORIZONTAL, VERTICAL
 };
 
+
+function keyEventCallback(ev: KeyboardEvent)  {
+    if( ev.shiftKey && ev.key === "Enter" ){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if( !WorkerManager.get().isWorkerBusy()){
+            PythonManager.get().runCodeFromEditor();
+        }
+    }
+}
+
 export function setupInterface(){
 
     let SIZER_SIZE="10px";
 
     let sizeCallback = () => {
-        // viewAndEditDiv.style.height=
         View.get().resize();
         Editor.get().resize();
         tabs.resize();
@@ -71,18 +81,9 @@ export function setupInterface(){
 
     View.initialize(viewdiv);
 
-    // let eddiv = createGridCell( contentArea, currentRow,3, 1,1);
     eddiv.style.height="100%";
     Editor.get().initialize(eddiv);
-    Editor.get().addKeyEventCommand( (ev: KeyboardEvent) => {
-        if( ev.shiftKey && ev.key === "Enter" ){
-            ev.preventDefault();
-            ev.stopPropagation();
-            if( !WorkerManager.get().isWorkerBusy()){
-                PythonManager.get().runCodeFromEditor();
-            }
-        }
-    });
+    Editor.get().addKeyEventCommand( keyEventCallback );
 
     
     let div = document.createElement("div");
@@ -104,6 +105,11 @@ export function setupInterface(){
    
     window.addEventListener("resize", () => {
         sizeCallback();
+    });
+
+
+    window.addEventListener("keydown", (ev: KeyboardEvent)=>{
+        keyEventCallback(ev);
     });
 
 
