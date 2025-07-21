@@ -75,4 +75,11 @@ for fname in [
     os.makedirs(folder,exist_ok=True)
     shutil.copyfile(fname,dest)
 
+
+with open("dist/.htaccess","w") as fp:
+    print("SetHandler default-handler", file=fp)
+    print("AddType text/plain py",file=fp)
+    print("Options -ExecCGI",file=fp)
+
+
 # link("../ext","dist/ext")
