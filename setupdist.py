@@ -15,6 +15,7 @@ shutil.copyfile("src/about.txt","dist/about.txt")
 shutil.copyfile("src/help.html","dist/help.html")
 shutil.copyfile("src/demo.txt","dist/demo.txt")
 shutil.copyfile("src/main.css","dist/main.css")
+shutil.copyfile("src/envmap.jpg","dist/envmap.jpg")
 
 #some web hosts treat *anything* with a .py in the name as
 #if it is a cgi script, even if we don't ask to execute it.
@@ -57,14 +58,9 @@ for fname in [
       "dist/ext/lines",
     ),
 
-    # "src/ext/three/package/examples/jsm/renderers/CSS2DRenderer.js",
     # "src/ext/three/package/examples/jsm/controls/TrackballControls.js",
     "src/ext/split/package/dist/split-grid.mjs",
-    # "src/ext/jquery/jquery-3.7.1.min.js",
-    # "src/ext/jqueryui/jquery-ui.min.css",
-    # "src/ext/jqueryui/jquery-ui.min.js",
-    # "src/ext/jqueryui/jquery-ui.structure.min.css",
-    # "src/ext/jqueryui/jquery-ui.theme.min.css",
+    "src/ext/three/package/examples/jsm/effects/OutlineEffect.js"
 ]:
     if type(fname) == str:
         folder=f"dist/ext/{fname.split('/')[2]}"

@@ -25,6 +25,9 @@ import {LineSegments2} from "LineSegments2";
 import {LineSegmentsGeometry} from "LineSegmentsGeometry";
 
 // @ts-ignore
+import {OutlineEffect} from "OutlineEffect";
+
+// @ts-ignore
 import {LineMaterial} from "LineMaterial";
 
 import { ErrorReporter } from "./ErrorReporter.js";
@@ -68,6 +71,7 @@ class Label{
     elem: HTMLElement;
     elemW: number;
     constructor( parent: HTMLElement, p: Vector3, txt: string){
+
         this.worldPoint = p;
         this.elem = document.createElement("span");
         parent.appendChild(this.elem);
@@ -83,7 +87,7 @@ class Label{
         this.cvs.style.position="absolute";
         this.cvs.width=8;
         this.cvs.height=8;
-        let ctx = this.cvs.getContext("2d");
+        let ctx = this.cvs.getContext("2d")!;
         ctx.clearRect(0,0,this.cvs.width,this.cvs.height);
         ctx.fillStyle="#8080ff";
         ctx.strokeStyle="black";
@@ -93,8 +97,10 @@ class Label{
         parent.appendChild(this.cvs);
     }
     removeDOMElements(){
-        this.cvs.parentNode.removeChild(this.cvs);
-        this.elem.parentNode.removeChild(this.elem);
+        if( this.cvs.parentNode)
+            this.cvs.parentNode.removeChild(this.cvs);
+        if( this.elem.parentNode)
+            this.elem.parentNode.removeChild(this.elem);
     }
 
     updatePosition(camera:Camera, w: number, h: number){
@@ -164,15 +170,24 @@ export class View{
     orthoControls: THREEOrbitControls; //TrackballControls;
 
     //light that is located at the eye
-    light: any;
+    eyeLight: any;
+
+    //environment map for rendering
+    envMap: any;
+
+    //other ambient lights
+    // ambientLights: any[];
 
     //light will point at this object (this object
     //is not drawn; it only exists for pointing the light);
-    //this is a THREE.Object3D object.
+    //lightTarget is a THREE.Object3D object.
     lightTarget: any;
 
     //the renderer: Draws the scene: A THREE.WebGLRenderer
     renderer: WebGLRenderer;
+
+    //outline effect
+    outlineEffect: any;
 
     labels: Label[] = [];
     labeldiv: HTMLDivElement;
@@ -210,6 +225,10 @@ export class View{
         this.renderer.setSize(16,16,false);   //dummy
         this.renderer.localClippingEnabled=true;
 
+
+        var L = new THREE.TextureLoader();
+        this.envMap = L.load( "envmap.jpg" );
+        this.envMap.mapping = THREE.EquirectangularReflectionMapping;
 
         //we want to intercept some mouse events before the orbitcontrol has a chance
         //to see them.
@@ -262,7 +281,7 @@ export class View{
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xffffff);
-        let amb = new THREE.AmbientLight(0x808080);
+        let amb = new THREE.HemisphereLight( 0xccccff, 0xffffcc, 1.0); 
         amb.name="ambient light";
         amb.userData = new UserData(false);
         this.scene.add(amb);
@@ -271,12 +290,23 @@ export class View{
         this.lightTarget.userData = new UserData(false);
         this.scene.add(this.lightTarget);
 
-        this.light = new THREE.DirectionalLight(
+        this.eyeLight = new THREE.DirectionalLight(
             0xffffff, //color
-            4.0     //intensity
+            3.5     //intensity
         );
-        this.scene.add(this.light);
-        this.light.target = this.lightTarget;
+        this.scene.add(this.eyeLight);
+        this.eyeLight.target = this.lightTarget;
+        this.eyeLight.userData = new UserData(false);
+        this.eyeLight.name="moving light";
+
+        // let alight1 = new THREE.HemisphereLight (
+        //     0xccccff,   //sky color: Slight cool light
+        //     0xffffcc,   //ground color: Slight warm light
+        //     1.0         //intensity
+        // );
+        // alight1.name = "ambient light 1"
+        
+        // this.ambientLights = [alight1];
 
         // this.light = new THREE.PointLight(
         //     0xffffff,   //color
@@ -284,8 +314,7 @@ export class View{
         //     0,          //max distance
         //     0           //decay
         // );
-        this.light.userData = new UserData(false);
-        this.light.name="moving light";
+       
 
 
         this.makeGrids(
@@ -436,6 +465,12 @@ export class View{
         //         }
         //     }
         // });
+
+        this.outlineEffect = new OutlineEffect(this.renderer,
+                {
+                    defaultThickness: 0.005
+                }
+        );
 
     } // constructor
 
@@ -721,7 +756,7 @@ export class View{
         //must do this after updating controls
         this.recomputeLabelPositions();
 
-        if( this.light ){
+        if( this.eyeLight ){
             let p = camera.position;
             let W = camera.matrixWorld;
             let v = new THREE.Vector4(0,0,-1,0);
@@ -731,11 +766,17 @@ export class View{
             let pfront = new THREE.Vector3(p.x,p.y,p.z);
             pfront.add( v3 );
 
-            this.light.position.set( p.x, p.y, p.z );
+            this.eyeLight.position.set( p.x, p.y, p.z );
             this.lightTarget.position.set( pfront.x, pfront.y, pfront.z );
         }
 
-        this.renderer.render(this.scene, camera );
+        
+        if(!this.outlineEffect){
+            this.renderer.render(this.scene, camera );
+        } else {
+            this.outlineEffect.render( this.scene, camera );
+        }
+
         this.viewIsStale=false;
     }
 
@@ -812,7 +853,14 @@ export class View{
             let c = color[0] << 16 ;
             c |= color[1] << 8;
             c |= color[2] ;
-            let mtl: Material = new THREE.MeshLambertMaterial( { color: c } );
+            //let mtl: Material = new THREE.MeshLambertMaterial( { color: c } );
+            let mtl: Material = new THREE.MeshStandardMaterial( { 
+                    color: c, 
+                    metalness: 0.5,
+                    roughness: 0.5,
+                    //envMap: this.envMap
+             } );
+            
             this.allMaterials.push(mtl);
             mtl.clippingPlanes = this.clippingPlanes;
             mtl.side = THREE.DoubleSide;
