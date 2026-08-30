@@ -10,3 +10,20 @@ Axis parameter for cylinder() and frustum()
 3mf export
 Add tube primitive
 Move primitives to separate module
+New primitives from Manifold:
+    -LevelSet
+    -Slice
+    -Project (?)
+    -Status
+    -IsEmpty
+    -NumVert
+    -NumEdge
+    -NumTri
+    -Volume
+    -SurfaceArea
+    -WindingNumber
+    -Mirror
+    -Warp
+    -Simplify
+    -Boolean
+    
